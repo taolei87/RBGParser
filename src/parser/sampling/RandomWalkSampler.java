@@ -1,7 +1,7 @@
 package parser.sampling;
 
 import java.util.*;
-
+import gnu.trove.list.array.*;
 import parser.*;
 import utils.Utils;
 
@@ -40,8 +40,9 @@ public class RandomWalkSampler {
     		int curr = i;
     		while (!inTree[curr]) {
     			// sample new head
-    			ArrayList<Double> score = new ArrayList<Double>();
-    			ArrayList<Integer> depList = new ArrayList<Integer>();
+    			
+    			TDoubleArrayList score = new TDoubleArrayList();
+    			TIntArrayList depList = new TIntArrayList();
 
     			for (int candH = 0; candH < len; candH++) {
     				if (lfd.isPruned(candH, curr))
@@ -81,7 +82,7 @@ public class RandomWalkSampler {
     	}
     }
     
-    private int samplePoint(ArrayList<Double> score, Random r) {
+    private int samplePoint(TDoubleArrayList score, Random r) {
     	double sumScore = -1e30;
     	for (int i = 0; i < score.size(); i++) {
     		sumScore = Utils.logSumExp(sumScore, score.get(i));
