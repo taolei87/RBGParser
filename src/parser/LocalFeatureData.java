@@ -5,6 +5,11 @@ import utils.Utils;
 
 public class LocalFeatureData {
 	
+	static double pruningGoldHits = 0;
+	static double pruningTotGold = 0;
+	static double pruningTotUparcs = 0;
+	static double pruningTotArcs = 0;
+	
 	DependencyInstance inst;
 	DependencyPipe pipe;
 	Options options;
@@ -108,13 +113,17 @@ public class LocalFeatureData {
 				isPruned[i] = false;
 			}
 			nuparcs = len*len;
-		} else {			
+		} else {	
+			pruningTotGold += len-1;
+			pruningTotArcs += (len-1)*(len-1);
+			
 			for (int i = 0, L = arc2id.length; i < L; ++i) {
 				arc2id[i] = -1;
 				isPruned[i] = true;
 			}
 			
 			double threshold = Math.log(options.pruningCoeff);
+			//System.out.println(threshold);
 			nuparcs = 0;
 			LocalFeatureData lfd2 = new LocalFeatureData(inst, pruner);
 			
@@ -125,17 +134,34 @@ public class LocalFeatureData {
 						double v = lfd2.getArcScore(h, m);
 						maxv = Math.max(maxv, v);;
 					}
+
 				for (int h = 0; h < len; ++h)
 					if (h != m) {
+						double v = lfd2.getArcScore(h, m);
+						
 						if ((includeGoldArcs && h == inst.heads[m]) ||
-						 (lfd2.getArcScore(h, m) >= maxv + threshold)) {
-							isPruned[m*len+h] = false;
+						 (v >= maxv + threshold)) {
+							//isPruned[m*len+h] = false;
+							isPruned[m*len+h] = !(v >= maxv + threshold);
 							arc2id[m*len+h] = nuparcs;
-							nuparcs++;
+							nuparcs++;							
 						}
 					}
 			}
+			
+			if (includeGoldArcs)
+				for (int m = 1; m < len; ++m)
+					if (!isPruned[m*len+inst.heads[m]])
+						pruningGoldHits++;
+			pruningTotUparcs += nuparcs;
 		}
+	}
+	
+	public static void printPruningStats()
+	{
+		System.out.printf("Pruning Recall: %.4f\tEffcy: %.4f%n",
+				pruningGoldHits / pruningTotGold,
+				pruningTotUparcs / pruningTotArcs);
 	}
 	
 	public int[][] getStaticTypes() {
@@ -159,6 +185,11 @@ public class LocalFeatureData {
 				staticTypes[i][j] = k;
 			}
 		return staticTypes;
+	}
+	
+	public boolean isPruned(int h, int m) 
+	{
+		return isPruned[m*len+h];
 	}
 	
 	public double getArcScore(int h, int m)

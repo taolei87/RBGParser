@@ -22,15 +22,15 @@ public class Options {
     //public boolean evalWithPunc = true;
 	public int maxNumSent = -1;
     public int numPretrainIters = 1;
-	public int maxNumIters = 15;
+	public int maxNumIters = 10;
 	
 	public LearningMode learningMode = LearningMode.Basic;
 	public boolean projective = false;
 	public boolean learnLabel = false;
-	public boolean pruning = false;
-	public double pruningCoeff = 0.005;
+	public boolean pruning = true;
+	public double pruningCoeff = 0.05;
 	
-	public boolean average = false;
+	public boolean average = true;
 	public double C = 1;
 	public double gamma = 1;
 	public int R = 50;
@@ -54,8 +54,8 @@ public class Options {
             else if (arg.equals("non-proj")) {
                 projective = false;
             }
-            else if (arg.equals("average")) {
-            	average = true;
+            else if (arg.equals("average:")) {
+            	average = Boolean.parseBoolean(arg.split(":")[1]);
             }
     		else if (arg.startsWith("train-file:")) {
     			trainFile = arg.split(":")[1];

@@ -189,7 +189,7 @@ public class DependencyParser {
     				System.currentTimeMillis() - start);
 
     		// evaluate on a development set
-    		if (evalAndSave && options.test && ((iIter+1) % 10 == 0 || iIter+1 == options.maxNumIters)) {		
+    		if (evalAndSave && options.test && ((iIter+1) % 100 == 0 || iIter+1 == options.maxNumIters)) {		
     			System.out.println();
 	  			System.out.println("_____________________________________________");
 	  			System.out.println();
@@ -262,6 +262,8 @@ public class DependencyParser {
     public double evaluateSet(boolean output, boolean evalWithPunc)
     		throws IOException {
     	
+    	//pruner = this;
+    	
     	DependencyReader reader = DependencyReader.createDependencyReader(options);
     	reader.startReading(options.testFile);
     	
@@ -279,6 +281,7 @@ public class DependencyParser {
     	while (inst != null) {
     		LocalFeatureData lfd = new LocalFeatureData(inst, this);
     		GlobalFeatureData gfd = null; 
+    		//lfd.initArcPruningMap(true);
     		
     		++nSents;
             
@@ -321,6 +324,8 @@ public class DependencyParser {
     	
     	reader.close();
     	if (out != null) out.close();
+    	
+    	//LocalFeatureData.printPruningStats();
     	System.out.printf(" Tokens: %d%n", nDeps);
     	System.out.printf(" Sentences: %d%n", nSents);
     	System.out.printf(" UAS=%.6f\tLAS=%.6f\tCAS=%.6f%n",
