@@ -48,7 +48,7 @@ public class DependencyInstance implements Serializable {
 	public int[][] featids;
 	public int[] wordVecIds;
 
-	public int[] depids;
+	public int[] deplbids;
 
     public DependencyInstance() {}
     
@@ -91,7 +91,7 @@ public class DependencyInstance implements Serializable {
     	postagids = a.postagids;
     	cpostagids = a.cpostagids;
     	deprelids = a.deprelids;
-    	depids = a.depids;
+    	deplbids = a.deplbids;
     	featids = a.featids;
     	wordVecIds = a.wordVecIds;
     }
@@ -105,7 +105,7 @@ public class DependencyInstance implements Serializable {
     	    	
     	formids = new int[length];    	
 		deprelids = new int[length];
-		depids = new int[length];
+		deplbids = new int[length];
 		postagids = new int[length];
 		cpostagids = new int[length];
 		
@@ -114,7 +114,7 @@ public class DependencyInstance implements Serializable {
 			postagids[i] = tagDict.lookupIndex("pos="+postags[i]);
 			cpostagids[i] = tagDict.lookupIndex("cpos="+cpostags[i]);
 			deprelids[i] = tagDict.lookupIndex("label="+deprels[i]);
-			depids[i] = typeAlphabet.lookupIndex(deprelids[i]);
+			deplbids[i] = typeAlphabet.lookupIndex(deprelids[i]);
     	}
     	    	
     	if (lemmas != null) {

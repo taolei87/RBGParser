@@ -14,7 +14,7 @@ public class RandomWalkSampler {
 	}
 	
 	public RandomWalkSampler() {
-		r = new Random();
+		r = new Random(System.currentTimeMillis());
 	}
 	
 	public RandomWalkSampler(Random r) {
@@ -28,7 +28,7 @@ public class RandomWalkSampler {
     	
 		DependencyInstance predInst = new DependencyInstance(inst);
 		predInst.heads = new int[len];
-		predInst.depids = new int[len];
+		predInst.deplbids = new int[len];
     	
     	boolean[] inTree = new boolean[len];
     	inTree[0] = true;
@@ -49,7 +49,7 @@ public class RandomWalkSampler {
     					continue;
     				depList.add(candH);
     				double s = lfd.getArcScore(candH, curr);
-    				if (addLoss && inst.depids[i] != candH) {
+    				if (addLoss && inst.heads[i] != candH) {
     					// cost augmented
     					s += 1.0;
     				}
@@ -57,17 +57,17 @@ public class RandomWalkSampler {
     			}
 
     			int sample = samplePoint(score, r);
-    			predInst.depids[curr] = depList.get(sample);
-    			curr = predInst.depids[curr];
+    			predInst.heads[curr] = depList.get(sample);
+    			curr = predInst.heads[curr];
     			
-    			if (predInst.depids[curr] != -1 && !inTree[curr]) {
-    				cycleErase(predInst.depids, curr);
+    			if (predInst.heads[curr] != -1 && !inTree[curr]) {
+    				cycleErase(predInst.heads, curr);
     			}
     		}
     		curr = i;
     		while (!inTree[curr]) {
     			inTree[curr] = true;
-    			curr = predInst.depids[curr]; 
+    			curr = predInst.heads[curr]; 
     		}
     	}
     	

@@ -201,9 +201,9 @@ public class Parameters implements Serializable {
 	{
 		int N = gold.length;
     	int[] actDeps = gold.heads;
-    	int[] actLabs = gold.depids;
+    	int[] actLabs = gold.deplbids;
     	int[] predDeps = pred.heads;
-    	int[] predLabs = pred.depids;
+    	int[] predLabs = pred.deplbids;
     	
     	double Fi = getHammingDis(actDeps, actLabs, predDeps, predLabs);
     	

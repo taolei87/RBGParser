@@ -22,7 +22,7 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
         int M = N << 1;
         
         int[] deps = inst.heads;
-        int[] labs = inst.depids;
+        int[] labs = inst.deplbids;
         int[][] staticTypes = null;
 		if (options.learnLabel)
 		    staticTypes = lfd.getStaticTypes();
@@ -58,13 +58,13 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
         
 		DependencyInstance predInst = new DependencyInstance(inst);
 		predInst.heads = new int[N];
-		predInst.depids = new int[N];
+		predInst.deplbids = new int[N];
 		
         for (int i = 1; i < N; ++i) {
             int j = final_par[i];
             int t = options.learnLabel ? staticTypes[j][i] : 0;
             predInst.heads[i] = j;
-            predInst.depids[i] = t;
+            predInst.deplbids[i] = t;
         }
         
         return predInst;

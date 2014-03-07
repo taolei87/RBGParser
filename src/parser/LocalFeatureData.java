@@ -237,9 +237,9 @@ public class LocalFeatureData {
 		
     	int N = inst.length;
     	int[] actDeps = gold.heads;
-    	int[] actLabs = gold.depids;
+    	int[] actLabs = gold.deplbids;
     	int[] predDeps = pred.heads;
-    	int[] predLabs = pred.depids;
+    	int[] predLabs = pred.deplbids;
 		
     	for (int mod = 1; mod < N; ++mod) {
     		int type = actLabs[mod];

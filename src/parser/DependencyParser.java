@@ -225,7 +225,7 @@ public class DependencyParser {
     {
     	int nCorrect = 0;
     	for (int i = 1, N = act.length; i < N; ++i) {
-    		if (act.heads[i] == pred.heads[i] && act.depids[i] == pred.depids[i])
+    		if (act.heads[i] == pred.heads[i] && act.deplbids[i] == pred.deplbids[i])
     			++nCorrect;
     	}    		  		
     	return nCorrect;
@@ -254,7 +254,7 @@ public class DependencyParser {
             if (!evalWithPunc)
             	if (inst.forms[i].matches("[-!\"#%&'()*,./:;?@\\[\\]_{}、]+")) continue;
 
-    		if (inst.heads[i] == pred.heads[i] && inst.depids[i] == pred.depids[i]) ++nCorrect;
+    		if (inst.heads[i] == pred.heads[i] && inst.deplbids[i] == pred.deplbids[i]) ++nCorrect;
     	}    		
     	return nCorrect;
     }
@@ -308,7 +308,7 @@ public class DependencyParser {
     			++nWhole;
     		
     		if (out != null) {
-    			int[] deps = predInst.heads, labs = predInst.depids;
+    			int[] deps = predInst.heads, labs = predInst.deplbids;
     			String line1 = "", line2 = "", line3 = "", line4 = "";
     			for (int i = 1; i < inst.length; ++i) {
     				line1 += inst.forms[i] + "\t";
