@@ -30,7 +30,7 @@ public class Options {
 	public boolean pruning = true;
 	public double pruningCoeff = 0.05;
 	
-	public int numHcThreads = 6;		// hill climbing: number of threads
+	public int numHcThreads = 1;		// hill climbing: number of threads
 	public int numHcConverge = 50;		// hill climbing: number of restarts to converge 
 	
 	public boolean average = true;

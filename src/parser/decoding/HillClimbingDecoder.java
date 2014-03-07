@@ -1,5 +1,6 @@
 package parser.decoding;
 
+import parser.DependencyArcList;
 import parser.DependencyInstance;
 import parser.GlobalFeatureData;
 import parser.LocalFeatureData;
@@ -65,17 +66,16 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		
 		int n, converge;
 		int size;
-		int[] st, ed, edges, dfslis;
+		DependencyArcList arcLis;
+		int[] dfslis;
 		
 		public void run()
 		{
 			n = inst.length;
 			converge = options.numHcConverge;
-			st = new int[n];
-			ed = new int[n];
 			dfslis = new int[n];
-			edges = new int[n*n];
-			
+			arcLis = new DependencyArcList(n);
+
 			while (!stopped) {
 				DependencyInstance now = sampler.randomWalkSampling(
 						inst, lfd, addLoss);
@@ -115,7 +115,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 						deplbids[m] = staticTypes[heads[m]][m];
 				}
 				
-				double score = calcScore(heads, deplbids);
+				double score = calcScore(now);
 				synchronized (pred) {
 					++totRuns;
 					if (score > bestScore) {
@@ -134,50 +134,36 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		
 		private double calcScore(int[] heads, int m)
 		{
-			return ((addLoss && heads[m] != inst.heads[m]) ? 1 : 0);
-			//		+ lfd.getScore(heads, m)
-			//		+ gfd.getScore(heads, m);
+			return ((addLoss && heads[m] != inst.heads[m]) ? 1 : 0)
+					+ lfd.getPartialScore(heads, m);
+			//		+ gfd.getStructureScore(heads, m);
 		}
 		
-		private double calcScore(int[] heads, int[] deplbids) 
+		private double calcScore(DependencyInstance now) 
 		{
-			//TODO
-			return 0;
+			double score = 0;
+			int[] heads = now.heads;
+			int[] deplbids = now.deplbids;
+			for (int m = 1; m < n; ++m)
+				score += lfd.getLabeledArcScore(heads[m], m, deplbids[m]);
+			 
+			score += lfd.getScore(now);
+			return score;
 		}
 		
 		private void depthFirstSearch(int[] heads)
 		{
-			for (int i = 0; i < n; ++i)
-				ed[i] = 0;
-			
-			for (int i = 1; i < n; ++i) {
-				int j = heads[i];
-				++ed[j];
-			}
-			
-			st[0] = 0;
-			for (int i = 1; i < n; ++i) {
-				st[i] = ed[i-1];
-				ed[i] += ed[i-1];
-			}
-			
-			Utils.Assert(ed[n-1] == n-1);
-			
-			for (int i = 1; i < n; ++i) {
-				int j = heads[i];
-				edges[st[j]] = i;
-				++st[j];
-			}
+			arcLis.constructDepTreeArcList(heads);
 			size = 0;
 			dfs(0);
 		}
 		
 		private void dfs(int i)
 		{
-			int l = i == 0 ? 0 : ed[i-1];
-			int r = ed[i];
+			int l = arcLis.startIndex(i);
+			int r = arcLis.endIndex(i);
 			for (int p = l; p < r; ++p) {
-				int j = edges[p];
+				int j = arcLis.get(p);
 				dfs(j);
 				dfslis[size++] = j;
 			}

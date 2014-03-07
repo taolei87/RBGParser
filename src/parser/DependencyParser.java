@@ -165,7 +165,7 @@ public class DependencyParser {
     		for (int i = 0; i < N; ++i) {
     			
     			DependencyInstance inst = new DependencyInstance(lstTrain[i]);
-    			LocalFeatureData lfd = new LocalFeatureData(inst, this);
+    			LocalFeatureData lfd = new LocalFeatureData(inst, this, true);
     		    GlobalFeatureData gfd = null;
     		    int n = inst.length;
     		    
@@ -279,7 +279,7 @@ public class DependencyParser {
     	
     	DependencyInstance inst = pipe.createInstance(reader);    	
     	while (inst != null) {
-    		LocalFeatureData lfd = new LocalFeatureData(inst, this);
+    		LocalFeatureData lfd = new LocalFeatureData(inst, this, false);
     		GlobalFeatureData gfd = null; 
     		//lfd.initArcPruningMap(true);
     		

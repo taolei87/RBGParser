@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 
 
+import parser.Options.LearningMode;
 import parser.io.DependencyReader;
 import utils.Alphabet;
 import utils.Dictionary;
@@ -323,13 +324,17 @@ public class DependencyPipe implements Serializable {
     
     public void initFeatureAlphabets(DependencyInstance inst) 
     {
+        int n = inst.length;
         
-        for (int i = 0; i < inst.length; ++i)
+    	// word 
+        for (int i = 0; i < n; ++i)
             createWordFeatures(inst, i);
     	
         int[] heads = inst.heads;
         int[] deprelids = inst.deprelids;
-    	for (int i = 0; i < inst.length; ++i) {
+    	
+        // 1st order arc
+        for (int i = 0; i < n; ++i) {
     		
     		if (heads[i] == -1) continue;
     	     
@@ -342,7 +347,26 @@ public class DependencyPipe implements Serializable {
     			createLabelFeatures(inst, i, type, toRight, true);
     		}
     	}
-
+    	
+        if (options.learningMode != LearningMode.Basic) {
+        	
+        	DependencyArcList arcLis = new DependencyArcList(heads);
+    		
+    		// 2nd order (h,m,s) & (m,s)
+    		for (int h = 0; h < n; ++h) {
+    			
+    			int st = arcLis.startIndex(h);
+    			int ed = arcLis.endIndex(h);
+    			
+    			for (int p = st; p+1 < ed; ++p) {
+    				// mod and sib
+    				int m = arcLis.get(p);
+    				int s = arcLis.get(p+1);
+    				createTripsFeatureVector(inst, h, m, s);
+    				createSibFeatureVector(inst, m, s, false);
+    			}
+    		}
+        }		
     }
     
     
@@ -948,7 +972,7 @@ public class DependencyPipe implements Serializable {
     	int[] posA = inst.cpostagids;
 
     	// ch1 is always the closes to par
-    	int dirFlag = (((par < ch2 ? 0 : 1) << 1) | 1);
+    	int dirFlag = ((((par < ch1 ? 0 : 1) << 1) | (par < ch2 ? 0 : 1)) << 1) | 1;
 
     	int HP = pos[par];
     	int SP = ch1 == par ? TOKEN_START : pos[ch1];

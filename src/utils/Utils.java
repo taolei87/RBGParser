@@ -79,5 +79,7 @@ public final class Utils {
 			min = Math.min(min, vec[i]);
 		return min;
 	}
+
+
 	
 }

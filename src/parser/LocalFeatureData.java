@@ -1,5 +1,6 @@
 package parser;
 
+import parser.Options.LearningMode;
 import utils.FeatureVector;
 import utils.Utils;
 
@@ -41,19 +42,21 @@ public class LocalFeatureData {
 	FeatureVector[][] tripsFvs;		// [dep id][sib]
 	double[][] tripsScores;
 
-	FeatureVector[][][] sibFvs;	// [mod][sib][2]
-	double[][][] sibScores;
+	FeatureVector[][] sibFvs;		// [mod][sib]
+	double[][] sibScores;
 	
 	
 	
-	public LocalFeatureData(DependencyInstance inst, DependencyParser parser) 
+	public LocalFeatureData(DependencyInstance inst,
+			DependencyParser parser, boolean indexGoldArcs) 
 	{
 		this.inst = inst;
 		this.pipe = parser.pipe;
 		this.options = parser.options;
 		this.parameters = parser.parameters;
 		this.pruner = parser.pruner;
-	
+		
+		Utils.Assert(pruner == null || pruner.options.learningMode == LearningMode.Basic);
 		
 		// allocate memory for arrays here
 		len = inst.length;
@@ -71,10 +74,18 @@ public class LocalFeatureData {
 		
 		lbFvs = new FeatureVector[len][ntypes][2][2];
 		lbScores = new double[len][ntypes][2][2];
-		
-		
+
 		// calculate 1st order feature vectors and scores
-		initFirstOrderTables();		
+		initFirstOrderTables();
+		
+		if (options.learningMode != LearningMode.Basic) {
+			// construct unpruned arc list. All arcs are kept if there is no pruner.
+			initArcPruningMap(indexGoldArcs);
+			
+			// allocate memory for tables of high order features 
+			initHighOrderFeatureTables();
+		}
+				
 	}
 	
 	private void initFirstOrderTables() 
@@ -108,13 +119,16 @@ public class LocalFeatureData {
 		}
 	}
 	
-	public void initFeatureTables() {
+	public void initHighOrderFeatureTables() {
 		// init non-first-order feature tables
-		tripsFvs = new FeatureVector[nuparcs][len];
-		tripsScores = new double[nuparcs][len];
 		
-		sibFvs = new FeatureVector[len][len][2];
-		sibScores = new double[len][len][2];
+		// 2nd order (head, mod, mod_sib) features
+		tripsFvs = new FeatureVector[nuparcs][len];
+		tripsScores = new double[nuparcs][len];		
+		
+		// 2nd order (mod, mod_sib) features
+		sibFvs = new FeatureVector[len][len];
+		sibScores = new double[len][len];
 	}
 	
 	public void initArcPruningMap(boolean includeGoldArcs) {
@@ -140,7 +154,7 @@ public class LocalFeatureData {
 			double threshold = Math.log(options.pruningCoeff);
 			//System.out.println(threshold);
 			nuparcs = 0;
-			LocalFeatureData lfd2 = new LocalFeatureData(inst, pruner);
+			LocalFeatureData lfd2 = new LocalFeatureData(inst, pruner, false);
 			
 			for (int m = 1; m < len; ++m) {								
 				double maxv = Double.NEGATIVE_INFINITY;
@@ -218,26 +232,170 @@ public class LocalFeatureData {
 		return lbScores[h][t][toR][0] + lbScores[m][t][toR][1];
 	}
 	
+	public double getTripsScore(int h, int m, int s) 
+	{
+		int id = arc2id[m*len+h];
+		
+		Utils.Assert(id >= 0 && arc2id[s*len+h] >= 0);
+		
+		if (tripsFvs[id][s] == null)
+			getTripsFeatureVector(h, m, s);
+		
+		return tripsScores[id][s];
+	}
+	
+	public double getSibScore(int m, int s)
+	{
+		if (sibFvs[m][s] == null)
+			getSibFeatureVector(m, s);
+		
+		return sibScores[m][s];
+	}
+	
+	public double getPartialScore(int[] heads, int x)
+	{
+		// 1st order arc
+		double score = arcScores[heads[x]][x];
+		
+		if (options.learningMode != LearningMode.Basic) {
+			
+			DependencyArcList arcLis = new DependencyArcList(heads);
+			
+			// 2nd order (h,m,s) & (m,s)
+			for (int h = 0; h < len; ++h) if (h != x) {
+				
+				int st = arcLis.startIndex(h);
+				int ed = arcLis.endIndex(h);
+				
+				for (int p = st; p+1 < ed; ++p) {
+					// mod and sib
+					int m = arcLis.get(p);
+					int s = arcLis.get(p+1);
+					if (m <= x && x <= s)
+						score += getTripsScore(h, m, s) + getSibScore(m, s);
+				}
+			}
+		}
+		
+		return score;
+	}
+	
+	public double getScore(DependencyInstance now)
+	{
+		double score = 0;		
+		int[] heads = now.heads;
+		
+		// 1st order arc
+		for (int m = 1; m < len; ++m)
+			score += arcScores[heads[m]][m];
+		
+		if (options.learningMode != LearningMode.Basic) {
+			
+			DependencyArcList arcLis = new DependencyArcList(heads);
+			
+			// 2nd order (h,m,s) & (m,s)
+			for (int h = 0; h < len; ++h) {
+				
+				int st = arcLis.startIndex(h);
+				int ed = arcLis.endIndex(h);
+				
+				for (int p = st; p+1 < ed; ++p) {
+					// mod and sib
+					int m = arcLis.get(p);
+					int s = arcLis.get(p+1);
+					score += getTripsScore(h, m, s);
+					score += getSibScore(m, s);
+				}
+			}
+			
+		}
+		
+		return score;
+	}
+	
+	public FeatureVector getFeatureVector(DependencyInstance now)
+	{
+		FeatureVector fv = new FeatureVector(size);
+		
+		int[] heads = now.heads;
+		
+		// 1st order arc
+		for (int m = 1; m < len; ++m)
+			fv.addEntries(arcFvs[heads[m]][m]);
+		
+		if (options.learningMode != LearningMode.Basic) {
+			
+			DependencyArcList arcLis = new DependencyArcList(heads);
+			
+			// 2nd order (h,m,s) & (m,s)
+			for (int h = 0; h < len; ++h) {
+				
+				int st = arcLis.startIndex(h);
+				int ed = arcLis.endIndex(h);
+				
+				for (int p = st; p+1 < ed; ++p) {
+					// mod and sib
+					int m = arcLis.get(p);
+					int s = arcLis.get(p+1);
+					fv.addEntries(getTripsFeatureVector(h,m,s));
+					fv.addEntries(getSibFeatureVector(m,s));
+				}
+			}
+			
+		}
+		
+		return fv;
+	}
+	
+	public FeatureVector getTripsFeatureVector(int h, int m, int s)
+	{
+		int id = arc2id[m*len+h];
+		
+		Utils.Assert(id >= 0 && arc2id[s*len+h] >= 0);
+		
+		FeatureVector fv = tripsFvs[id][s];		
+		if (fv == null) {
+			fv = pipe.createTripsFeatureVector(inst, h, m, s);
+			tripsFvs[id][s] = fv;
+			tripsScores[id][s] = parameters.dotProduct(fv) * gamma;
+		}
+		return fv;
+	}
+	
+	public FeatureVector getSibFeatureVector(int m, int s)
+	{
+		FeatureVector fv = sibFvs[m][s];		
+		if (fv == null) {			
+			fv = pipe.createSibFeatureVector(inst, m, s, false);
+			sibFvs[m][s] = fv;
+			sibScores[m][s] = parameters.dotProduct(fv) * gamma;
+		}
+		return fv;
+	}
+	
 	public FeatureVector getFeatureDifference(DependencyInstance gold, 
 						DependencyInstance pred)
 	{
-		FeatureVector dfv = new FeatureVector(size);
+//		FeatureVector dfv = new FeatureVector(size);
+//		
+//		int N = gold.length;
+//    	int[] actDeps = gold.heads;
+//    	int[] predDeps = pred.heads;
+//    	
+//    	// 1st order arc
+//    	for (int mod = 1; mod < N; ++mod) {
+//    		int head  = actDeps[mod];
+//    		int head2 = predDeps[mod];
+//    		if (head != head2) {
+//    			dfv.addEntries(arcFvs[head][mod]);
+//    			dfv.addEntries(arcFvs[head2][mod], -1.0);
+//    		}
+//    	}
+//    	
+//    	//TODO: handle high order features
 		
-		int N = gold.length;
-    	int[] actDeps = gold.heads;
-    	int[] predDeps = pred.heads;
-    	
-    	// 1st order arc
-    	for (int mod = 1; mod < N; ++mod) {
-    		int head  = actDeps[mod];
-    		int head2 = predDeps[mod];
-    		if (head != head2) {
-    			dfv.addEntries(arcFvs[head][mod]);
-    			dfv.addEntries(arcFvs[head2][mod], -1.0);
-    		}
-    	}
-    	
-    	//TODO: handle high order features
+		FeatureVector dfv = getFeatureVector(gold);
+		dfv.addEntries(getFeatureVector(pred), -1.0);
     	
     	return dfv;
 	}
