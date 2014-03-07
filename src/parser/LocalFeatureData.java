@@ -38,6 +38,13 @@ public class LocalFeatureData {
 	
 	//TODO: add high order feature vectors and score tables
 	
+	FeatureVector[][] tripsFvs;		// [dep id][sib]
+	double[][] tripsScores;
+
+	FeatureVector[][][] sibFvs;	// [mod][sib][2]
+	double[][][] sibScores;
+	
+	
 	
 	public LocalFeatureData(DependencyInstance inst, DependencyParser parser) 
 	{
@@ -101,6 +108,14 @@ public class LocalFeatureData {
 		}
 	}
 	
+	public void initFeatureTables() {
+		// init non-first-order feature tables
+		tripsFvs = new FeatureVector[nuparcs][len];
+		tripsScores = new double[nuparcs][len];
+		
+		sibFvs = new FeatureVector[len][len][2];
+		sibScores = new double[len][len][2];
+	}
 	
 	public void initArcPruningMap(boolean includeGoldArcs) {
 		

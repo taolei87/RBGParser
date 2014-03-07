@@ -37,6 +37,9 @@ public class Options {
 	public double C = 1;
 	public double gamma = 1;
 	public int R = 50;
+	
+	// feature set
+	public boolean useCS = true;		// use consecutive siblings
     
 	public Options() {
 		
@@ -115,6 +118,9 @@ public class Options {
         System.out.println("R: " + R);
         System.out.println("word-vector:" + wordVectorFile);
         System.out.println("projective: " + projective);
+        
+        System.out.println();
+        System.out.println("use consecutive siblings: " + useCS);
 
     	System.out.println("------\n");
     }

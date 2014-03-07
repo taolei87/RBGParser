@@ -81,6 +81,117 @@ public class FeatureTemplate {
 
 	    
 		/*************************************************
+		 * 2o feature  
+		 * ***********************************************/
+
+	    HP_SP_MP,
+		HC_SC_MC,
+
+		pHC_HC_SC_MC,
+		HC_nHC_SC_MC,
+		HC_pSC_SC_MC,
+		HC_SC_nSC_MC,
+		HC_SC_pMC_MC,
+		HC_SC_MC_nMC,
+
+		pHC_HL_SC_MC,
+		HL_nHC_SC_MC,
+		HL_pSC_SC_MC,
+		HL_SC_nSC_MC,
+		HL_SC_pMC_MC,
+		HL_SC_MC_nMC,
+
+		pHC_HC_SL_MC,
+		HC_nHC_SL_MC,
+		HC_pSC_SL_MC,
+		HC_SL_nSC_MC,
+		HC_SL_pMC_MC,
+		HC_SL_MC_nMC,
+
+		pHC_HC_SC_ML,
+		HC_nHC_SC_ML,
+		HC_pSC_SC_ML,
+		HC_SC_nSC_ML,
+		HC_SC_pMC_ML,
+		HC_SC_ML_nMC,
+
+		HC_MC_SC_pHC_pMC,
+		HC_MC_SC_pHC_pSC,
+		HC_MC_SC_pMC_pSC,
+		HC_MC_SC_nHC_nMC,
+		HC_MC_SC_nHC_nSC,
+		HC_MC_SC_nMC_nSC,
+		HC_MC_SC_pHC_nMC,
+		HC_MC_SC_pHC_nSC,
+		HC_MC_SC_pMC_nSC,
+		HC_MC_SC_nHC_pMC,
+		HC_MC_SC_nHC_pSC,
+		HC_MC_SC_nMC_pSC,
+
+		SP_MP,
+		SW_MW,
+		SW_MP,
+		SP_MW,
+		SC_MC,
+		SL_ML,
+		SL_MC,
+		SC_ML,
+
+		// head bigram
+		H1P_H2P_M1P_M2P,
+		H1P_H2P_M1P_M2P_DIR,
+		H1C_H2C_M1C_M2C,
+		H1C_H2C_M1C_M2C_DIR,
+
+		// gp-p-c
+		GP_HP_MP,
+		GC_HC_MC,
+		GL_HC_MC,
+		GC_HL_MC,
+		GC_HC_ML,
+
+		pGC_GC_HC_MC,
+		GC_nGC_HC_MC,
+		GC_pHC_HC_MC,
+		GC_HC_nHC_MC,
+		GC_HC_pMC_MC,
+		GC_HC_MC_nMC,
+
+		pGC_GL_HC_MC,
+		GL_nGC_HC_MC,
+		GL_pHC_HC_MC,
+		GL_HC_nHC_MC,
+		GL_HC_pMC_MC,
+		GL_HC_MC_nMC,
+
+		pGC_GC_HL_MC,
+		GC_nGC_HL_MC,
+		GC_pHC_HL_MC,
+		GC_HL_nHC_MC,
+		GC_HL_pMC_MC,
+		GC_HL_MC_nMC,
+
+		pGC_GC_HC_ML,
+		GC_nGC_HC_ML,
+		GC_pHC_HC_ML,
+		GC_HC_nHC_ML,
+		GC_HC_pMC_ML,
+		GC_HC_ML_nMC,
+
+		GC_HC_MC_pGC_pHC,
+		GC_HC_MC_pGC_pMC,
+		GC_HC_MC_pHC_pMC,
+		GC_HC_MC_nGC_nHC,
+		GC_HC_MC_nGC_nMC,
+		GC_HC_MC_nHC_nMC,
+		GC_HC_MC_pGC_nHC,
+		GC_HC_MC_pGC_nMC,
+		GC_HC_MC_pHC_nMC,
+		GC_HC_MC_nGC_pHC,
+		GC_HC_MC_nGC_pMC,
+		GC_HC_MC_nHC_pMC,
+
+		/*************************************************
 		 * word embedding feature  
 		 * ***********************************************/
 	    
