@@ -4,6 +4,20 @@ import utils.Utils;
 
 public class FeatureTemplate {
 	
+	/**
+	 * "H"	: head
+	 * "M"	: modifier
+	 * "B"	: in-between tokens
+	 * 
+	 * "P"	: pos tag
+	 * "W"	: word form or lemma
+	 * "EMB": word embedding (word vector)
+	 * 
+	 * "p": previous token
+	 * "n": next token
+	 *
+	 */
+	
 	public enum Arc {
 		
 		FEATURE_TEMPLATE_START,
@@ -12,31 +26,30 @@ public class FeatureTemplate {
 		 * Arc feature inspired by MST parser 
 		 * ***********************************************/
 		
-	    // feature posL posIn posR
-	    CORE_POS_PC,	    
-	    CORE_POS_XPC,
-
+	    // posL posIn posR
+	    HP_BP_MP,			//CORE_POS_PC,	    
+	    					//CORE_POS_XPC,
 	    
-	    // feature posL-1 posL posR posR+1
-	    CORE_POS_PT0,
-	    CORE_POS_PT1,
-	    CORE_POS_PT2,
-	    CORE_POS_PT3,
-	    CORE_POS_PT4,
+	    // posL-1 posL posR posR+1
+	    HPp_HP_MP_MPn,		//CORE_POS_PT0,
+	    HP_MP_MPn,			//CORE_POS_PT1,
+	    HPp_HP_MP,			//CORE_POS_PT2,
+	    HPp_MP_MPn,			//CORE_POS_PT3,
+	    HPp_HP_MPn,			//CORE_POS_PT4,
     
-	    // feature posL posL+1 posR-1 posR
-	    CORE_POS_APT0,
-	    CORE_POS_APT1,
-	    CORE_POS_APT2,
-	    CORE_POS_APT3,
-	    CORE_POS_APT4,
+	    // posL posL+1 posR-1 posR
+	    HP_HPn_MPp_MP,		//CORE_POS_APT0,
+	    HP_MPp_MP,			//CORE_POS_APT1,
+	    HP_HPn_MP,			//CORE_POS_APT2,
+	    HPn_MPp_MP,			//CORE_POS_APT3,
+	    HP_HPn_MPp,			//CORE_POS_APT4,
 	    
-	    // feature posL-1 posL posR-1 posR
-	    // feature posL posL+1 posR posR+1
-	    CORE_POS_BPT,
-	    CORE_POS_CPT,
+	    // posL-1 posL posR-1 posR
+	    // posL posL+1 posR posR+1
+	    HPp_HP_MPp_MP,		//CORE_POS_BPT,
+	    HP_HPn_MP_MPn,		//CORE_POS_CPT,
 
-	    // feature  unigram (form, lemma, pos, coarse_pos, morphology) 
+	    // unigram (form, lemma, pos, coarse_pos, morphology) 
 	    CORE_HEAD_WORD,
 	    CORE_HEAD_POS,
 	    CORE_MOD_WORD,
@@ -46,18 +59,18 @@ public class FeatureTemplate {
 	    CORE_MOD_pWORD,
 	    CORE_MOD_nWORD,    
 	    
-	    // feature  bigram word-cross-word(-cross-distance)
-	    CORE_BIGRAM_A,
-	    CORE_BIGRAM_B,
-	    CORE_BIGRAM_C,
-	    CORE_BIGRAM_D,
-	    CORE_BIGRAM_E,
-	    CORE_BIGRAM_F,
-	    CORE_BIGRAM_G,
-	    CORE_BIGRAM_H,
-	    CORE_BIGRAM_K,
+	    // bigram  [word|lemma]-cross-[pos|cpos|mophlogy](-cross-distance)
+	    HW_MW_HP_MP,			//CORE_BIGRAM_A,
+	    MW_HP_MP,				//CORE_BIGRAM_B,
+	    HW_HP_MP,				//CORE_BIGRAM_C,
+	    MW_HP,					//CORE_BIGRAM_D,
+	    HW_MP,					//CORE_BIGRAM_E,
+	    HW_HP,					//CORE_BIGRAM_F,
+	    MW_MP,					//CORE_BIGRAM_G,
+	    HW_MW,					//CORE_BIGRAM_H,
+	    HP_MP,					//CORE_BIGRAM_K,
 	    
-	    // feature  label feature
+	    // label feature
 	    CORE_LABEL_NTS1,
 	    CORE_LABEL_NTH,
 	    CORE_LABEL_NTI,
@@ -71,8 +84,8 @@ public class FeatureTemplate {
 		 * word embedding feature  
 		 * ***********************************************/
 	    
-	    CORE_HEAD_EMB,
-	    CORE_MOD_EMB,
+	    HEAD_EMB,
+	    MOD_EMB,
 	    
 	    
 	    FEATURE_TEMPLATE_END;

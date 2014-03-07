@@ -37,6 +37,18 @@ public class Alphabet implements Serializable
     }
 
     /** Return -1 if entry isn't present. */
+    public int lookupIndex (long entry, int value)
+    {
+		int ret = map.get(entry);
+		if (ret <= 0 && !growthStopped) {
+			numEntries++;
+			ret = value + 1;
+		    map.put (entry, ret);
+		}
+		return ret - 1;	// feature id should be 0-based
+    }
+    
+    /** Return -1 if entry isn't present. */
     public int lookupIndex (long entry, boolean addIfNotPresent)
     {
 		int ret = map.get(entry);
@@ -47,7 +59,7 @@ public class Alphabet implements Serializable
 		}
 		return ret - 1;	// feature id should be 0-based
     }
-
+    
     public int lookupIndex (long entry)
     {
     	return lookupIndex (entry, true);

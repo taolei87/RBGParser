@@ -52,7 +52,7 @@ public class LocalFeatureData {
 		len = inst.length;
 		ntypes = pipe.types.length;
 		rank = options.R;
-		size = pipe.arcAlphabet.size();
+		size = pipe.numArcFeats;
 		gamma = options.gamma;
 		
 		wordFvs = new FeatureVector[len];

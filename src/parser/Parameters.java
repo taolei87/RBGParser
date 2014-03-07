@@ -32,7 +32,7 @@ public class Parameters implements Serializable {
 	{
 		 //T = pipe.types.length;
         D = d * 2 + 1;
-		size = pipe.arcAlphabet.size();		
+		size = pipe.numArcFeats;		
 		params = new double[size];
 		total = new double[size];
 
@@ -41,7 +41,7 @@ public class Parameters implements Serializable {
 		gamma = options.gamma;
 		rank = options.R;
 		
-		N = pipe.wordAlphabet.size();
+		N = pipe.numWordFeats;
 		M = N;
 		U = new double[rank][N];		
 		V = new double[rank][M];
