@@ -96,7 +96,8 @@ public class HillClimbingDecoder extends DependencyDecoder {
 						double maxScore = calcScore(heads, m);
 						
 						for (int h = 0; h < n; ++h)
-							if (h != m && h != bestHead && !lfd.isPruned(h, m)) {
+							if (h != m && h != bestHead && !lfd.isPruned(h, m)
+								&& !isAncestorOf(heads, m, h)) {
 								heads[m] = h;
 								double score = calcScore(heads, m);
 								if (score > maxScore) {
@@ -132,9 +133,21 @@ public class HillClimbingDecoder extends DependencyDecoder {
 			}
 		}
 		
+		private boolean isAncestorOf(int[] heads, int par, int ch) 
+		{
+			while (ch != 0) {
+				if (ch == par) return true;
+				ch = heads[ch];
+			}
+			return false;
+		}
+		
 		private double calcScore(int[] heads, int m)
 		{
 			return ((addLoss && heads[m] != inst.heads[m]) ? 1 : 0)
+					+ (options.learnLabel ? 
+						lfd.getLabeledArcScore(heads[m], m, staticTypes[heads[m]][m])
+						: 0.0)
 					+ lfd.getPartialScore(heads, m);
 			//		+ gfd.getStructureScore(heads, m);
 		}
@@ -153,10 +166,15 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		
 		private void depthFirstSearch(int[] heads)
 		{
+			//for (int i = 1; i < n; ++i) {
+			//	System.out.println(heads[i] + " --> " + i);
+			//}
+			//System.out.println();
 			arcLis.constructDepTreeArcList(heads);
 			size = 0;
 			dfs(0);
 		}
+		
 		
 		private void dfs(int i)
 		{

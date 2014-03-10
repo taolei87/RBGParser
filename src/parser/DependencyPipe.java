@@ -10,14 +10,12 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-
 import parser.Options.LearningMode;
 import parser.io.DependencyReader;
 import utils.Alphabet;
 import utils.Dictionary;
 import utils.FeatureVector;
 import utils.Utils;
-
 import static parser.FeatureTemplate.Arc.*;
 import static parser.FeatureTemplate.Word.*;
 
@@ -331,7 +329,7 @@ public class DependencyPipe implements Serializable {
             createWordFeatures(inst, i);
     	
         int[] heads = inst.heads;
-        int[] deprelids = inst.deprelids;
+        int[] deplbids = inst.deplbids;
     	
         // 1st order arc
         for (int i = 0; i < n; ++i) {
@@ -341,7 +339,7 @@ public class DependencyPipe implements Serializable {
     		int parent = heads[i];
     		createArcFeatures(inst, parent, i);	// arc features    		
     		if (options.learnLabel) {
-    			int type = deprelids[i]; 
+    			int type = deplbids[i]; 
     			boolean toRight = parent < i;
     			createLabelFeatures(inst, parent, type, toRight, false);
     			createLabelFeatures(inst, i, type, toRight, true);
@@ -996,7 +994,8 @@ public class DependencyPipe implements Serializable {
     	return fv;
     }
 
-    void addTurboSib(DependencyInstance inst, int par, int ch1, int ch2, int dirFlag, FeatureVector fv) {
+    void addTurboSib(DependencyInstance inst, int par, int ch1, int ch2, int dirFlag, FeatureVector fv) 
+    {
     	int[] posA = inst.cpostagids;
     	int[] lemma = inst.lemmaids;
     	int len = inst.length;
@@ -1004,11 +1003,7 @@ public class DependencyPipe implements Serializable {
     	int HC = posA[par];
     	int SC = ch1 == par ? TOKEN_START : posA[ch1];
     	int MC = posA[ch2];
-
-    	int HL = lemma[par];
-    	int SL = ch1 == par ? TOKEN_START : lemma[ch1];
-    	int ML = lemma[ch2];
-
+    	
     	int pHC = par > 0 ? posA[par - 1] : TOKEN_START;
     	int nHC = par < len - 1 ? posA[par + 1] : TOKEN_END;
     	int pSC = ch1 > 0 ? posA[ch1 - 1] : TOKEN_START;
@@ -1043,81 +1038,88 @@ public class DependencyPipe implements Serializable {
     	addArcFeature(code, fv);
     	addArcFeature(code | dirFlag, fv);
 
-    	// LCC
-    	code = createArcCodeWPPP(pHC_HL_SC_MC, HL, pHC, SC, MC);
-    	addArcFeature(code, fv);
-    	addArcFeature(code | dirFlag, fv);
-
-    	code = createArcCodeWPPP(HL_nHC_SC_MC, HL, nHC, SC, MC);
-    	addArcFeature(code, fv);
-    	addArcFeature(code | dirFlag, fv);
-
-    	code = createArcCodeWPPP(HL_pSC_SC_MC, HL, pSC, SC, MC);
-    	addArcFeature(code, fv);
-    	addArcFeature(code | dirFlag, fv);
-
-    	code = createArcCodeWPPP(HL_SC_nSC_MC, HL, SC, nSC, MC);
-    	addArcFeature(code, fv);
-    	addArcFeature(code | dirFlag, fv);
-
-    	code = createArcCodeWPPP(HL_SC_pMC_MC, HL, SC, pMC, MC);
-    	addArcFeature(code, fv);
-    	addArcFeature(code | dirFlag, fv);
-
-    	code = createArcCodeWPPP(HL_SC_MC_nMC, HL, SC, MC, nMC);
-    	addArcFeature(code, fv);
-    	addArcFeature(code | dirFlag, fv);
-
-    	// CLC
-    	code = createArcCodeWPPP(pHC_HC_SL_MC, SL, pHC, HC, MC);
-    	addArcFeature(code, fv);
-    	addArcFeature(code | dirFlag, fv);
-
-    	code = createArcCodeWPPP(HC_nHC_SL_MC, SL, HC, nHC, MC);
-    	addArcFeature(code, fv);
-    	addArcFeature(code | dirFlag, fv);
-
-    	code = createArcCodeWPPP(HC_pSC_SL_MC, SL, HC, pSC, MC);
-    	addArcFeature(code, fv);
-    	addArcFeature(code | dirFlag, fv);
-
-    	code = createArcCodeWPPP(HC_SL_nSC_MC, SL, HC, nSC, MC);
-    	addArcFeature(code, fv);
-    	addArcFeature(code | dirFlag, fv);
-
-    	code = createArcCodeWPPP(HC_SL_pMC_MC, SL, HC, pMC, MC);
-    	addArcFeature(code, fv);
-    	addArcFeature(code | dirFlag, fv);
-
-    	code = createArcCodeWPPP(HC_SL_MC_nMC, SL, HC, MC, nMC);
-    	addArcFeature(code, fv);
-    	addArcFeature(code | dirFlag, fv);
-
-    	// CCL
-    	code = createArcCodeWPPP(pHC_HC_SC_ML, ML, pHC, HC, SC);
-    	addArcFeature(code, fv);
-    	addArcFeature(code | dirFlag, fv);
-
-    	code = createArcCodeWPPP(HC_nHC_SC_ML, ML, HC, nHC, SC);
-    	addArcFeature(code, fv);
-    	addArcFeature(code | dirFlag, fv);
-
-    	code = createArcCodeWPPP(HC_pSC_SC_ML, ML, HC, pSC, SC);
-    	addArcFeature(code, fv);
-    	addArcFeature(code | dirFlag, fv);
-
-    	code = createArcCodeWPPP(HC_SC_nSC_ML, ML, HC, SC, nSC);
-    	addArcFeature(code, fv);
-    	addArcFeature(code | dirFlag, fv);
-
-    	code = createArcCodeWPPP(HC_SC_pMC_ML, ML, HC, SC, pMC);
-    	addArcFeature(code, fv);
-    	addArcFeature(code | dirFlag, fv);
-
-    	code = createArcCodeWPPP(HC_SC_ML_nMC, ML, HC, SC, nMC);
-    	addArcFeature(code, fv);
-    	addArcFeature(code | dirFlag, fv);
-
+    	if (lemma != null) {
+    		
+	    	int HL = lemma[par];
+	    	int SL = ch1 == par ? TOKEN_START : lemma[ch1];
+	    	int ML = lemma[ch2];
+	    	
+	    	// LCC
+	    	code = createArcCodeWPPP(pHC_HL_SC_MC, HL, pHC, SC, MC);
+	    	addArcFeature(code, fv);
+	    	addArcFeature(code | dirFlag, fv);
+	
+	    	code = createArcCodeWPPP(HL_nHC_SC_MC, HL, nHC, SC, MC);
+	    	addArcFeature(code, fv);
+	    	addArcFeature(code | dirFlag, fv);
+	
+	    	code = createArcCodeWPPP(HL_pSC_SC_MC, HL, pSC, SC, MC);
+	    	addArcFeature(code, fv);
+	    	addArcFeature(code | dirFlag, fv);
+	
+	    	code = createArcCodeWPPP(HL_SC_nSC_MC, HL, SC, nSC, MC);
+	    	addArcFeature(code, fv);
+	    	addArcFeature(code | dirFlag, fv);
+	
+	    	code = createArcCodeWPPP(HL_SC_pMC_MC, HL, SC, pMC, MC);
+	    	addArcFeature(code, fv);
+	    	addArcFeature(code | dirFlag, fv);
+	
+	    	code = createArcCodeWPPP(HL_SC_MC_nMC, HL, SC, MC, nMC);
+	    	addArcFeature(code, fv);
+	    	addArcFeature(code | dirFlag, fv);
+	
+	    	// CLC
+	    	code = createArcCodeWPPP(pHC_HC_SL_MC, SL, pHC, HC, MC);
+	    	addArcFeature(code, fv);
+	    	addArcFeature(code | dirFlag, fv);
+	
+	    	code = createArcCodeWPPP(HC_nHC_SL_MC, SL, HC, nHC, MC);
+	    	addArcFeature(code, fv);
+	    	addArcFeature(code | dirFlag, fv);
+	
+	    	code = createArcCodeWPPP(HC_pSC_SL_MC, SL, HC, pSC, MC);
+	    	addArcFeature(code, fv);
+	    	addArcFeature(code | dirFlag, fv);
+	
+	    	code = createArcCodeWPPP(HC_SL_nSC_MC, SL, HC, nSC, MC);
+	    	addArcFeature(code, fv);
+	    	addArcFeature(code | dirFlag, fv);
+	
+	    	code = createArcCodeWPPP(HC_SL_pMC_MC, SL, HC, pMC, MC);
+	    	addArcFeature(code, fv);
+	    	addArcFeature(code | dirFlag, fv);
+	
+	    	code = createArcCodeWPPP(HC_SL_MC_nMC, SL, HC, MC, nMC);
+	    	addArcFeature(code, fv);
+	    	addArcFeature(code | dirFlag, fv);
+	
+	    	// CCL
+	    	code = createArcCodeWPPP(pHC_HC_SC_ML, ML, pHC, HC, SC);
+	    	addArcFeature(code, fv);
+	    	addArcFeature(code | dirFlag, fv);
+	
+	    	code = createArcCodeWPPP(HC_nHC_SC_ML, ML, HC, nHC, SC);
+	    	addArcFeature(code, fv);
+	    	addArcFeature(code | dirFlag, fv);
+	
+	    	code = createArcCodeWPPP(HC_pSC_SC_ML, ML, HC, pSC, SC);
+	    	addArcFeature(code, fv);
+	    	addArcFeature(code | dirFlag, fv);
+	
+	    	code = createArcCodeWPPP(HC_SC_nSC_ML, ML, HC, SC, nSC);
+	    	addArcFeature(code, fv);
+	    	addArcFeature(code | dirFlag, fv);
+	
+	    	code = createArcCodeWPPP(HC_SC_pMC_ML, ML, HC, SC, pMC);
+	    	addArcFeature(code, fv);
+	    	addArcFeature(code | dirFlag, fv);
+	
+	    	code = createArcCodeWPPP(HC_SC_ML_nMC, ML, HC, SC, nMC);
+	    	addArcFeature(code, fv);
+	    	addArcFeature(code | dirFlag, fv);
+    	}
+    	
     	code = createArcCodePPPPP(HC_MC_SC_pHC_pMC, HC, MC, SC, pHC, pMC);
     	addArcFeature(code, fv);
     	addArcFeature(code | dirFlag, fv);
@@ -1184,8 +1186,7 @@ public class DependencyPipe implements Serializable {
     	int MW = toks[ch2];
     	int SC = isST ? TOKEN_START : posA[ch1];
     	int MC = posA[ch2];
-    	int SL = isST ? TOKEN_START : lemma[ch1];
-    	int ML = lemma[ch2];
+
 
     	int flag = getBinnedDistance(ch1 - ch2);
 
@@ -1210,19 +1211,26 @@ public class DependencyPipe implements Serializable {
     	code = createArcCodePP(SC_MC, SC, MC);
     	addArcFeature(code, fv);
     	addArcFeature(code | flag, fv);
-
-    	code = createArcCodePP(SL_ML, SL, ML);
-    	addArcFeature(code, fv);
-    	addArcFeature(code | flag, fv);
-
-    	code = createArcCodePP(SL_MC, MC, SL);
-    	addArcFeature(code, fv);
-    	addArcFeature(code | flag, fv);
-
-    	code = createArcCodePP(SC_ML, SC, ML);
-    	addArcFeature(code, fv);
-    	addArcFeature(code | flag, fv);
-
+    	
+    	if (lemma != null) {
+    		
+	    	int SL = isST ? TOKEN_START : lemma[ch1];
+	    	int ML = lemma[ch2];
+	    	
+	    	code = createArcCodePP(SL_ML, SL, ML);
+	    	addArcFeature(code, fv);
+	    	addArcFeature(code | flag, fv);
+	
+	    	code = createArcCodePP(SL_MC, MC, SL);
+	    	addArcFeature(code, fv);
+	    	addArcFeature(code | flag, fv);
+	
+	    	code = createArcCodePP(SC_ML, SC, ML);
+	    	addArcFeature(code, fv);
+	    	addArcFeature(code | flag, fv);
+	    	
+    	}
+    	
     	return fv;
     }
 
@@ -1459,4 +1467,240 @@ public class DependencyPipe implements Serializable {
     /************************************************************************
      *  Region end #
      ************************************************************************/
+    
+    public void fillParameters(LowRankParam tensor, Parameters params) {
+        //System.out.println(arcAlphabet.size());	
+    	long[] codes = arcAlphabet.toArray();
+    	int[] x = new int[4];
+    	
+    	for (long code : codes) {
+    		
+    		int id = arcAlphabet.lookupIndex(code);
+    		if (id < 0) continue;
+    		
+    		int dist = (int) extractDistanceCode(code);
+    		int temp = (int) extractArcTemplateCode(code);
+    		long head = 0, mod = 0;
+
+        	//code = createArcCodePPPP(CORE_POS_PT0, pHeadLeft, pHead, pMod, pModRight);
+    		if (temp == HPp_HP_MP_MPn.ordinal()) {
+    			extractArcCodePPPP(code, x);
+    			head = createWordCodePP(WORDFV_PpP0, x[0], x[1]);
+    			mod = createWordCodePP(WORDFV_P0Pn, x[2], x[3]);
+    		}
+    		
+        	//code = createArcCodePPP(CORE_POS_PT1, pHead, pMod, pModRight);
+    		else if (temp == HP_MP_MPn.ordinal()) {
+    			extractArcCodePPP(code, x);
+    			head = createWordCodeP(WORDFV_P0, x[0]);
+    			mod = createWordCodePP(WORDFV_P0Pn, x[1], x[2]);
+    		}
+
+        	//code = createArcCodePPP(CORE_POS_PT2, pHeadLeft, pHead, pMod);
+    		else if (temp == HPp_HP_MP.ordinal()) {
+    			extractArcCodePPP(code, x);
+    			head = createWordCodePP(WORDFV_PpP0, x[0], x[1]);
+    			mod = createWordCodeP(WORDFV_P0, x[2]);
+    		}
+    		
+        	//code = createArcCodePPP(CORE_POS_PT3, pHeadLeft, pMod, pModRight);
+    		else if (temp == HPp_MP_MPn.ordinal()) {
+    			extractArcCodePPP(code, x);
+    			head = createWordCodeP(WORDFV_Pp, x[0]);
+    			mod = createWordCodePP(WORDFV_P0Pn, x[1], x[2]);
+    		}
+    		
+        	//code = createArcCodePPP(CORE_POS_PT4, pHeadLeft, pHead, pModRight);
+    		else if (temp == HPp_HP_MPn.ordinal()) {
+    			extractArcCodePPP(code, x);
+    			head = createWordCodePP(WORDFV_PpP0, x[0], x[1]);
+    			mod = createWordCodeP(WORDFV_Pn, x[2]);
+    		}
+        	        	
+    		//code = createArcCodePPPP(CORE_POS_APT0, pHead, pHeadRight, pModLeft, pMod);
+    		else if (temp == HP_HPn_MPp_MP.ordinal()) {
+    			extractArcCodePPPP(code, x);
+    			head = createWordCodePP(WORDFV_P0Pn, x[0], x[1]);
+    			mod = createWordCodePP(WORDFV_PpP0, x[2], x[3]);
+    		}
+    		
+    		//code = createArcCodePPP(CORE_POS_APT1, pHead, pModLeft, pMod);
+    		else if (temp == HP_MPp_MP.ordinal()) {
+    			extractArcCodePPP(code, x);
+    			head = createWordCodeP(WORDFV_P0, x[0]);
+    			mod = createWordCodePP(WORDFV_PpP0, x[1], x[2]);
+    		}
+    		
+    		//code = createArcCodePPP(CORE_POS_APT2, pHead, pHeadRight, pMod);
+    		else if (temp == HP_HPn_MP.ordinal()) {
+    			extractArcCodePPP(code, x);
+    			head = createWordCodePP(WORDFV_P0Pn, x[0], x[1]);
+    			mod = createWordCodeP(WORDFV_P0, x[2]);
+    		}
+    		
+    		//code = createArcCodePPP(CORE_POS_APT3, pHeadRight, pModLeft, pMod);
+    		else if (temp == HPn_MPp_MP.ordinal()) {
+    			extractArcCodePPP(code, x);
+    			head = createWordCodeP(WORDFV_Pn, x[0]);
+    			mod = createWordCodePP(WORDFV_PpP0, x[1], x[2]);
+    		}
+    		
+    		//code = createArcCodePPP(CORE_POS_APT4, pHead, pHeadRight, pModLeft);
+    		else if (temp == HP_HPn_MPp.ordinal()) {
+    			extractArcCodePPP(code, x);
+    			head = createWordCodePP(WORDFV_P0Pn, x[0], x[1]);
+    			mod = createWordCodeP(WORDFV_Pp, x[2]);
+    		}
+
+    		//code = createArcCodePPPP(CORE_POS_BPT, pHeadLeft, pHead, pModLeft, pMod);
+    		else if (temp == HPp_HP_MPp_MP.ordinal()) {
+    			extractArcCodePPPP(code, x);
+    			head = createWordCodePP(WORDFV_PpP0, x[0], x[1]);
+    			mod = createWordCodePP(WORDFV_PpP0, x[2], x[3]);
+    		}
+    		
+    		//code = createArcCodePPPP(CORE_POS_CPT, pHead, pHeadRight, pMod, pModRight);
+    		else if (temp == HP_HPn_MP_MPn.ordinal()) {
+    			extractArcCodePPPP(code, x);
+    			head = createWordCodePP(WORDFV_P0Pn, x[0], x[1]);
+    			mod = createWordCodePP(WORDFV_P0Pn, x[2], x[3]);
+    		}
+    		
+        	//code = createArcCodeWWPP(CORE_BIGRAM_A, head, mod, headP, modP);
+    		else if (temp == HW_MW_HP_MP.ordinal()) {
+    			extractArcCodeWWPP(code, x);
+    			head = createWordCodeWP(WORDFV_W0P0, x[0], x[2]);
+    			mod = createWordCodeWP(WORDFV_W0P0, x[1], x[3]);
+    		}
+        	
+        	//code = createArcCodeWPP(CORE_BIGRAM_B, mod, headP, modP);
+    		else if (temp == MW_HP_MP.ordinal()) {
+    			extractArcCodeWPP(code, x);
+    			head = createWordCodeP(WORDFV_P0, x[1]);
+    			mod = createWordCodeWP(WORDFV_W0P0, x[0], x[2]);
+    		}
+        	
+        	//code = createArcCodeWPP(CORE_BIGRAM_C, head, headP, modP);
+    		else if (temp == HW_HP_MP.ordinal()) {
+    			extractArcCodeWPP(code, x);
+    			head = createWordCodeWP(WORDFV_W0P0, x[0], x[1]);
+    			mod = createWordCodeP(WORDFV_P0, x[2]);
+    		}
+        	
+        	//code = createArcCodeWP(CORE_BIGRAM_D, mod, headP);
+    		else if (temp == MW_HP.ordinal()) {
+    			extractArcCodeWP(code, x);
+    			head = createWordCodeP(WORDFV_P0, x[1]);
+    			mod = createWordCodeW(WORDFV_W0, x[0]);
+    		}
+        	
+        	//code = createArcCodeWP(CORE_BIGRAM_E, head, modP);
+    		else if (temp == HW_MP.ordinal()) {
+    			extractArcCodeWP(code, x);
+    			head = createWordCodeW(WORDFV_W0, x[0]);
+    			mod = createWordCodeP(WORDFV_P0, x[1]);
+    		}
+        	
+            //code = createArcCodeWW(CORE_BIGRAM_F, head, mod);
+    		else if (temp == HW_MW.ordinal()) {
+    			extractArcCodeWW(code, x);
+    			head = createWordCodeW(WORDFV_W0, x[0]);
+    			mod = createWordCodeW(WORDFV_W0, x[1]);
+    		}
+        	
+            //code = createArcCodePP(CORE_BIGRAM_G, headP, modP);
+    		else if (temp == HP_MP.ordinal()) {
+    			extractArcCodePP(code, x);
+    			head = createWordCodeW(WORDFV_P0, x[0]);
+    			mod = createWordCodeW(WORDFV_P0, x[1]);
+    		}
+    		
+        	//code = createArcCodeWP(CORE_BIGRAM_H, head, headP);
+    		else if (temp == HW_HP.ordinal()) {
+    			extractArcCodeWP(code, x);
+    			head = createWordCodeWP(WORDFV_W0P0, x[0], x[1]);
+    			mod = createWordCodeP(WORDFV_BIAS, 0);
+    		}
+    		
+        	//code = createArcCodeWP(CORE_BIGRAM_K, mod, modP);
+    		else if (temp == MW_MP.ordinal()) {
+    			extractArcCodeWP(code, x);    			
+    			head = createWordCodeP(WORDFV_BIAS, 0);
+    			mod = createWordCodeWP(WORDFV_W0P0, x[0], x[1]);
+    		}
+    		
+    		else if (temp == CORE_HEAD_WORD.ordinal()) {
+    			extractArcCodeW(code, x);
+    			head = createWordCodeW(WORDFV_W0, x[0]);
+    			mod = createWordCodeP(WORDFV_BIAS, 0);
+    		}
+    		
+    		else if (temp == CORE_HEAD_POS.ordinal()) {
+    			extractArcCodeP(code, x);
+    			head = createWordCodeP(WORDFV_P0, x[0]);
+    			mod = createWordCodeP(WORDFV_BIAS, 0);	
+    		}
+    		
+    		else if (temp == CORE_MOD_WORD.ordinal()) {
+    			extractArcCodeW(code, x);
+    			head = createWordCodeP(WORDFV_BIAS, 0);
+    			mod = createWordCodeW(WORDFV_W0, x[0]);    			
+    		}
+    		
+    		else if (temp == CORE_MOD_POS.ordinal()) {
+    			extractArcCodeP(code, x);
+    			head = createWordCodeP(WORDFV_BIAS, 0);	
+    			mod = createWordCodeP(WORDFV_P0, x[0]);
+    		}
+    		
+    		else if (temp == CORE_HEAD_pWORD.ordinal()) {
+    			extractArcCodeW(code, x);
+    			head = createWordCodeW(WORDFV_Wp, x[0]);
+    			mod = createWordCodeP(WORDFV_BIAS, 0);
+    		}
+    		
+    		else if (temp == CORE_HEAD_nWORD.ordinal()) {
+    			extractArcCodeW(code, x);
+    			head = createWordCodeW(WORDFV_Wn, x[0]);
+    			mod = createWordCodeP(WORDFV_BIAS, 0);
+    		}
+    		
+    		else if (temp == CORE_MOD_pWORD.ordinal()) {
+    			extractArcCodeW(code, x);
+    			mod = createWordCodeW(WORDFV_Wp, x[0]);
+    			head = createWordCodeP(WORDFV_BIAS, 0);
+    		}
+    		
+    		else if (temp == CORE_MOD_nWORD.ordinal()) {
+    			extractArcCodeW(code, x);
+    			mod = createWordCodeW(WORDFV_Wn, x[0]);
+    			head = createWordCodeP(WORDFV_BIAS, 0);
+    		}
+    		
+    		else if (temp == HEAD_EMB.ordinal()) {
+    			extractArcCodeW(code, x);
+    			head = createWordCodeW(WORDFV_EMB, x[0]);
+    			mod = createWordCodeP(WORDFV_BIAS, 0);
+    		}
+    		
+    		else if (temp == MOD_EMB.ordinal()) {
+    			extractArcCodeW(code, x);
+    			mod = createWordCodeW(WORDFV_EMB, x[0]);
+    			head = createWordCodeP(WORDFV_BIAS, 0);
+    		}
+    		
+    		else {
+    			//System.out.println(temp);
+    			continue;
+    		}
+    		
+    		int headId = wordAlphabet.lookupIndex(head);
+    		int modId = wordAlphabet.lookupIndex(mod);
+    		if (headId >= 0 && modId >= 0) {
+    			double value = params.params[id];
+    			tensor.putEntry(headId, modId, dist, value);
+            }
+    	}
+    	
+    }
 }

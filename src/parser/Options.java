@@ -1,7 +1,7 @@
 package parser;
 
 
-public class Options {
+public class Options implements Cloneable {
 	
 	public enum LearningMode {
 		Basic,			// 1st order arc factored model
@@ -24,14 +24,15 @@ public class Options {
     public int numPretrainIters = 1;
 	public int maxNumIters = 10;
 	
-	public LearningMode learningMode = LearningMode.Basic;
+	//public LearningMode learningMode = LearningMode.Basic;
+	public LearningMode learningMode = LearningMode.Standard;
 	public boolean projective = false;
 	public boolean learnLabel = false;
 	public boolean pruning = true;
 	public double pruningCoeff = 0.05;
 	
-	public int numHcThreads = 1;		// hill climbing: number of threads
-	public int numHcConverge = 50;		// hill climbing: number of restarts to converge 
+	public int numHcThreads = 8;		// hill climbing: number of threads
+	public int numHcConverge = 100;		// hill climbing: number of restarts to converge 
 	
 	public boolean average = true;
 	public double C = 1;
@@ -43,6 +44,12 @@ public class Options {
     
 	public Options() {
 		
+	}
+	
+	@Override
+	protected Object clone() throws CloneNotSupportedException 
+	{
+		return super.clone();
 	}
 	
     public void processArguments(String[] args) {

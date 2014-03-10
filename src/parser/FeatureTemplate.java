@@ -65,10 +65,10 @@ public class FeatureTemplate {
 	    HW_HP_MP,				//CORE_BIGRAM_C,
 	    MW_HP,					//CORE_BIGRAM_D,
 	    HW_MP,					//CORE_BIGRAM_E,
-	    HW_HP,					//CORE_BIGRAM_F,
-	    MW_MP,					//CORE_BIGRAM_G,
-	    HW_MW,					//CORE_BIGRAM_H,
-	    HP_MP,					//CORE_BIGRAM_K,
+	    HW_HP,					//CORE_BIGRAM_H,
+	    MW_MP,					//CORE_BIGRAM_K,
+	    HW_MW,					//CORE_BIGRAM_F,
+	    HP_MP,					//CORE_BIGRAM_G,
 	    
 	    // label feature
 	    CORE_LABEL_NTS1,

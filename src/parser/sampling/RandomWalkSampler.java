@@ -14,7 +14,7 @@ public class RandomWalkSampler {
 	}
 	
 	public RandomWalkSampler() {
-		r = new Random(System.currentTimeMillis());
+		r = new Random(1/*System.currentTimeMillis()*/);
 	}
 	
 	public RandomWalkSampler(Random r) {

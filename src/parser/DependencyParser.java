@@ -10,10 +10,13 @@ import java.io.OutputStreamWriter;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import parser.Options.LearningMode;
 import parser.decoding.DependencyDecoder;
 import parser.io.DependencyReader;
 
 public class DependencyParser {
+	
+	static boolean initTensorWithPretrain = true;
 	
 	Options options;
 	DependencyPipe pipe;
@@ -21,7 +24,7 @@ public class DependencyParser {
 	
 	DependencyParser pruner;
 	
-	public static void main(String[] args) throws IOException, ClassNotFoundException {
+	public static void main(String[] args) throws IOException, ClassNotFoundException, CloneNotSupportedException {
 		
 		Options options = new Options();
 		options.processArguments(args);
@@ -72,59 +75,60 @@ public class DependencyParser {
                 new GZIPInputStream(new FileInputStream(options.modelFile)));    
         pipe = (DependencyPipe) in.readObject();
         parameters = (Parameters) in.readObject();
-        //pipe.options = options;
-        //parameters.options = options;
+        pipe.options = options;
+        parameters.options = options;
         in.close();
         pipe.closeAlphabets();
     }
 	
-    public void train(DependencyInstance[] lstTrain) throws IOException 
+    public void train(DependencyInstance[] lstTrain) throws IOException, CloneNotSupportedException 
     {
     	long start = 0, end = 0;
     	
-//        if (options.R > 0 && initTensorWithPretrain) {
+        if (options.R > 0 && initTensorWithPretrain) {
 //        	//parameters.randomlyInitUVW();
-//        	int backupR = options.R, backupIters = options.maxNumIters;
-//        	double backupGamma = options.gamma;
-//        	options.R = 0;
-//        	options.gamma = 1.0;
-//        	options.maxNumIters = options.numPretrainIters;
-//        	parameters.gamma = 1.0;
-//        	parameters.rank = 0;
-//    		System.out.println("=============================================");
-//    		System.out.printf(" Pre-training:%n");
-//    		System.out.println("=============================================");
-//    		
-//    		start = System.currentTimeMillis();
+        	Options optionsBak = (Options) options.clone();
+        	options.learningMode = LearningMode.Basic;
+        	options.R = 0;
+        	options.gamma = 1.0;
+        	options.maxNumIters = options.numPretrainIters;
+        	parameters.gamma = 1.0;
+        	parameters.rank = 0;
+    		System.out.println("=============================================");
+    		System.out.printf(" Pre-training:%n");
+    		System.out.println("=============================================");
+    		
+    		start = System.currentTimeMillis();
+
+    		System.out.println("Running MIRA ... ");
+    		trainIter(lstTrain, false);
+    		System.out.println();
+    		
+    		System.out.println("Init tensor ... ");
+    		LowRankParam tensor = new LowRankParam(parameters);
+    		pipe.fillParameters(tensor, parameters);
+    		tensor.decompose(1, parameters);
+            System.out.println();
+    		end = System.currentTimeMillis();
+    		
+    		options.learningMode = optionsBak.learningMode;
+    		options.R = optionsBak.R;
+    		options.gamma = optionsBak.gamma;
+    		options.maxNumIters = optionsBak.maxNumIters;
+    		parameters.rank = optionsBak.R;
+    		parameters.gamma = optionsBak.gamma;
+    		parameters.clearTheta();
+            parameters.printUStat();
+            parameters.printVStat();
+            parameters.printWStat();
+            System.out.println();
+            System.out.printf("Pre-training took %d ms.%n", end-start);    		
+    		System.out.println("=============================================");
+    		System.out.println();	    
 //
-//    		System.out.println("Running MIRA ... ");
-//    		trainIter(lstTrain, parameters, pipe, false);
-//    		System.out.println();
-//    		
-//    		System.out.println("Init tensor ... ");
-//    		LowRankParam tensor = new LowRankParam(parameters);
-//    		pipe.fillParameters(tensor, parameters);
-//    		tensor.decompose(1, parameters);
-//            System.out.println();
-//    		end = System.currentTimeMillis();
-//    		
-//    		options.R = backupR;
-//    		options.gamma = backupGamma;
-//    		options.maxNumIters = backupIters;
-//    		parameters.rank = backupR;
-//    		parameters.gamma = backupGamma;
-//    		parameters.clearTheta();
-//            parameters.printUStat();
-//            parameters.printVStat();
-//            parameters.printWStat();
-//            System.out.println();
-//            System.out.printf("Pre-training took %d ms.%n", end-start);    		
-//    		System.out.println("=============================================");
-//    		System.out.println();	    
-//
-//        } else {
+        } else {
         	parameters.randomlyInitUVW();
-//        }
+        }
         
 		System.out.println("=============================================");
 		System.out.printf(" Training:%n");

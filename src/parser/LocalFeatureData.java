@@ -356,8 +356,9 @@ public class LocalFeatureData {
 		FeatureVector fv = tripsFvs[id][s];		
 		if (fv == null) {
 			fv = pipe.createTripsFeatureVector(inst, h, m, s);
-			tripsFvs[id][s] = fv;
 			tripsScores[id][s] = parameters.dotProduct(fv) * gamma;
+			tripsFvs[id][s] = fv;
+			
 		}
 		return fv;
 	}
@@ -367,8 +368,8 @@ public class LocalFeatureData {
 		FeatureVector fv = sibFvs[m][s];		
 		if (fv == null) {			
 			fv = pipe.createSibFeatureVector(inst, m, s, false);
-			sibFvs[m][s] = fv;
 			sibScores[m][s] = parameters.dotProduct(fv) * gamma;
+			sibFvs[m][s] = fv;
 		}
 		return fv;
 	}
