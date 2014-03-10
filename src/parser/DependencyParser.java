@@ -16,7 +16,7 @@ import parser.io.DependencyReader;
 
 public class DependencyParser {
 	
-	static boolean initTensorWithPretrain = true;
+	//static boolean initTensorWithPretrain = true;
 	
 	Options options;
 	DependencyPipe pipe;
@@ -24,7 +24,9 @@ public class DependencyParser {
 	
 	DependencyParser pruner;
 	
-	public static void main(String[] args) throws IOException, ClassNotFoundException, CloneNotSupportedException {
+	public static void main(String[] args) 
+		throws IOException, ClassNotFoundException, CloneNotSupportedException
+	{
 		
 		Options options = new Options();
 		options.processArguments(args);
@@ -62,7 +64,8 @@ public class DependencyParser {
 		
 	}
 	
-    public void saveModel() throws IOException {
+    public void saveModel() throws IOException 
+    {
     	ObjectOutputStream out = new ObjectOutputStream(
     			new GZIPOutputStream(new FileOutputStream(options.modelFile)));
     	out.writeObject(pipe);
@@ -70,7 +73,8 @@ public class DependencyParser {
     	out.close();
     }
 	
-    public void loadModel() throws IOException, ClassNotFoundException {
+    public void loadModel() throws IOException, ClassNotFoundException 
+    {
         ObjectInputStream in = new ObjectInputStream(
                 new GZIPInputStream(new FileInputStream(options.modelFile)));    
         pipe = (DependencyPipe) in.readObject();
@@ -81,11 +85,12 @@ public class DependencyParser {
         pipe.closeAlphabets();
     }
 	
-    public void train(DependencyInstance[] lstTrain) throws IOException, CloneNotSupportedException 
+    public void train(DependencyInstance[] lstTrain) 
+    	throws IOException, CloneNotSupportedException 
     {
     	long start = 0, end = 0;
     	
-        if (options.R > 0 && initTensorWithPretrain) {
+        if (options.R > 0 && options.initTensorWithPretrain) {
 //        	//parameters.randomlyInitUVW();
         	Options optionsBak = (Options) options.clone();
         	options.learningMode = LearningMode.Basic;

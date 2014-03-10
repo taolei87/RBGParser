@@ -23,6 +23,7 @@ public class Options implements Cloneable {
 	public int maxNumSent = -1;
     public int numPretrainIters = 1;
 	public int maxNumIters = 10;
+	public boolean initTensorWithPretrain = true;
 	
 	//public LearningMode learningMode = LearningMode.Basic;
 	public LearningMode learningMode = LearningMode.Standard;
@@ -32,7 +33,7 @@ public class Options implements Cloneable {
 	public double pruningCoeff = 0.05;
 	
 	public int numHcThreads = 8;		// hill climbing: number of threads
-	public int numHcConverge = 100;		// hill climbing: number of restarts to converge 
+	public int numHcConverge = 300;		// hill climbing: number of restarts to converge 
 	
 	public boolean average = true;
 	public double C = 1;
