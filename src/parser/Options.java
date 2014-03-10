@@ -32,7 +32,7 @@ public class Options implements Cloneable {
 	public boolean pruning = true;
 	public double pruningCoeff = 0.05;
 	
-	public int numHcThreads = 8;		// hill climbing: number of threads
+	public int numHcThreads = 10;		// hill climbing: number of threads
 	public int numHcConverge = 300;		// hill climbing: number of restarts to converge 
 	
 	public boolean average = true;

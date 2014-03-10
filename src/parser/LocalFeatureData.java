@@ -39,11 +39,9 @@ public class LocalFeatureData {
 	
 	//TODO: add high order feature vectors and score tables
 	
-	FeatureVector[][] tripsFvs;		// [dep id][sib]
-	double[][] tripsScores;
-
-	FeatureVector[][] sibFvs;		// [mod][sib]
-	double[][] sibScores;
+	FeatureDataItem[] trips;		// [dep id][sib]
+	
+	FeatureDataItem[] sib;			// [mod][sib]
 	
 	
 	
@@ -123,12 +121,10 @@ public class LocalFeatureData {
 		// init non-first-order feature tables
 		
 		// 2nd order (head, mod, mod_sib) features
-		tripsFvs = new FeatureVector[nuparcs][len];
-		tripsScores = new double[nuparcs][len];		
+		trips = new FeatureDataItem[nuparcs*len];	
 		
 		// 2nd order (mod, mod_sib) features
-		sibFvs = new FeatureVector[len][len];
-		sibScores = new double[len][len];
+		sib = new FeatureDataItem[len*len];
 	}
 	
 	public void initArcPruningMap(boolean includeGoldArcs) {
@@ -238,18 +234,20 @@ public class LocalFeatureData {
 		
 		Utils.Assert(id >= 0 && arc2id[s*len+h] >= 0);
 		
-		if (tripsFvs[id][s] == null)
+		int pos = id*len+s;
+		if (trips[pos] == null)
 			getTripsFeatureVector(h, m, s);
 		
-		return tripsScores[id][s];
+		return trips[pos].score;
 	}
 	
 	public double getSibScore(int m, int s)
 	{
-		if (sibFvs[m][s] == null)
+		int pos = m*len+s;
+		if (sib[pos] == null)
 			getSibFeatureVector(m, s);
 		
-		return sibScores[m][s];
+		return sib[pos].score;
 	}
 	
 	public double getPartialScore(int[] heads, int x)
@@ -353,25 +351,28 @@ public class LocalFeatureData {
 		
 		Utils.Assert(id >= 0 && arc2id[s*len+h] >= 0);
 		
-		FeatureVector fv = tripsFvs[id][s];		
-		if (fv == null) {
-			fv = pipe.createTripsFeatureVector(inst, h, m, s);
-			tripsScores[id][s] = parameters.dotProduct(fv) * gamma;
-			tripsFvs[id][s] = fv;
-			
+		int pos = id*len+s;
+		FeatureDataItem item = trips[pos];
+		if (item == null) {
+			FeatureVector fv = pipe.createTripsFeatureVector(inst, h, m, s);
+			double score = parameters.dotProduct(fv) * gamma;
+			item = new FeatureDataItem(fv, score);
+			trips[pos] = item;			
 		}
-		return fv;
+		return item.fv;
 	}
 	
 	public FeatureVector getSibFeatureVector(int m, int s)
 	{
-		FeatureVector fv = sibFvs[m][s];		
-		if (fv == null) {			
-			fv = pipe.createSibFeatureVector(inst, m, s, false);
-			sibScores[m][s] = parameters.dotProduct(fv) * gamma;
-			sibFvs[m][s] = fv;
+		int pos = m*len+s;
+		FeatureDataItem item = sib[pos];
+		if (item == null) {					
+			FeatureVector fv = pipe.createSibFeatureVector(inst, m, s, false);
+			double score = parameters.dotProduct(fv) * gamma;
+			item = new FeatureDataItem(fv, score);
+			sib[pos] = item;
 		}
-		return fv;
+		return item.fv;
 	}
 	
 	public FeatureVector getFeatureDifference(DependencyInstance gold, 
@@ -433,4 +434,15 @@ public class LocalFeatureData {
 		return dlfv;
 	}
 	
+}
+
+class FeatureDataItem {
+	final FeatureVector fv;
+	final double score;
+	
+	public FeatureDataItem(FeatureVector fv, double score)
+	{
+		this.fv = fv;
+		this.score = score;
+	}
 }
