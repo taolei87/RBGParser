@@ -21,7 +21,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 	
 	double bestScore;	
 	int unchangedRuns, totRuns;
-	boolean stopped;
+	volatile boolean stopped;
 	
 	public HillClimbingDecoder(Options options) {
 		this.options = options;
@@ -94,21 +94,23 @@ public class HillClimbingDecoder extends DependencyDecoder {
 						
 						int bestHead = heads[m];
 						double maxScore = calcScore(heads, m);
+						//double maxScore = calcScore(now);
 						
 						for (int h = 0; h < n; ++h)
 							if (h != m && h != bestHead && !lfd.isPruned(h, m)
 								&& !isAncestorOf(heads, m, h)) {
 								heads[m] = h;
 								double score = calcScore(heads, m);
+								//double score = calcScore(now);
 								if (score > maxScore) {
 									more = true;
 									bestHead = h;
-									maxScore = score;
+									maxScore = score;									
 								}
 							}
 						heads[m] = bestHead;
 					}
-					if (!more) break;
+					if (!more) break;					
 				}
 				
 				if (options.learnLabel) {
@@ -129,6 +131,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 						if (unchangedRuns >= converge)
 							stopped = true;
 					}
+					
 				}
 			}
 		}
@@ -158,7 +161,8 @@ public class HillClimbingDecoder extends DependencyDecoder {
 			int[] heads = now.heads;
 			int[] deplbids = now.deplbids;
 			for (int m = 1; m < n; ++m)
-				score += lfd.getLabeledArcScore(heads[m], m, deplbids[m]);
+				score += lfd.getLabeledArcScore(heads[m], m, deplbids[m])
+					   + ((addLoss && heads[m] != inst.heads[m]) ? 1 : 0);
 			 
 			score += lfd.getScore(now);
 			return score;
@@ -166,10 +170,6 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		
 		private void depthFirstSearch(int[] heads)
 		{
-			//for (int i = 1; i < n; ++i) {
-			//	System.out.println(heads[i] + " --> " + i);
-			//}
-			//System.out.println();
 			arcLis.constructDepTreeArcList(heads);
 			size = 0;
 			dfs(0);

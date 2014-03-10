@@ -53,7 +53,6 @@ public class DependencyArcList {
 		for (int i = 1; i < n; ++i) {
 			int j = heads[i];
 			++st[j];
-			//System.out.println(j + "-->" + i);
 		}
 				
 		for (int i = 1; i < n; ++i)
@@ -65,6 +64,19 @@ public class DependencyArcList {
 			int j = heads[i];
 			--st[j];
 			edges[st[j]] = i;
-		}		
+		}
+		
+//		for (int i = 0; i < n; ++i) {
+//			int st = startIndex(i);
+//			int ed = endIndex(i);
+//			if (i > 0)
+//				Utils.Assert(startIndex(i) == endIndex(i-1));
+//			if (st < ed)
+//				Utils.Assert(heads[get(st)] == i);
+//			for (int p = st+1; p < ed; ++p) {
+//				Utils.Assert(heads[get(p)] == i);
+//				Utils.Assert(get(p-1) < get(p));
+//			}
+//		}
 	}
 }

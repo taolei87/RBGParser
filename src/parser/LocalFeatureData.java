@@ -31,8 +31,8 @@ public class LocalFeatureData {
 	FeatureVector[] wordFvs;		// word feature vectors
 	double[][] wpU, wpV;			// word projections U\phi and V\phi
 	
-	FeatureVector[][] arcFvs;		// 1st order arc feature vectors
-	double[][] arcScores;			// 1st order arc scores (including tensor)
+	FeatureVector[] arcFvs;			// 1st order arc feature vectors
+	double[] arcScores;				// 1st order arc scores (including tensor)
 	
 	FeatureVector[][][][] lbFvs;	// labeled-arc feature vectors
 	double[][][][] lbScores;		// labeled-arc scores
@@ -67,8 +67,8 @@ public class LocalFeatureData {
 		wpU = new double[len][rank];
 		wpV = new double[len][rank];
 		
-		arcFvs = new FeatureVector[len][len];
-		arcScores = new double[len][len];
+		arcFvs = new FeatureVector[len*len];
+		arcScores = new double[len*len];
 		
 		lbFvs = new FeatureVector[len][ntypes][2][2];
 		lbScores = new double[len][ntypes][2][2];
@@ -99,8 +99,8 @@ public class LocalFeatureData {
 		for (int i = 0; i < len; ++i)
 			for (int j = 0; j < len; ++j) 
 				if (i != j) {
-					arcFvs[i][j] = pipe.createArcFeatures(inst, i, j);
-					arcScores[i][j] = parameters.dotProduct(arcFvs[i][j]) * gamma
+					arcFvs[i*len+j] = pipe.createArcFeatures(inst, i, j);
+					arcScores[i*len+j] = parameters.dotProduct(arcFvs[i*len+j]) * gamma
 									+ parameters.dotProduct(wpU[i], wpV[j], i-j) * (1-gamma);
 				}
 		
@@ -219,7 +219,7 @@ public class LocalFeatureData {
 	
 	public double getArcScore(int h, int m)
 	{
-		return arcScores[h][m];
+		return arcScores[h*len+m];
 	}
 	
 	public double getLabeledArcScore(int h, int m, int t)
@@ -253,7 +253,7 @@ public class LocalFeatureData {
 	public double getPartialScore(int[] heads, int x)
 	{
 		// 1st order arc
-		double score = arcScores[heads[x]][x];
+		double score = arcScores[heads[x]*len+x];
 		
 		if (options.learningMode != LearningMode.Basic) {
 			
@@ -269,9 +269,13 @@ public class LocalFeatureData {
 					// mod and sib
 					int m = arcLis.get(p);
 					int s = arcLis.get(p+1);
+
 					if (m <= x && x <= s)
 						score += getTripsScore(h, m, s) + getSibScore(m, s);
+					if (x < m) break;
+					
 				}
+				
 			}
 		}
 		
@@ -285,7 +289,7 @@ public class LocalFeatureData {
 		
 		// 1st order arc
 		for (int m = 1; m < len; ++m)
-			score += arcScores[heads[m]][m];
+			score += arcScores[heads[m]*len+m];
 		
 		if (options.learningMode != LearningMode.Basic) {
 			
@@ -319,7 +323,7 @@ public class LocalFeatureData {
 		
 		// 1st order arc
 		for (int m = 1; m < len; ++m)
-			fv.addEntries(arcFvs[heads[m]][m]);
+			fv.addEntries(arcFvs[heads[m]*len+m]);
 		
 		if (options.learningMode != LearningMode.Basic) {
 			
