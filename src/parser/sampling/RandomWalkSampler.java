@@ -64,7 +64,7 @@ public class RandomWalkSampler {
     			if (predInst.heads[curr] != -1 && !inTree[curr]) {
     				cycleErase(predInst.heads, curr);
     				++loopCount;
-    				if (loopCount % 10000 == 0)
+    				if (loopCount % 10000000 == 0)
     					System.out.println("\tRndWalk Loop " + loopCount);
     			}
     		}
@@ -87,22 +87,17 @@ public class RandomWalkSampler {
     }
     
     private int samplePoint(TDoubleArrayList score, Random r) {
-    	double sumScore = -1e30;
-    	for (int i = 0; i < score.size(); i++) {
+    	double sumScore = Double.NEGATIVE_INFINITY;
+    	int N = score.size();
+    	for (int i = 0; i < N; i++) {
     		sumScore = Utils.logSumExp(sumScore, score.get(i));
     	}
-    	double[] prob = new double[score.size()];
-    	prob[0] = Math.exp(score.get(0) - sumScore);
-    	for (int i = 1; i < score.size(); i++)
-    		prob[i] = prob[i - 1] + Math.exp(score.get(i) - sumScore);
-    	if (Math.abs(prob[prob.length - 1] - 1.0) > 1e-4) {
-    		System.out.println("sample point bug");
-    		System.exit(0);
-    	}
-    	double p = r.nextDouble();
+    	double logp = Math.log(r.nextDouble() + 1e-30);
+    	double cur = Double.NEGATIVE_INFINITY;
     	int ret = 0;
-    	for (; ret < prob.length; ret++) {
-    		if (p < prob[ret])
+    	for (; ret < N; ret++) {
+    		cur = Utils.logSumExp(cur, score.get(ret));
+    		if (logp + sumScore < cur)
     			break;
     	}
     	return ret;
