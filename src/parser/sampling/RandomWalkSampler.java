@@ -24,6 +24,7 @@ public class RandomWalkSampler {
 	
     public DependencyInstance randomWalkSampling(DependencyInstance inst,
     		LocalFeatureData lfd, boolean addLoss) {
+    	int loopCount = 0;
     	int len = inst.length;
     	
 		DependencyInstance predInst = new DependencyInstance(inst);
@@ -62,6 +63,9 @@ public class RandomWalkSampler {
     			
     			if (predInst.heads[curr] != -1 && !inTree[curr]) {
     				cycleErase(predInst.heads, curr);
+    				++loopCount;
+    				if (loopCount % 1000 == 0)
+    					System.out.println("\tRndWalk Loop " + loopCount);
     			}
     		}
     		curr = i;
