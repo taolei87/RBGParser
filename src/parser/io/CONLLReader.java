@@ -57,7 +57,7 @@ public class CONLLReader extends DependencyReader {
 	    	pos[i] = parts[4];
 	    	if (!parts[5].equals("_")) feats[i] = parts[5].split("\\|");
 	    	heads[i] = Integer.parseInt(parts[6]);
-	    	deprels[i] = (options.learnLabel && isLabeled) ? parts[7] : "<no-type>";
+	    	deprels[i] = (/*options.learnLabel &&*/ isLabeled) ? parts[7] : "<no-type>";
 	    }
 	    if (!hasLemma) lemmas = null;
 	    

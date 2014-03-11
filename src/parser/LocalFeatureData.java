@@ -5,12 +5,7 @@ import utils.FeatureVector;
 import utils.Utils;
 
 public class LocalFeatureData {
-	
-	static double pruningGoldHits = 0;
-	static double pruningTotGold = 0;
-	static double pruningTotUparcs = 0;
-	static double pruningTotArcs = 0;
-	
+		
 	DependencyInstance inst;
 	DependencyPipe pipe;
 	Options options;
@@ -139,8 +134,8 @@ public class LocalFeatureData {
 			}
 			nuparcs = len*len;
 		} else {	
-			pruningTotGold += len-1;
-			pruningTotArcs += (len-1)*(len-1);
+			if (includeGoldArcs) pruner.pruningTotGold += len-1;
+			pruner.pruningTotArcs += (len-1)*(len-1);
 			
 			for (int i = 0, L = arc2id.length; i < L; ++i) {
 				arc2id[i] = -1;
@@ -148,9 +143,8 @@ public class LocalFeatureData {
 			}
 			
 			double threshold = Math.log(options.pruningCoeff);
-			//System.out.println(threshold);
 			nuparcs = 0;
-			LocalFeatureData lfd2 = new LocalFeatureData(inst, pruner, false);
+			LocalFeatureData lfd2 = new LocalFeatureData(inst, pruner, false);			
 			
 			for (int m = 1; m < len; ++m) {								
 				double maxv = Double.NEGATIVE_INFINITY;
@@ -177,16 +171,9 @@ public class LocalFeatureData {
 			if (includeGoldArcs)
 				for (int m = 1; m < len; ++m)
 					if (!isPruned[m*len+inst.heads[m]])
-						pruningGoldHits++;
-			pruningTotUparcs += nuparcs;
+						pruner.pruningGoldHits++;
+			pruner.pruningTotUparcs += nuparcs;
 		}
-	}
-	
-	public static void printPruningStats()
-	{
-		System.out.printf("Pruning Recall: %.4f\tEffcy: %.4f%n",
-				pruningGoldHits / pruningTotGold,
-				pruningTotUparcs / pruningTotArcs);
 	}
 	
 	public int[][] getStaticTypes() {

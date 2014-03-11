@@ -1,8 +1,15 @@
 package parser;
 
+import java.io.Serializable;
 
-public class Options implements Cloneable {
+
+public class Options implements Cloneable, Serializable {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public enum LearningMode {
 		Basic,			// 1st order arc factored model
 		Standard,		// 2nd order model (3rd order?)

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Serializable;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -14,15 +15,24 @@ import parser.Options.LearningMode;
 import parser.decoding.DependencyDecoder;
 import parser.io.DependencyReader;
 
-public class DependencyParser {
+public class DependencyParser implements Serializable {
 	
-	//static boolean initTensorWithPretrain = true;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	
 	Options options;
 	DependencyPipe pipe;
 	Parameters parameters;
 	
 	DependencyParser pruner;
+	
+	double pruningGoldHits = 0;
+	double pruningTotGold = 1e-30;
+	double pruningTotUparcs = 0;
+	double pruningTotArcs = 1e-30;
 	
 	public static void main(String[] args) 
 		throws IOException, ClassNotFoundException, CloneNotSupportedException
@@ -32,12 +42,38 @@ public class DependencyParser {
 		options.processArguments(args);
 		options.printOptions();
 		
+		DependencyParser pruner = null;
+		if (options.train && options.pruning) {
+			Options prunerOptions = new Options();
+			prunerOptions.processArguments(args);
+			prunerOptions.learningMode = LearningMode.Basic;
+			prunerOptions.pruning = false;
+			prunerOptions.test = false;
+			prunerOptions.learnLabel = false;
+			
+			pruner = new DependencyParser();
+			pruner.options = prunerOptions;
+			
+			DependencyPipe pipe = new DependencyPipe(prunerOptions);
+			pruner.pipe = pipe;
+			
+			pipe.createAlphabets(prunerOptions.trainFile);
+			DependencyInstance[] lstTrain = pipe.createInstances(prunerOptions.trainFile);
+			
+			Parameters parameters = new Parameters(pipe, prunerOptions);
+			pruner.parameters = parameters;
+			
+			pruner.train(lstTrain);
+		}
+		
 		if (options.train) {
 			DependencyParser parser = new DependencyParser();
 			parser.options = options;
 			
 			DependencyPipe pipe = new DependencyPipe(options);
 			parser.pipe = pipe;
+			
+			if (options.pruning) parser.pruner = pruner;
 			
 			pipe.createAlphabets(options.trainFile);
 			DependencyInstance[] lstTrain = pipe.createInstances(options.trainFile);
@@ -70,6 +106,8 @@ public class DependencyParser {
     			new GZIPOutputStream(new FileOutputStream(options.modelFile)));
     	out.writeObject(pipe);
     	out.writeObject(parameters);
+    	if (options.pruning && options.learningMode != LearningMode.Basic) 
+    		out.writeObject(pruner);
     	out.close();
     }
 	
@@ -79,19 +117,36 @@ public class DependencyParser {
                 new GZIPInputStream(new FileInputStream(options.modelFile)));    
         pipe = (DependencyPipe) in.readObject();
         parameters = (Parameters) in.readObject();
+        if (options.pruning && options.learningMode != LearningMode.Basic)
+        	pruner = (DependencyParser) in.readObject();
         pipe.options = options;
-        parameters.options = options;
+        parameters.options = options;        
         in.close();
         pipe.closeAlphabets();
     }
+    
+	public void printPruningStats()
+	{
+		System.out.printf("  Pruning Recall: %.4f\tEffcy: %.4f%n",
+				pruningGoldHits / pruningTotGold,
+				pruningTotUparcs / pruningTotArcs);
+	}
+	
+	public void resetPruningStats()
+	{
+		pruningGoldHits = 0;
+		pruningTotGold = 1e-30;
+		pruningTotUparcs = 0;
+		pruningTotArcs = 1e-30;
+	}
 	
     public void train(DependencyInstance[] lstTrain) 
     	throws IOException, CloneNotSupportedException 
     {
     	long start = 0, end = 0;
     	
-        if (options.R > 0 && options.initTensorWithPretrain) {
-//        	//parameters.randomlyInitUVW();
+        if (options.R > 0 && options.gamma < 1 && options.initTensorWithPretrain) {
+
         	Options optionsBak = (Options) options.clone();
         	options.learningMode = LearningMode.Basic;
         	options.R = 0;
@@ -130,7 +185,7 @@ public class DependencyParser {
             System.out.printf("Pre-training took %d ms.%n", end-start);    		
     		System.out.println("=============================================");
     		System.out.println();	    
-//
+
         } else {
         	parameters.randomlyInitUVW();
         }
@@ -172,7 +227,7 @@ public class DependencyParser {
     		start = System.currentTimeMillis();
                 		    		
     		for (int i = 0; i < N; ++i) {
-    			
+
     			DependencyInstance inst = new DependencyInstance(lstTrain[i]);
     			LocalFeatureData lfd = new LocalFeatureData(inst, this, true);
     		    GlobalFeatureData gfd = null;
@@ -196,9 +251,12 @@ public class DependencyParser {
     		System.out.printf("  Iter %d\tloss=%.4f\tuas=%.4f\t[%d ms]%n", iIter+1,
     				loss, uas/(tot+0.0),
     				System.currentTimeMillis() - start);
-
+    		
+    		if (options.learningMode != LearningMode.Basic && options.pruning && pruner != null)
+    			pruner.printPruningStats();
+    		
     		// evaluate on a development set
-    		if (evalAndSave && options.test && ((iIter+1) % 100 == 0 || iIter+1 == options.maxNumIters)) {		
+    		if (evalAndSave && options.test && ((iIter+1) % 1 == 0 || iIter+1 == options.maxNumIters)) {		
     			System.out.println();
 	  			System.out.println("_____________________________________________");
 	  			System.out.println();
@@ -271,7 +329,7 @@ public class DependencyParser {
     public double evaluateSet(boolean output, boolean evalWithPunc)
     		throws IOException {
     	
-    	//pruner = this;
+    	if (pruner != null) pruner.resetPruningStats();
     	
     	DependencyReader reader = DependencyReader.createDependencyReader(options);
     	reader.startReading(options.testFile);
@@ -288,9 +346,8 @@ public class DependencyParser {
     	
     	DependencyInstance inst = pipe.createInstance(reader);    	
     	while (inst != null) {
-    		LocalFeatureData lfd = new LocalFeatureData(inst, this, false);
+    		LocalFeatureData lfd = new LocalFeatureData(inst, this, true);
     		GlobalFeatureData gfd = null; 
-    		//lfd.initArcPruningMap(true);
     		
     		++nSents;
             
@@ -334,13 +391,14 @@ public class DependencyParser {
     	reader.close();
     	if (out != null) out.close();
     	
-    	//LocalFeatureData.printPruningStats();
     	System.out.printf(" Tokens: %d%n", nDeps);
     	System.out.printf(" Sentences: %d%n", nSents);
     	System.out.printf(" UAS=%.6f\tLAS=%.6f\tCAS=%.6f%n",
     			(nUCorrect+0.0)/nDeps,
     			(nLCorrect+0.0)/nDeps,
     			(nWhole + 0.0)/nSents);
+    	if (options.pruning && options.learningMode != LearningMode.Basic && pruner != null)
+    		pruner.printPruningStats();
     	
     	return (nUCorrect+0.0)/nDeps;
     }

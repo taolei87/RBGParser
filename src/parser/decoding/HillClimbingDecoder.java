@@ -32,7 +32,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 	public DependencyInstance decode(DependencyInstance inst,
 			LocalFeatureData lfd, GlobalFeatureData gfd, boolean addLoss) {
 		
-		lfd.initArcPruningMap(addLoss);
+		//lfd.initArcPruningMap(addLoss);
 		
 		this.inst = inst;
 		this.lfd = lfd;
