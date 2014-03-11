@@ -142,30 +142,41 @@ public class LocalFeatureData {
 				isPruned[i] = true;
 			}
 			
-			double threshold = Math.log(options.pruningCoeff);
-			nuparcs = 0;
-			LocalFeatureData lfd2 = new LocalFeatureData(inst, pruner, false);			
-			
-			for (int m = 1; m < len; ++m) {								
-				double maxv = Double.NEGATIVE_INFINITY;
-				for (int h = 0; h < len; ++h)
-					if (h != m) {
-						double v = lfd2.getArcScore(h, m);
-						maxv = Math.max(maxv, v);;
-					}
 
-				for (int h = 0; h < len; ++h)
-					if (h != m) {
-						double v = lfd2.getArcScore(h, m);
-						
-						if ((includeGoldArcs && h == inst.heads[m]) ||
-						 (v >= maxv + threshold)) {
-							//isPruned[m*len+h] = false;
-							isPruned[m*len+h] = !(v >= maxv + threshold);
-							arc2id[m*len+h] = nuparcs;
-							nuparcs++;							
+			LocalFeatureData lfd2 = new LocalFeatureData(inst, pruner, false);			
+			boolean[] vis = new boolean[len];
+			
+			// Use the threshold to prune arcs. Increase the threshold to store more arcs
+			// until there's at least one valid dependency tree ...
+			for (double threshold = Math.log(options.pruningCoeff); ; threshold *= 2) {
+				nuparcs = 0;
+				for (int m = 1; m < len; ++m) {								
+					double maxv = Double.NEGATIVE_INFINITY;
+					for (int h = 0; h < len; ++h)
+						if (h != m) {
+							double v = lfd2.getArcScore(h, m);
+							maxv = Math.max(maxv, v);;
 						}
-					}
+	
+					for (int h = 0; h < len; ++h)
+						if (h != m) {
+							double v = lfd2.getArcScore(h, m);
+							
+							if ((includeGoldArcs && h == inst.heads[m]) ||
+							 (v >= maxv + threshold)) {
+								//isPruned[m*len+h] = false;
+								isPruned[m*len+h] = !(v >= maxv + threshold);
+								arc2id[m*len+h] = nuparcs;
+								nuparcs++;							
+							}
+						}
+				}
+				
+				for (int i = 0; i < len; ++i) vis[i] = true;
+				traverse(0, vis);
+				boolean ok = true;
+				for (int i = 1; i < len; ++i) ok &= (!vis[i]);
+				if (ok) break;
 			}
 			
 			if (includeGoldArcs)
@@ -174,6 +185,13 @@ public class LocalFeatureData {
 						pruner.pruningGoldHits++;
 			pruner.pruningTotUparcs += nuparcs;
 		}
+	}
+	
+	private void traverse(int x, boolean[] vis)
+	{
+		vis[x] = false;
+		for (int y = 1; y < len; ++y)
+			if (vis[y] && !isPruned(x, y)) traverse(y, vis);
 	}
 	
 	public int[][] getStaticTypes() {

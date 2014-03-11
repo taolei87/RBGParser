@@ -64,7 +64,7 @@ public class RandomWalkSampler {
     			if (predInst.heads[curr] != -1 && !inTree[curr]) {
     				cycleErase(predInst.heads, curr);
     				++loopCount;
-    				if (loopCount % 1000 == 0)
+    				if (loopCount % 10000 == 0)
     					System.out.println("\tRndWalk Loop " + loopCount);
     			}
     		}
