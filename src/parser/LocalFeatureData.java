@@ -576,7 +576,7 @@ public class LocalFeatureData {
 		int pos = m*len+s;
 		FeatureDataItem item = sib[pos];
 		if (item == null) {					
-			FeatureVector fv = pipe.createSibFeatureVector(inst, m, s, false);
+			FeatureVector fv = pipe.createSibFeatureVector(inst, m, s/*, false*/);
 			double score = parameters.dotProduct(fv) * gamma;
 			item = new FeatureDataItem(fv, score);
 			sib[pos] = item;

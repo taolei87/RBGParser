@@ -42,7 +42,7 @@ public class CONLLReader extends DependencyReader {
 	    deprels[0] = "<no-type>";
 	    heads[0] = -1;
 	    
-	    boolean hasLemma = false;
+	    //boolean hasLemma = false;
 	    
 	    // 3 eles ele pron pron-pers M|3P|NOM 4 SUBJ _ _
 	    // ID FORM LEMMA COURSE-POS FINE-POS FEATURES HEAD DEPREL PHEAD PDEPREL
@@ -51,15 +51,15 @@ public class CONLLReader extends DependencyReader {
 	    	forms[i] = normalize(parts[1]);
 	    	if (!parts[2].equals("_")) { 
 	    		lemmas[i] = normalize(parts[2]);
-	    		hasLemma = true;
-	    	}
+	    		//hasLemma = true;
+	    	} else lemmas[i] = forms[i];
 	    	cpos[i] = parts[3];
 	    	pos[i] = parts[4];
 	    	if (!parts[5].equals("_")) feats[i] = parts[5].split("\\|");
 	    	heads[i] = Integer.parseInt(parts[6]);
 	    	deprels[i] = (/*options.learnLabel &&*/ isLabeled) ? parts[7] : "<no-type>";
 	    }
-	    if (!hasLemma) lemmas = null;
+	    //if (!hasLemma) lemmas = null;
 	    
 		return new DependencyInstance(forms, lemmas, cpos, pos, feats, heads, deprels);
 	}
