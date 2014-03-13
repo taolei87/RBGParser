@@ -150,6 +150,25 @@ public class FeatureTemplate {
 		GC_HL_MC,
 		GC_HC_ML,
 
+		GL_HL_MC,
+		GL_HC_ML,
+		GC_HL_ML,
+		GL_HL_ML,
+
+		GC_HC,
+		GL_HC,
+		GC_HL,
+		GL_HL,
+
+		GC_MC,	// this block only cross with dir flag
+		GL_MC,
+		GC_ML,
+		GL_ML,
+		HC_MC,
+		HL_MC,
+		HC_ML,
+		HL_ML,
+
 		pGC_GC_HC_MC,
 		GC_nGC_HC_MC,
 		GC_pHC_HC_MC,
@@ -190,6 +209,33 @@ public class FeatureTemplate {
 		GC_HC_MC_nGC_pHC,
 		GC_HC_MC_nGC_pMC,
 		GC_HC_MC_nHC_pMC,
+
+		// gp sibling
+		GC_HC_MC_SC,
+		GL_HC_MC_SC,
+		GC_HL_MC_SC,
+		GC_HC_ML_SC,
+		GC_HC_MC_SL,
+
+		// tri-sibling
+		HC_PC_MC_NC,
+		HL_PC_MC_NC,
+		HC_PL_MC_NC,
+		HC_PC_ML_NC,
+		HC_PC_MC_NL,
+
+		HC_PC_NC,
+		PC_MC_NC,
+		HL_PC_NC,
+		HC_PL_NC,
+		HC_PC_NL,
+		PL_MC_NC,
+		PC_ML_NC,
+		PC_MC_NL,
+
+		PC_NC,
+		PL_NC,
+		PC_NL,
 
 		/*************************************************
 		 * word embedding feature  

@@ -33,11 +33,11 @@ public class Options implements Cloneable, Serializable {
 	public boolean initTensorWithPretrain = true;
 	
 	//public LearningMode learningMode = LearningMode.Basic;
-	public LearningMode learningMode = LearningMode.Standard;
+	public LearningMode learningMode = LearningMode.Full;
 	public boolean projective = false;
 	public boolean learnLabel = false;
 	public boolean pruning = true;
-	public double pruningCoeff = 0.01;
+	public double pruningCoeff = 0.04;
 	
 	public int numHcThreads = 10;		// hill climbing: number of threads
 	public int numHcConverge = 300;		// hill climbing: number of restarts to converge 
@@ -49,6 +49,10 @@ public class Options implements Cloneable, Serializable {
 	
 	// feature set
 	public boolean useCS = true;		// use consecutive siblings
+	public boolean useGP = true;		// use grandparent
+	public boolean useHB = true;		// use head bigram
+	public boolean useGS = true;		// use grand sibling
+	public boolean useTS = true;		// use tri-sibling
     
 	public Options() {
 		
@@ -115,6 +119,23 @@ public class Options implements Cloneable, Serializable {
 
     	}    	
 
+    	switch (learningMode) {
+    		case Basic:
+    			useCS = false;
+    			useGP = false;
+    			useHB = false;
+    			useGS = false;
+    			useTS = false;
+    			break;
+    		case Standard:
+    			useGS = false;
+    			useTS = false;
+    			break;
+    		case Full:
+    			break;
+    		default:
+    			break;
+    	}
     }
     
     public void printOptions() {
@@ -136,6 +157,10 @@ public class Options implements Cloneable, Serializable {
         
         System.out.println();
         System.out.println("use consecutive siblings: " + useCS);
+        System.out.println("use grandparent: " + useGP);
+        System.out.println("use head bigram: " + useHB);
+        System.out.println("use grand siblings: " + useGS);
+        System.out.println("use tri-siblings: " + useTS);
 
     	System.out.println("------\n");
     }
