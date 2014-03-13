@@ -1020,7 +1020,8 @@ public class DependencyPipe implements Serializable {
     void addTurboSib(DependencyInstance inst, int par, int ch1, int ch2, int dirFlag, FeatureVector fv) 
     {
     	int[] posA = inst.cpostagids;
-    	int[] lemma = inst.lemmaids;
+    	//int[] lemma = inst.lemmaids;
+    	int[] lemma = inst.lemmaids != null ? inst.lemmaids : inst.formids;
     	int len = inst.length;
 
     	int HC = posA[par];
@@ -1061,87 +1062,84 @@ public class DependencyPipe implements Serializable {
     	addArcFeature(code, fv);
     	addArcFeature(code | dirFlag, fv);
 
-    	if (lemma != null) {
-    		
-	    	int HL = lemma[par];
-	    	int SL = ch1 == par ? TOKEN_START : lemma[ch1];
-	    	int ML = lemma[ch2];
-	    	
-	    	// LCC
-	    	code = createArcCodeWPPP(pHC_HL_SC_MC, HL, pHC, SC, MC);
-	    	addArcFeature(code, fv);
-	    	addArcFeature(code | dirFlag, fv);
-	
-	    	code = createArcCodeWPPP(HL_nHC_SC_MC, HL, nHC, SC, MC);
-	    	addArcFeature(code, fv);
-	    	addArcFeature(code | dirFlag, fv);
-	
-	    	code = createArcCodeWPPP(HL_pSC_SC_MC, HL, pSC, SC, MC);
-	    	addArcFeature(code, fv);
-	    	addArcFeature(code | dirFlag, fv);
-	
-	    	code = createArcCodeWPPP(HL_SC_nSC_MC, HL, SC, nSC, MC);
-	    	addArcFeature(code, fv);
-	    	addArcFeature(code | dirFlag, fv);
-	
-	    	code = createArcCodeWPPP(HL_SC_pMC_MC, HL, SC, pMC, MC);
-	    	addArcFeature(code, fv);
-	    	addArcFeature(code | dirFlag, fv);
-	
-	    	code = createArcCodeWPPP(HL_SC_MC_nMC, HL, SC, MC, nMC);
-	    	addArcFeature(code, fv);
-	    	addArcFeature(code | dirFlag, fv);
-	
-	    	// CLC
-	    	code = createArcCodeWPPP(pHC_HC_SL_MC, SL, pHC, HC, MC);
-	    	addArcFeature(code, fv);
-	    	addArcFeature(code | dirFlag, fv);
-	
-	    	code = createArcCodeWPPP(HC_nHC_SL_MC, SL, HC, nHC, MC);
-	    	addArcFeature(code, fv);
-	    	addArcFeature(code | dirFlag, fv);
-	
-	    	code = createArcCodeWPPP(HC_pSC_SL_MC, SL, HC, pSC, MC);
-	    	addArcFeature(code, fv);
-	    	addArcFeature(code | dirFlag, fv);
-	
-	    	code = createArcCodeWPPP(HC_SL_nSC_MC, SL, HC, nSC, MC);
-	    	addArcFeature(code, fv);
-	    	addArcFeature(code | dirFlag, fv);
-	
-	    	code = createArcCodeWPPP(HC_SL_pMC_MC, SL, HC, pMC, MC);
-	    	addArcFeature(code, fv);
-	    	addArcFeature(code | dirFlag, fv);
-	
-	    	code = createArcCodeWPPP(HC_SL_MC_nMC, SL, HC, MC, nMC);
-	    	addArcFeature(code, fv);
-	    	addArcFeature(code | dirFlag, fv);
-	
-	    	// CCL
-	    	code = createArcCodeWPPP(pHC_HC_SC_ML, ML, pHC, HC, SC);
-	    	addArcFeature(code, fv);
-	    	addArcFeature(code | dirFlag, fv);
-	
-	    	code = createArcCodeWPPP(HC_nHC_SC_ML, ML, HC, nHC, SC);
-	    	addArcFeature(code, fv);
-	    	addArcFeature(code | dirFlag, fv);
-	
-	    	code = createArcCodeWPPP(HC_pSC_SC_ML, ML, HC, pSC, SC);
-	    	addArcFeature(code, fv);
-	    	addArcFeature(code | dirFlag, fv);
-	
-	    	code = createArcCodeWPPP(HC_SC_nSC_ML, ML, HC, SC, nSC);
-	    	addArcFeature(code, fv);
-	    	addArcFeature(code | dirFlag, fv);
-	
-	    	code = createArcCodeWPPP(HC_SC_pMC_ML, ML, HC, SC, pMC);
-	    	addArcFeature(code, fv);
-	    	addArcFeature(code | dirFlag, fv);
-	
-	    	code = createArcCodeWPPP(HC_SC_ML_nMC, ML, HC, SC, nMC);
-	    	addArcFeature(code, fv);
-	    	addArcFeature(code | dirFlag, fv);
-    	}
+    	int HL = lemma[par];
+    	int SL = ch1 == par ? TOKEN_START : lemma[ch1];
+    	int ML = lemma[ch2];
+    	
+    	// LCC
+    	code = createArcCodeWPPP(pHC_HL_SC_MC, HL, pHC, SC, MC);
+    	addArcFeature(code, fv);
+    	addArcFeature(code | dirFlag, fv);
+
+    	code = createArcCodeWPPP(HL_nHC_SC_MC, HL, nHC, SC, MC);
+    	addArcFeature(code, fv);
+    	addArcFeature(code | dirFlag, fv);
+
+    	code = createArcCodeWPPP(HL_pSC_SC_MC, HL, pSC, SC, MC);
+    	addArcFeature(code, fv);
+    	addArcFeature(code | dirFlag, fv);
+
+    	code = createArcCodeWPPP(HL_SC_nSC_MC, HL, SC, nSC, MC);
+    	addArcFeature(code, fv);
+    	addArcFeature(code | dirFlag, fv);
+
+    	code = createArcCodeWPPP(HL_SC_pMC_MC, HL, SC, pMC, MC);
+    	addArcFeature(code, fv);
+    	addArcFeature(code | dirFlag, fv);
+
+    	code = createArcCodeWPPP(HL_SC_MC_nMC, HL, SC, MC, nMC);
+    	addArcFeature(code, fv);
+    	addArcFeature(code | dirFlag, fv);
+
+    	// CLC
+    	code = createArcCodeWPPP(pHC_HC_SL_MC, SL, pHC, HC, MC);
+    	addArcFeature(code, fv);
+    	addArcFeature(code | dirFlag, fv);
+
+    	code = createArcCodeWPPP(HC_nHC_SL_MC, SL, HC, nHC, MC);
+    	addArcFeature(code, fv);
+    	addArcFeature(code | dirFlag, fv);
+
+    	code = createArcCodeWPPP(HC_pSC_SL_MC, SL, HC, pSC, MC);
+    	addArcFeature(code, fv);
+    	addArcFeature(code | dirFlag, fv);
+
+    	code = createArcCodeWPPP(HC_SL_nSC_MC, SL, HC, nSC, MC);
+    	addArcFeature(code, fv);
+    	addArcFeature(code | dirFlag, fv);
+
+    	code = createArcCodeWPPP(HC_SL_pMC_MC, SL, HC, pMC, MC);
+    	addArcFeature(code, fv);
+    	addArcFeature(code | dirFlag, fv);
+
+    	code = createArcCodeWPPP(HC_SL_MC_nMC, SL, HC, MC, nMC);
+    	addArcFeature(code, fv);
+    	addArcFeature(code | dirFlag, fv);
+
+    	// CCL
+    	code = createArcCodeWPPP(pHC_HC_SC_ML, ML, pHC, HC, SC);
+    	addArcFeature(code, fv);
+    	addArcFeature(code | dirFlag, fv);
+
+    	code = createArcCodeWPPP(HC_nHC_SC_ML, ML, HC, nHC, SC);
+    	addArcFeature(code, fv);
+    	addArcFeature(code | dirFlag, fv);
+
+    	code = createArcCodeWPPP(HC_pSC_SC_ML, ML, HC, pSC, SC);
+    	addArcFeature(code, fv);
+    	addArcFeature(code | dirFlag, fv);
+
+    	code = createArcCodeWPPP(HC_SC_nSC_ML, ML, HC, SC, nSC);
+    	addArcFeature(code, fv);
+    	addArcFeature(code | dirFlag, fv);
+
+    	code = createArcCodeWPPP(HC_SC_pMC_ML, ML, HC, SC, pMC);
+    	addArcFeature(code, fv);
+    	addArcFeature(code | dirFlag, fv);
+
+    	code = createArcCodeWPPP(HC_SC_ML_nMC, ML, HC, SC, nMC);
+    	addArcFeature(code, fv);
+    	addArcFeature(code | dirFlag, fv);
     	
     	code = createArcCodePPPPP(HC_MC_SC_pHC_pMC, HC, MC, SC, pHC, pMC);
     	addArcFeature(code, fv);
@@ -1199,8 +1197,9 @@ public class DependencyPipe implements Serializable {
     	int[] pos = inst.postagids;
     	int[] posA = inst.cpostagids;
     	int[] toks = inst.formids;
-    	int[] lemma = inst.lemmaids;
-
+    	//int[] lemma = inst.lemmaids;
+    	int[] lemma = inst.lemmaids != null ? inst.lemmaids : inst.formids;
+    	
     	// ch1 is always the closes to par
 
     	int SP = /*isST ? TOKEN_START :*/ pos[ch1];
@@ -1235,24 +1234,22 @@ public class DependencyPipe implements Serializable {
     	addArcFeature(code, fv);
     	addArcFeature(code | flag, fv);
     	
-    	if (lemma != null) {
     		
-	    	int SL = /*isST ? TOKEN_START :*/ lemma[ch1];
-	    	int ML = lemma[ch2];
+    	int SL = /*isST ? TOKEN_START :*/ lemma[ch1];
+    	int ML = lemma[ch2];
+    	
+    	code = createArcCodeWW(SL_ML, SL, ML);
+    	addArcFeature(code, fv);
+    	addArcFeature(code | flag, fv);
+
+    	code = createArcCodeWP(SL_MC, SL, MC);
+    	addArcFeature(code, fv);
+    	addArcFeature(code | flag, fv);
+
+    	code = createArcCodeWP(SC_ML, ML, SC);
+    	addArcFeature(code, fv);
+    	addArcFeature(code | flag, fv);
 	    	
-	    	code = createArcCodeWW(SL_ML, SL, ML);
-	    	addArcFeature(code, fv);
-	    	addArcFeature(code | flag, fv);
-	
-	    	code = createArcCodeWP(SL_MC, SL, MC);
-	    	addArcFeature(code, fv);
-	    	addArcFeature(code | flag, fv);
-	
-	    	code = createArcCodeWP(SC_ML, ML, SC);
-	    	addArcFeature(code, fv);
-	    	addArcFeature(code | flag, fv);
-	    	
-    	}
     	
     	return fv;
     }
@@ -1306,8 +1303,9 @@ public class DependencyPipe implements Serializable {
 
     	int[] pos = inst.postagids;
     	int[] posA = inst.cpostagids;
-    	int[] lemma = inst.lemmaids;
-
+    	//int[] lemma = inst.lemmaids;
+    	int[] lemma = inst.lemmaids != null ? inst.lemmaids : inst.formids;
+    	
     	int flag = (((((gp < par ? 0 : 1) << 1) | (par < c ? 0 : 1)) << 1) | 1);
 
     	int GP = pos[gp];
@@ -1326,23 +1324,21 @@ public class DependencyPipe implements Serializable {
     	addArcFeature(code, fv);
     	addArcFeature(code | flag, fv);
     
-        if (lemma != null) {
-            int GL = lemma[gp];
-            int HL = lemma[par];
-            int ML = lemma[c];
+        int GL = lemma[gp];
+        int HL = lemma[par];
+        int ML = lemma[c];
 
-            code = createArcCodeWPP(GL_HC_MC, GL, HC, MC);
-            addArcFeature(code, fv);
-            addArcFeature(code | flag, fv);
+        code = createArcCodeWPP(GL_HC_MC, GL, HC, MC);
+        addArcFeature(code, fv);
+        addArcFeature(code | flag, fv);
 
-            code = createArcCodeWPP(GC_HL_MC, HL, GC, MC);
-            addArcFeature(code, fv);
-            addArcFeature(code | flag, fv);
+        code = createArcCodeWPP(GC_HL_MC, HL, GC, MC);
+        addArcFeature(code, fv);
+        addArcFeature(code | flag, fv);
 
-            code = createArcCodeWPP(GC_HC_ML, ML, GC, HC);
-            addArcFeature(code, fv);
-            addArcFeature(code | flag, fv);
-        }
+        code = createArcCodeWPP(GC_HC_ML, ML, GC, HC);
+        addArcFeature(code, fv);
+        addArcFeature(code | flag, fv);
 
     	addTurboGPC(inst, gp, par, c, flag, fv);
     	
@@ -1351,7 +1347,8 @@ public class DependencyPipe implements Serializable {
 
     void addTurboGPC(DependencyInstance inst, int gp, int par, int c, int dirFlag, FeatureVector fv) {
     	int[] posA = inst.cpostagids;
-    	int[] lemma = inst.lemmaids;
+    	//int[] lemma = inst.lemmaids;
+    	int[] lemma = inst.lemmaids != null ? inst.lemmaids : inst.formids;
     	int len = posA.length;
 
     	int GC = posA[gp];
@@ -1450,131 +1447,129 @@ public class DependencyPipe implements Serializable {
     	code = createArcCodePP(HC_MC, HC, MC);
     	addArcFeature(code | dirFlag, fv);
         
-        if (lemma != null) {
-            int GL = lemma[gp];
-            int HL = lemma[par];
-            int ML = lemma[c];
+        int GL = lemma[gp];
+        int HL = lemma[par];
+        int ML = lemma[c];
 
-            // LCC
-            code = createArcCodeWPPP(pGC_GL_HC_MC, GL, pGC, HC, MC);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        // LCC
+        code = createArcCodeWPPP(pGC_GL_HC_MC, GL, pGC, HC, MC);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWPPP(GL_nGC_HC_MC, GL, nGC, HC, MC);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWPPP(GL_nGC_HC_MC, GL, nGC, HC, MC);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWPPP(GL_pHC_HC_MC, GL, pHC, HC, MC);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWPPP(GL_pHC_HC_MC, GL, pHC, HC, MC);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWPPP(GL_HC_nHC_MC, GL, HC, nHC, MC);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWPPP(GL_HC_nHC_MC, GL, HC, nHC, MC);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWPPP(GL_HC_pMC_MC, GL, HC, pMC, MC);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWPPP(GL_HC_pMC_MC, GL, HC, pMC, MC);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWPPP(GL_HC_MC_nMC, GL, HC, MC, nMC);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWPPP(GL_HC_MC_nMC, GL, HC, MC, nMC);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            // CLC
-            code = createArcCodeWPPP(pGC_GC_HL_MC, HL, pGC, GC, MC);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        // CLC
+        code = createArcCodeWPPP(pGC_GC_HL_MC, HL, pGC, GC, MC);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWPPP(GC_nGC_HL_MC, HL, GC, nGC, MC);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWPPP(GC_nGC_HL_MC, HL, GC, nGC, MC);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWPPP(GC_pHC_HL_MC, HL, GC, pHC, MC);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWPPP(GC_pHC_HL_MC, HL, GC, pHC, MC);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWPPP(GC_HL_nHC_MC, HL, GC, nHC, MC);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWPPP(GC_HL_nHC_MC, HL, GC, nHC, MC);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWPPP(GC_HL_pMC_MC, HL, GC, pMC, MC);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWPPP(GC_HL_pMC_MC, HL, GC, pMC, MC);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWPPP(GC_HL_MC_nMC, HL, GC, MC, nMC);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWPPP(GC_HL_MC_nMC, HL, GC, MC, nMC);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            // CCL
-            code = createArcCodeWPPP(pGC_GC_HC_ML, ML, pGC, GC, HC);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        // CCL
+        code = createArcCodeWPPP(pGC_GC_HC_ML, ML, pGC, GC, HC);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWPPP(GC_nGC_HC_ML, ML, GC, nGC, HC);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWPPP(GC_nGC_HC_ML, ML, GC, nGC, HC);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWPPP(GC_pHC_HC_ML, ML, GC, pHC, HC);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWPPP(GC_pHC_HC_ML, ML, GC, pHC, HC);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWPPP(GC_HC_nHC_ML, ML, GC, HC, nHC);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWPPP(GC_HC_nHC_ML, ML, GC, HC, nHC);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWPPP(GC_HC_pMC_ML, ML, GC, HC, pMC);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWPPP(GC_HC_pMC_ML, ML, GC, HC, pMC);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWPPP(GC_HC_ML_nMC, ML, GC, HC, nMC);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWPPP(GC_HC_ML_nMC, ML, GC, HC, nMC);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWWP(GL_HL_MC, GL, HL, MC);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWWP(GL_HL_MC, GL, HL, MC);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWWP(GL_HC_ML, GL, ML, HC);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWWP(GL_HC_ML, GL, ML, HC);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWWP(GC_HL_ML, HL, ML, GC);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWWP(GC_HL_ML, HL, ML, GC);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            //code = createArcCodeWWW(GL_HL_ML, GL, HL, ML);
-            //addCode(TemplateType::TThirdOrder, code, fv);
+        //code = createArcCodeWWW(GL_HL_ML, GL, HL, ML);
+        //addCode(TemplateType::TThirdOrder, code, fv);
 
-            code = createArcCodeWP(GL_HC, GL, HC);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWP(GL_HC, GL, HC);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWP(GC_HL, HL, GC);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWP(GC_HL, HL, GC);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWW(GL_HL, GL, HL);
-            addArcFeature(code, fv);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWW(GL_HL, GL, HL);
+        addArcFeature(code, fv);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWP(GL_MC, GL, MC);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWP(GL_MC, GL, MC);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWP(GC_ML, ML, GC);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWP(GC_ML, ML, GC);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWW(GL_ML, GL, ML);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWW(GL_ML, GL, ML);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWP(HL_MC, HL, MC);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWP(HL_MC, HL, MC);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWP(HC_ML, ML, HC);
-            addArcFeature(code | dirFlag, fv);
+        code = createArcCodeWP(HC_ML, ML, HC);
+        addArcFeature(code | dirFlag, fv);
 
-            code = createArcCodeWW(HL_ML, HL, ML);
-            addArcFeature(code | dirFlag, fv);
-        }
+        code = createArcCodeWW(HL_ML, HL, ML);
+        addArcFeature(code | dirFlag, fv);
     }
 
     /************************************************************************
@@ -1593,9 +1588,10 @@ public class DependencyPipe implements Serializable {
     	FeatureVector fv = new FeatureVector(arcAlphabet.size());
 
     	int[] posA = inst.cpostagids;
-        int[] lemma = inst.lemmaids;
-   	
-    	int flag = par < arg ? 0 : 1;					// bit 1
+        //int[] lemma = inst.lemmaids;
+        int[] lemma = inst.lemmaids != null ? inst.lemmaids : inst.formids;
+    	
+        int flag = par < arg ? 0 : 1;					// bit 1
     	flag = (flag << 1) | (arg < prev ? 0 : 1);		// bit 2
     	flag = (flag << 1) | (arg < curr ? 0 : 1);		// bit 3
     	flag = (flag << 1) | 1;							// bit 4
@@ -1610,28 +1606,26 @@ public class DependencyPipe implements Serializable {
     	addArcFeature(code, fv);
     	addArcFeature(code | flag, fv);
     
-        if (lemma != null) {
-            int GL = lemma[par];
-            int HL = lemma[arg];
-            int SL = lemma[prev];
-            int ML = lemma[curr];
+        int GL = lemma[par];
+        int HL = lemma[arg];
+        int SL = lemma[prev];
+        int ML = lemma[curr];
 
-            code = createArcCodeWPPP(GL_HC_MC_SC, GL, HC, SC, MC);
-            addArcFeature(code, fv);
-            addArcFeature(code | flag, fv);
+        code = createArcCodeWPPP(GL_HC_MC_SC, GL, HC, SC, MC);
+        addArcFeature(code, fv);
+        addArcFeature(code | flag, fv);
 
-            code = createArcCodeWPPP(GC_HL_MC_SC, HL, GC, SC, MC);
-            addArcFeature(code, fv);
-            addArcFeature(code | flag, fv);
+        code = createArcCodeWPPP(GC_HL_MC_SC, HL, GC, SC, MC);
+        addArcFeature(code, fv);
+        addArcFeature(code | flag, fv);
 
-            code = createArcCodeWPPP(GC_HC_ML_SC, ML, GC, HC, SC);
-            addArcFeature(code, fv);
-            addArcFeature(code | flag, fv);
+        code = createArcCodeWPPP(GC_HC_ML_SC, ML, GC, HC, SC);
+        addArcFeature(code, fv);
+        addArcFeature(code | flag, fv);
 
-            code = createArcCodeWPPP(GC_HC_MC_SL, SL, GC, HC, MC);
-            addArcFeature(code, fv);
-            addArcFeature(code | flag, fv);
-        }
+        code = createArcCodeWPPP(GC_HC_MC_SL, SL, GC, HC, MC);
+        addArcFeature(code, fv);
+        addArcFeature(code | flag, fv);
 
     	return fv;
     }
@@ -1640,8 +1634,9 @@ public class DependencyPipe implements Serializable {
     	FeatureVector fv = new FeatureVector(arcAlphabet.size());
 
     	int[] posA = inst.cpostagids;
-    	int[] lemma = inst.lemmaids;
-
+    	//int[] lemma = inst.lemmaids;
+    	int[] lemma = inst.lemmaids != null ? inst.lemmaids : inst.formids;
+    	
     	int flag = arg < prev ? 0 : 1;					// bit 1
     	flag = (flag << 1) | (arg < curr ? 0 : 1);		// bit 2
     	flag = (flag << 1) | (arg < next ? 0 : 1);		// bit 3
@@ -1669,60 +1664,58 @@ public class DependencyPipe implements Serializable {
     	addArcFeature(code, fv);
     	addArcFeature(code | flag, fv);
         
-        if (lemma != null) {
-            int HL = lemma[arg];
-            int PL = lemma[prev];
-            int ML = lemma[curr];
-            int NL = lemma[next];
+        int HL = lemma[arg];
+        int PL = lemma[prev];
+        int ML = lemma[curr];
+        int NL = lemma[next];
 
-            code = createArcCodeWPPP(HL_PC_MC_NC, HL, PC, MC, NC);
-            addArcFeature(code, fv);
-            addArcFeature(code | flag, fv);
+        code = createArcCodeWPPP(HL_PC_MC_NC, HL, PC, MC, NC);
+        addArcFeature(code, fv);
+        addArcFeature(code | flag, fv);
 
-            code = createArcCodeWPPP(HC_PL_MC_NC, PL, HC, MC, NC);
-            addArcFeature(code, fv);
-            addArcFeature(code | flag, fv);
+        code = createArcCodeWPPP(HC_PL_MC_NC, PL, HC, MC, NC);
+        addArcFeature(code, fv);
+        addArcFeature(code | flag, fv);
 
-            code = createArcCodeWPPP(HC_PC_ML_NC, ML, HC, PC, NC);
-            addArcFeature(code, fv);
-            addArcFeature(code | flag, fv);
+        code = createArcCodeWPPP(HC_PC_ML_NC, ML, HC, PC, NC);
+        addArcFeature(code, fv);
+        addArcFeature(code | flag, fv);
 
-            code = createArcCodeWPPP(HC_PC_MC_NL, NL, HC, PC, MC);
-            addArcFeature(code, fv);
-            addArcFeature(code | flag, fv);
+        code = createArcCodeWPPP(HC_PC_MC_NL, NL, HC, PC, MC);
+        addArcFeature(code, fv);
+        addArcFeature(code | flag, fv);
 
-            code = createArcCodeWPP(HL_PC_NC, HL, PC, NC);
-            addArcFeature(code, fv);
-            addArcFeature(code | flag, fv);
+        code = createArcCodeWPP(HL_PC_NC, HL, PC, NC);
+        addArcFeature(code, fv);
+        addArcFeature(code | flag, fv);
 
-            code = createArcCodeWPP(HC_PL_NC, PL, HC, NC);
-            addArcFeature(code, fv);
-            addArcFeature(code | flag, fv);
+        code = createArcCodeWPP(HC_PL_NC, PL, HC, NC);
+        addArcFeature(code, fv);
+        addArcFeature(code | flag, fv);
 
-            code = createArcCodeWPP(HC_PC_NL, NL, HC, PC);
-            addArcFeature(code, fv);
-            addArcFeature(code | flag, fv);
+        code = createArcCodeWPP(HC_PC_NL, NL, HC, PC);
+        addArcFeature(code, fv);
+        addArcFeature(code | flag, fv);
 
-            code = createArcCodeWPP(PL_MC_NC, PL, MC, NC);
-            addArcFeature(code, fv);
-            addArcFeature(code | flag, fv);
+        code = createArcCodeWPP(PL_MC_NC, PL, MC, NC);
+        addArcFeature(code, fv);
+        addArcFeature(code | flag, fv);
 
-            code = createArcCodeWPP(PC_ML_NC, ML, PC, NC);
-            addArcFeature(code, fv);
-            addArcFeature(code | flag, fv);
+        code = createArcCodeWPP(PC_ML_NC, ML, PC, NC);
+        addArcFeature(code, fv);
+        addArcFeature(code | flag, fv);
 
-            code = createArcCodeWPP(PC_MC_NL, NL, PC, MC);
-            addArcFeature(code, fv);
-            addArcFeature(code | flag, fv);
+        code = createArcCodeWPP(PC_MC_NL, NL, PC, MC);
+        addArcFeature(code, fv);
+        addArcFeature(code | flag, fv);
 
-            code = createArcCodeWP(PL_NC, PL, NC);
-            addArcFeature(code, fv);
-            addArcFeature(code | flag, fv);
+        code = createArcCodeWP(PL_NC, PL, NC);
+        addArcFeature(code, fv);
+        addArcFeature(code | flag, fv);
 
-            code = createArcCodeWP(PC_NL, NL, PC);
-            addArcFeature(code, fv);
-            addArcFeature(code | flag, fv);
-        }
+        code = createArcCodeWP(PC_NL, NL, PC);
+        addArcFeature(code, fv);
+        addArcFeature(code | flag, fv);
             
     	return fv;
     }
