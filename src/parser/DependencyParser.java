@@ -50,6 +50,7 @@ public class DependencyParser implements Serializable {
 			prunerOptions.pruning = false;
 			prunerOptions.test = false;
 			prunerOptions.learnLabel = false;
+			//prunerOptions.gamma = 1.0;
 			
 			pruner = new DependencyParser();
 			pruner.options = prunerOptions;
@@ -391,9 +392,9 @@ public class DependencyParser implements Serializable {
     	reader.close();
     	if (out != null) out.close();
     	
-    	System.out.printf(" Tokens: %d%n", nDeps);
-    	System.out.printf(" Sentences: %d%n", nSents);
-    	System.out.printf(" UAS=%.6f\tLAS=%.6f\tCAS=%.6f%n",
+    	System.out.printf("  Tokens: %d%n", nDeps);
+    	System.out.printf("  Sentences: %d%n", nSents);
+    	System.out.printf("  UAS=%.6f\tLAS=%.6f\tCAS=%.6f%n",
     			(nUCorrect+0.0)/nDeps,
     			(nLCorrect+0.0)/nDeps,
     			(nWhole + 0.0)/nSents);

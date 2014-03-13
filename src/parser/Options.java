@@ -35,9 +35,9 @@ public class Options implements Cloneable, Serializable {
 	//public LearningMode learningMode = LearningMode.Basic;
 	public LearningMode learningMode = LearningMode.Full;
 	public boolean projective = false;
-	public boolean learnLabel = false;
-	public boolean pruning = true;
-	public double pruningCoeff = 0.04;
+	public boolean learnLabel = true;
+	public boolean pruning = false;
+	public double pruningCoeff = 0.01;
 	
 	public int numHcThreads = 10;		// hill climbing: number of threads
 	public int numHcConverge = 300;		// hill climbing: number of restarts to converge 
