@@ -396,7 +396,7 @@ public class DependencyPipe implements Serializable {
 					int h2 = heads[m + 1];
 					Utils.Assert(h2 >= 0);
 					
-					createHeadBiFeatureVector(inst, h, m, h2);
+					createHeadBiFeatureVector(inst, m, h, h2);
 				}
 			}
         }		
