@@ -117,7 +117,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 
                     //DEBUG
                     ++cnt;
-                    if (cnt % 1000) {
+                    if (cnt % 10000 == 0) {
                         System.out.println(cnt);
                     }
 				}
