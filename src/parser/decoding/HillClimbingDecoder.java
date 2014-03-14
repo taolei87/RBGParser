@@ -151,6 +151,8 @@ public class HillClimbingDecoder extends DependencyDecoder {
 					+ (options.learnLabel ? 
 						lfd.getLabeledArcScore(heads[m], m, staticTypes[heads[m]][m])
 						: 0.0)
+                    + (addLoss && options.learnLabel && staticTypes[heads[m]][m]
+                        != inst.deplbids[m] ? 1 : 0)
 					+ lfd.getPartialScore(heads, m);
 			//		+ gfd.getStructureScore(heads, m);
 		}
@@ -161,8 +163,13 @@ public class HillClimbingDecoder extends DependencyDecoder {
 			int[] heads = now.heads;
 			int[] deplbids = now.deplbids;
 			for (int m = 1; m < n; ++m)
-				score += lfd.getLabeledArcScore(heads[m], m, deplbids[m])
-					   + ((addLoss && heads[m] != inst.heads[m]) ? 1 : 0);
+				score += (options.learnLabel ? 
+                            lfd.getLabeledArcScore(heads[m], m, deplbids[m])
+                            : 0)
+					   + ((addLoss && heads[m] != inst.heads[m]) ? 1 : 0)
+                       + ((addLoss && options.learnLabel && 
+                            staticTypes[heads[m]][m] != inst.deplbids[m]) ?
+                            1 : 0);
 			 
 			score += lfd.getScore(now);
 			return score;
