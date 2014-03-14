@@ -37,7 +37,7 @@ public class Options implements Cloneable, Serializable {
 	public boolean projective = false;
 	public boolean learnLabel = true;
 	public boolean pruning = false;
-	public double pruningCoeff = 0.01;
+	public double pruningCoeff = 0.02;
 	
 	public int numHcThreads = 10;		// hill climbing: number of threads
 	public int numHcConverge = 300;		// hill climbing: number of restarts to converge 
@@ -116,6 +116,9 @@ public class Options implements Cloneable, Serializable {
             else if (arg.startsWith("pre-iters:")) {
                 numPretrainIters = Integer.parseInt(arg.split(":")[1]);
             }
+            else if (arg.startsWith("pruning:")) {
+                pruning = Boolean.parseBoolean(arg.split(":")[1]);
+            }
 
     	}    	
 
@@ -154,6 +157,7 @@ public class Options implements Cloneable, Serializable {
         System.out.println("R: " + R);
         System.out.println("word-vector:" + wordVectorFile);
         System.out.println("projective: " + projective);
+        System.out.println("pruning: " + pruning);
         
         System.out.println();
         System.out.println("use consecutive siblings: " + useCS);

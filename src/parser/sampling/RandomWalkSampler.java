@@ -50,7 +50,7 @@ public class RandomWalkSampler {
     					continue;
     				depList.add(candH);
     				double s = lfd.getArcScore(candH, curr);
-    				if (addLoss && inst.heads[i] != candH) {
+    				if (addLoss && inst.heads[curr] != candH) {
     					// cost augmented
     					s += 1.0;
     				}

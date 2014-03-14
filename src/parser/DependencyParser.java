@@ -46,6 +46,8 @@ public class DependencyParser implements Serializable {
 		if (options.train && options.pruning) {
 			Options prunerOptions = new Options();
 			prunerOptions.processArguments(args);
+			prunerOptions.maxNumIters = 10;
+			
 			prunerOptions.learningMode = LearningMode.Basic;
 			prunerOptions.pruning = false;
 			prunerOptions.test = false;
