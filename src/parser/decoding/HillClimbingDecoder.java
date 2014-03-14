@@ -68,22 +68,25 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		int size;
 		DependencyArcList arcLis;
 		int[] dfslis;
-		
+	    int dfscnt;
+
 		public void run()
 		{
 			n = inst.length;
 			converge = options.numHcConverge;
 			dfslis = new int[n];
 			arcLis = new DependencyArcList(n);
-
+            
 			while (!stopped) {
+
 				DependencyInstance now = sampler.randomWalkSampling(
 						inst, lfd, addLoss);
 				
 				// hill climb
 				int[] heads = now.heads;
 				int[] deplbids = now.deplbids;
-				
+			    
+                int cnt = 0;
 				boolean more;
 				for (;;) {
 					more = false;					
@@ -111,6 +114,12 @@ public class HillClimbingDecoder extends DependencyDecoder {
 						heads[m] = bestHead;
 					}
 					if (!more) break;					
+
+                    //DEBUG
+                    ++cnt;
+                    if (cnt % 1000) {
+                        System.out.println(cnt);
+                    }
 				}
 				
 				if (options.learnLabel) {
@@ -138,9 +147,17 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		
 		private boolean isAncestorOf(int[] heads, int par, int ch) 
 		{
+            int cnt = 0;
 			while (ch != 0) {
 				if (ch == par) return true;
 				ch = heads[ch];
+
+                //DEBUG
+                ++cnt;
+                if (cnt > 10000) {
+                    System.out.println("DEAD LOOP in isAncestorOf !!!!");
+                    System.exit(1);
+                }
 			}
 			return false;
 		}
@@ -179,12 +196,20 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		{
 			arcLis.constructDepTreeArcList(heads);
 			size = 0;
+            dfscnt = 0;
 			dfs(0);
 		}
 		
 		
 		private void dfs(int i)
 		{
+            //DEBUG
+            ++dfscnt;
+            if (dfscnt > 10000) {
+                System.out.println("DEAD LOOP in dfs!!!!");
+                System.exit(1);
+            }
+
 			int l = arcLis.startIndex(i);
 			int r = arcLis.endIndex(i);
 			for (int p = l; p < r; ++p) {

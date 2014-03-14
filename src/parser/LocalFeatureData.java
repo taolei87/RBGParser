@@ -626,7 +626,7 @@ public class LocalFeatureData {
 		int pos = (id*len+m)*len+s;
 		FeatureDataItem item = gpsib[pos];
 		if (item == null) {
-			FeatureVector fv = pipe.createGPSibFeatureVector(inst, gp, h, s, m);
+			FeatureVector fv = pipe.createGPSibFeatureVector(inst, gp, h, m, s);
 			double score = parameters.dotProduct(fv) * gamma;
 			item = new FeatureDataItem(fv, score);
 			gpsib[pos] = item;			
