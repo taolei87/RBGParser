@@ -43,7 +43,7 @@ public class Options implements Cloneable, Serializable {
 	public int numHcConverge = 300;		// hill climbing: number of restarts to converge 
 	
 	public boolean average = true;
-	public double C = 1;
+	public double C = 0.01;
 	public double gamma = 1;
 	public int R = 50;
 	
