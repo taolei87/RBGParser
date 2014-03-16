@@ -10,8 +10,6 @@ import utils.Utils;
 
 public class HillClimbingDecoder extends DependencyDecoder {
 	
-	RandomWalkSampler sampler;
-	
 	DependencyInstance pred, inst;
 	LocalFeatureData lfd;
 	GlobalFeatureData gfd;
@@ -25,7 +23,9 @@ public class HillClimbingDecoder extends DependencyDecoder {
 	
 	public HillClimbingDecoder(Options options) {
 		this.options = options;
-		sampler = new RandomWalkSampler();
+		totalLoopCount = 0;
+		totalClimbTime = 0;
+		totalClimbAndSampleTime = 0;
 	}
 
 	@Override
@@ -46,29 +46,41 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		if (options.learnLabel)
 			staticTypes = lfd.getStaticTypes();
 		
+		
 		HillClimbingThread[] lstThreads = new HillClimbingThread[options.numHcThreads];
 		for (int i = 0; i < lstThreads.length; ++i) {
 			lstThreads[i] = new HillClimbingThread();
+			lstThreads[i].sampler = new RandomWalkSampler(i + 10, options);
 			lstThreads[i].start();
 		}
 		
 		for (int i = 0; i < lstThreads.length; ++i)
 			try {
 				lstThreads[i].join();
+				//totalLoopCount += lstThreads[i].sampler.loopCount;
+				totalClimbTime += lstThreads[i].climbTime;
+				totalClimbAndSampleTime += lstThreads[i].climbAndSampleTime;
 			} catch (InterruptedException e) {
 				System.out.println("Hill climbing thread interupted!!!!");
 			}
+		totalLoopCount += totRuns;
+		//System.out.println("Total loop count: " + totalLoopCount);
 		
 		return pred;		
 	}
 	
 	public class HillClimbingThread extends Thread {
 		
+		RandomWalkSampler sampler;
+
 		int n, converge;
 		int size;
 		DependencyArcList arcLis;
 		int[] dfslis;
 	    int dfscnt;
+
+		public long climbTime;
+		public long climbAndSampleTime;
 
 		public void run()
 		{
@@ -77,11 +89,17 @@ public class HillClimbingDecoder extends DependencyDecoder {
 			dfslis = new int[n];
 			arcLis = new DependencyArcList(n);
             
+			climbTime = 0;
+			climbAndSampleTime = 0;
+
 			while (!stopped) {
+				
+				long startClimbAndSample = System.currentTimeMillis();
 
 				DependencyInstance now = sampler.randomWalkSampling(
-						inst, lfd, addLoss);
+						inst, lfd, staticTypes, addLoss);
 				
+				long startClimb = System.currentTimeMillis();
 				// hill climb
 				int[] heads = now.heads;
 				int[] deplbids = now.deplbids;
@@ -121,6 +139,10 @@ public class HillClimbingDecoder extends DependencyDecoder {
                         System.out.println(cnt);
                     }
 				}
+				
+				long end = System.currentTimeMillis();
+				climbTime += end - startClimb;
+				climbAndSampleTime += end - startClimbAndSample;
 				
 				if (options.learnLabel) {
 					for (int m = 1; m < n; ++m)

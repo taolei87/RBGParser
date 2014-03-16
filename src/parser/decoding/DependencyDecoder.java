@@ -9,6 +9,9 @@ import parser.Options.LearningMode;
 public abstract class DependencyDecoder {
 	
 	Options options;
+	public int totalLoopCount;
+	public long totalClimbTime;
+	public long totalClimbAndSampleTime;
 	
 	public static DependencyDecoder createDependencyDecoder(Options options)
 	{

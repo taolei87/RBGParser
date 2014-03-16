@@ -1210,6 +1210,7 @@ public class DependencyPipe implements Serializable {
     	int MC = posA[ch2];
 
 
+    	//Utils.Assert(ch1 < ch2);
     	int flag = getBinnedDistance(ch1 - ch2);
 
     	long code = 0;

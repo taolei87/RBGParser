@@ -8,23 +8,32 @@ import utils.Utils;
 public class RandomWalkSampler {
 	
 	Random r;
+	Options options;
 	
-	public RandomWalkSampler(int seed) {
+	public int loopCount;
+	
+	public RandomWalkSampler(int seed, Options options) {
 		r = new Random(seed);
+		this.options = options;
+    	loopCount = 0;
 	}
 	
-	public RandomWalkSampler() {
+	public RandomWalkSampler(Options options) {
 		r = new Random(1/*System.currentTimeMillis()*/);
+		this.options = options;
+    	loopCount = 0;
 	}
 	
-	public RandomWalkSampler(Random r) {
+	public RandomWalkSampler(Random r, Options options) {
 		this.r = r;
+		this.options = options;
+    	loopCount = 0;
 	}
 	
 	
     public DependencyInstance randomWalkSampling(DependencyInstance inst,
-    		LocalFeatureData lfd, boolean addLoss) {
-    	int loopCount = 0;
+    		LocalFeatureData lfd, int[][] staticTypes, boolean addLoss) {
+    	//int loopCount = 0;
     	int len = inst.length;
     	
 		DependencyInstance predInst = new DependencyInstance(inst);
@@ -38,6 +47,7 @@ public class RandomWalkSampler {
     	}
     	
     	for (int i = 1; i < len; i++) {
+    		//loopCount = 0;
     		int curr = i;
     		while (!inTree[curr]) {
     			// sample new head
@@ -49,22 +59,28 @@ public class RandomWalkSampler {
     				if (lfd.isPruned(candH, curr))
     					continue;
     				depList.add(candH);
+    				int candLab = options.learnLabel ? staticTypes[candH][curr] : 0;
+    				
     				double s = lfd.getArcScore(candH, curr);
-    				if (addLoss && inst.heads[curr] != candH) {
+    				s += options.learnLabel ? lfd.getLabeledArcScore(candH, curr, candLab) : 0.0;
+    				
+    				if (addLoss) {
     					// cost augmented
-    					s += 1.0;
+    					s += (inst.heads[curr] != candH ? 1.0 : 0.0)
+    							+ (options.learnLabel && inst.deplbids[curr] != candLab ? 1.0 : 0.0);
     				}
     				score.add(s);
     			}
 
     			int sample = samplePoint(score, r);
     			predInst.heads[curr] = depList.get(sample);
+    			predInst.deplbids[curr] = options.learnLabel ? staticTypes[predInst.heads[curr]][curr] : 0;
     			curr = predInst.heads[curr];
     			
     			if (predInst.heads[curr] != -1 && !inTree[curr]) {
-    				cycleErase(predInst.heads, curr);
+    				cycleErase(predInst.heads, predInst.deplbids, curr);
     				++loopCount;
-    				if (loopCount % 10000000 == 0)
+    				if (loopCount % 1000000 == 0)
     					System.out.println("\tRndWalk Loop " + loopCount);
     			}
     		}
@@ -78,10 +94,11 @@ public class RandomWalkSampler {
     	return predInst;
     }
     
-    private void cycleErase(int[] dep, int i) {
+    private void cycleErase(int[] dep, int[] lab, int i) {
     	while (dep[i] != -1) {
     		int next = dep[i];
     		dep[i] = -1;
+    		lab[i] = 0;
     		i = next;
     	}
     }

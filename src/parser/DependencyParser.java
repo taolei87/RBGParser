@@ -228,8 +228,17 @@ public class DependencyParser implements Serializable {
     		double loss = 0;
     		int uas = 0, tot = 0;
     		start = System.currentTimeMillis();
+    		
+    		decoder.totalLoopCount = 0;
+    		decoder.totalClimbAndSampleTime = 0;
+    		decoder.totalClimbTime = 0;
                 		    		
     		for (int i = 0; i < N; ++i) {
+    			
+    			if ((i + 1) % 500 == 0) {
+    				System.out.print("   " + (i + 1));
+    				System.out.print("(" + decoder.totalClimbAndSampleTime / 1000 + "," + decoder.totalClimbTime / 1000 + ")");
+    			}
 
     			DependencyInstance inst = new DependencyInstance(lstTrain[i]);
     			LocalFeatureData lfd = new LocalFeatureData(inst, this, true);
