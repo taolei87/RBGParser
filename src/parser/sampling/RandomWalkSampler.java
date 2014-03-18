@@ -13,7 +13,7 @@ public class RandomWalkSampler {
 	public int loopCount;
 	
 	public static volatile double T = 1.0;
-	public static final int loopThreshold = 1000;
+	public static final int loopThreshold = 10000;
 	public static final double decayFactor = 0.99;	
 	public static final double minT = 0.3;
 	

@@ -29,6 +29,15 @@ public class DependencyArcList {
 		constructDepTreeArcList(heads);
 	}
 	
+	public void resize(int n)
+	{
+		if (n > st.length) {
+			st = new int[n];
+			edges = new int[n];
+		}
+		this.n = n;
+	}
+	
 	public int startIndex(int i)
 	{
 		return st[i];
