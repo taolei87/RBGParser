@@ -14,6 +14,7 @@ import java.util.zip.GZIPOutputStream;
 import parser.Options.LearningMode;
 import parser.decoding.DependencyDecoder;
 import parser.io.DependencyReader;
+import parser.sampling.RandomWalkSampler;
 
 public class DependencyParser implements Serializable {
 	
@@ -236,12 +237,11 @@ public class DependencyParser implements Serializable {
     		for (int i = 0; i < N; ++i) {
     			
     			if ((i + 1) % 1000 == 0) {
-                    System.out.printf("  %d (%.2f %.2f %.2f)", (i+1),
-                            decoder.totalClimbTime / 1000.0 / (i+1),
-                            (decoder.totalClimbAndSampleTime - decoder.totalClimbTime) / 1000.0 / (i+1),
-                            decoder.totalLoopCount / (i+1.0));
-    				//System.out.print("   " + (i + 1));
-    				//System.out.print("(" + decoder.totalClimbAndSampleTime / 1000 + "," + decoder.totalClimbTime / 1000 + ")");
+                    System.out.printf("\t%d (HC=%.2fs Sp=%.2fs LC=%.2f T=%.2f)", (i+1),
+                            decoder.totalClimbTime / 1000.0,
+                            (decoder.totalClimbAndSampleTime - decoder.totalClimbTime) / 1000.0,
+                            decoder.totalLoopCount / (i+1.0),
+                            RandomWalkSampler.T);
     			}
 
     			DependencyInstance inst = new DependencyInstance(lstTrain[i]);
@@ -264,9 +264,9 @@ public class DependencyParser implements Serializable {
                 }
 
     		}
-    		System.out.printf("  Iter %d\tloss=%.4f\tuas=%.4f\t[%d ms]%n", iIter+1,
+    		System.out.printf("%n  Iter %d\tloss=%.4f\tuas=%.4f\t[%ds]%n", iIter+1,
     				loss, uas/(tot+0.0),
-    				System.currentTimeMillis() - start);
+    				(System.currentTimeMillis() - start)/1000);
     		
     		if (options.learningMode != LearningMode.Basic && options.pruning && pruner != null)
     			pruner.printPruningStats();

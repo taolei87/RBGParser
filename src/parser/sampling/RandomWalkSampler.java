@@ -12,6 +12,11 @@ public class RandomWalkSampler {
 	
 	public int loopCount;
 	
+	public static volatile double T = 1.0;
+	public static final int loopThreshold = 1000;
+	public static final double decayFactor = 0.99;	
+	public static final double minT = 0.3;
+	
 	public RandomWalkSampler(int seed, Options options) {
 		r = new Random(seed);
 		this.options = options;
@@ -86,27 +91,14 @@ public class RandomWalkSampler {
     				cycleErase(predInst.heads, predInst.deplbids, curr);
     				++loopCount;
                     ++cnt;
-    				if (cnt % 1000000 == 0) {
-    					System.out.println("\tRndWalk Loop " + cnt);
-                        System.out.println(len);
-                        for (int u = 0; u < len; ++u) {
-                            for (int v = 0; v < len; ++v) 
-                                if (v == 0 || u == v || lfd.isPruned(u, v))
-                                    System.out.print("0.00\t");
-                                else {
-                                    double s = lfd.getArcScore(u, v);
-                                    int l = options.learnLabel ? staticTypes[u][v] : 0;
-                                    s += options.learnLabel ? lfd.getLabeledArcScore(u, v, l) : 0.0;
-                                    if (addLoss) {
-                                        s += (inst.heads[v] != u ? 1.0 : 0.0)
-                                           + (options.learnLabel && inst.deplbids[v] != l ? 1.0 : 0.0);
-                                    }
-                                    System.out.printf("%.2f\t", s);
-                                }
-                            System.out.println();
-                        }
-                        System.exit(1);
+                    if (cnt % loopThreshold == 0) {
+                    	T = Math.max(minT, T*decayFactor);
                     }
+                    //DEBUG
+    				//if (cnt >= 1000000) {
+    				//	System.out.println("\tRndWalk Loop " + cnt);
+    				//	dumpScoreTable(len, inst, lfd, staticTypes, addLoss);    					                        
+                    //}
     			}
     		}
     		curr = i;
@@ -118,8 +110,8 @@ public class RandomWalkSampler {
     	
     	return predInst;
     }
-    
-    private void cycleErase(int[] dep, int[] lab, int i) {
+
+	private void cycleErase(int[] dep, int[] lab, int i) {
     	while (dep[i] != -1) {
     		int next = dep[i];
     		dep[i] = -1;
@@ -131,16 +123,39 @@ public class RandomWalkSampler {
     private int samplePoint(double[] score, int N, Random r) {
     	double sumScore = Double.NEGATIVE_INFINITY;
     	for (int i = 0; i < N; i++) {
-    		sumScore = Utils.logSumExp(sumScore, score[i]);
+    		sumScore = Utils.logSumExp(sumScore, score[i]*T);
     	}
-    	double logp = Math.log(r.nextDouble() + 1e-30);
+    	double logp = Math.log(r.nextDouble() + 1e-60);
     	double cur = Double.NEGATIVE_INFINITY;
     	int ret = 0;
     	for (; ret < N; ret++) {
-    		cur = Utils.logSumExp(cur, score[ret]);
+    		cur = Utils.logSumExp(cur, score[ret]*T);
     		if (logp + sumScore < cur)
     			break;
     	}
     	return ret;
     }
+    
+    private void dumpScoreTable(int len, DependencyInstance inst,
+			LocalFeatureData lfd, int[][] staticTypes, boolean addLoss) {
+    	System.out.println(len);
+        for (int u = 0; u < len; ++u) {
+            for (int v = 0; v < len; ++v) 
+                if (v == 0 || u == v || lfd.isPruned(u, v))
+                    System.out.print("0.00\t");
+                else {
+                    double s = lfd.getArcScore(u, v);
+                    int l = options.learnLabel ? staticTypes[u][v] : 0;
+                    s += options.learnLabel ? lfd.getLabeledArcScore(u, v, l) : 0.0;
+                    if (addLoss) {
+                        s += (inst.heads[v] != u ? 1.0 : 0.0)
+                           + (options.learnLabel && inst.deplbids[v] != l ? 1.0 : 0.0);
+                    }
+                    System.out.printf("%.2f\t", s);
+                }
+            System.out.println();
+        }
+        System.exit(1);		
+	}
+
 }
