@@ -121,6 +121,7 @@ public class RandomWalkSampler {
     }
     
     private int samplePoint(double[] score, int N, Random r) {
+    	double T = RandomWalkSampler.T;
     	double sumScore = Double.NEGATIVE_INFINITY;
     	for (int i = 0; i < N; i++) {
     		sumScore = Utils.logSumExp(sumScore, score[i]*T);
