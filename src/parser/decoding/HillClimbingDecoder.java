@@ -57,13 +57,13 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		for (int i = 0; i < lstThreads.length; ++i)
 			try {
 				lstThreads[i].join();
-				//totalLoopCount += lstThreads[i].sampler.loopCount;
+				totalLoopCount += lstThreads[i].sampler.loopCount / (totRuns + 0.0);
 				totalClimbTime += lstThreads[i].climbTime;
 				totalClimbAndSampleTime += lstThreads[i].climbAndSampleTime;
 			} catch (InterruptedException e) {
 				System.out.println("Hill climbing thread interupted!!!!");
 			}
-		totalLoopCount += totRuns;
+		//totalLoopCount += totRuns;
 		//System.out.println("Total loop count: " + totalLoopCount);
 		
 		return pred;		

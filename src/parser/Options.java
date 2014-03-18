@@ -35,7 +35,7 @@ public class Options implements Cloneable, Serializable {
 	//public LearningMode learningMode = LearningMode.Basic;
 	public LearningMode learningMode = LearningMode.Full;
 	public boolean projective = false;
-	public boolean learnLabel = false;
+	public boolean learnLabel = true;
 	public boolean pruning = false;
 	public double pruningCoeff = 0.03;
 	

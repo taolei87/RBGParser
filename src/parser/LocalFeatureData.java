@@ -28,7 +28,8 @@ public class LocalFeatureData {
 	
 	FeatureVector[] arcFvs;			// 1st order arc feature vectors
 	double[] arcScores;				// 1st order arc scores (including tensor)
-	
+    double[] arcNtScores;
+
 	FeatureVector[][][][] lbFvs;	// labeled-arc feature vectors
 	double[][][][] lbScores;		// labeled-arc scores
 	
@@ -71,7 +72,8 @@ public class LocalFeatureData {
 		
 		arcFvs = new FeatureVector[len*len];
 		arcScores = new double[len*len];
-		
+	    arcNtScores = new double[len*len];
+
 		lbFvs = new FeatureVector[len][ntypes][2][2];
 		lbScores = new double[len][ntypes][2][2];
 
@@ -102,6 +104,7 @@ public class LocalFeatureData {
 			for (int j = 0; j < len; ++j) 
 				if (i != j) {
 					arcFvs[i*len+j] = pipe.createArcFeatures(inst, i, j);
+                    arcNtScores[i*len+j] = parameters.dotProduct(arcFvs[i*len+j]) * gamma;
 					arcScores[i*len+j] = parameters.dotProduct(arcFvs[i*len+j]) * gamma
 									+ parameters.dotProduct(wpU[i], wpV[j], i-j) * (1-gamma);
 				}
@@ -255,6 +258,11 @@ public class LocalFeatureData {
 	{
 		return arcScores[h*len+m];
 	}
+
+    public double getArcNoTensorScore(int h, int m)
+    {
+        return arcNtScores[h*len+m];
+    }
 	
 	public double getLabeledArcScore(int h, int m, int t)
 	{

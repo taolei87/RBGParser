@@ -235,9 +235,13 @@ public class DependencyParser implements Serializable {
                 		    		
     		for (int i = 0; i < N; ++i) {
     			
-    			if ((i + 1) % 500 == 0) {
-    				System.out.print("   " + (i + 1));
-    				System.out.print("(" + decoder.totalClimbAndSampleTime / 1000 + "," + decoder.totalClimbTime / 1000 + ")");
+    			if ((i + 1) % 1000 == 0) {
+                    System.out.printf("  %d (%.2f %.2f %.2f)", (i+1),
+                            decoder.totalClimbTime / 1000.0 / (i+1),
+                            (decoder.totalClimbAndSampleTime - decoder.totalClimbTime) / 1000.0 / (i+1),
+                            decoder.totalLoopCount / (i+1.0));
+    				//System.out.print("   " + (i + 1));
+    				//System.out.print("(" + decoder.totalClimbAndSampleTime / 1000 + "," + decoder.totalClimbTime / 1000 + ")");
     			}
 
     			DependencyInstance inst = new DependencyInstance(lstTrain[i]);
