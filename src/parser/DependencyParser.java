@@ -237,7 +237,7 @@ public class DependencyParser implements Serializable {
     		for (int i = 0; i < N; ++i) {
     			
     			if ((i + 1) % 1000 == 0) {
-                    System.out.printf("\t%d (HC=%.2fs Sp=%.2fs LC=%.2f T=%.2f)", (i+1),
+                    System.out.printf("    %d (HC=%.2fs SP=%.2fs LC=%.2f T=%.2f)", (i+1),
                             decoder.totalClimbTime / 1000.0,
                             (decoder.totalClimbAndSampleTime - decoder.totalClimbTime) / 1000.0,
                             decoder.totalLoopCount / (i+1.0),
