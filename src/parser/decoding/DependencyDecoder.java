@@ -24,7 +24,11 @@ public abstract class DependencyDecoder {
 		
 		return null;
 	}
-	
+    
+    public void shutdown()
+    {
+    }
+
 	public abstract DependencyInstance decode(DependencyInstance inst,
 						LocalFeatureData lfd,
 						GlobalFeatureData gfd,

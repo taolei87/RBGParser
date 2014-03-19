@@ -2,6 +2,8 @@ package parser.decoding;
 
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+
 
 import parser.DependencyArcList;
 import parser.DependencyInstance;
@@ -23,7 +25,8 @@ public class HillClimbingDecoder extends DependencyDecoder {
 	double bestScore;	
 	int unchangedRuns, totRuns;
 	volatile boolean stopped;
-	
+    
+    ExecutorService executorService;
 	ExecutorCompletionService<Object> decodingService;
 	HillClimbingTask[] tasks;
 	
@@ -32,14 +35,21 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		totalLoopCount = 0;
 		totalClimbTime = 0;
 		totalClimbAndSampleTime = 0;
-		decodingService = new ExecutorCompletionService<Object>(
-				Executors.newFixedThreadPool(options.numHcThreads));
+        executorService = Executors.newFixedThreadPool(options.numHcThreads);
+		decodingService = new ExecutorCompletionService<Object>(executorService);
 		tasks = new HillClimbingTask[options.numHcThreads];
 		for (int i = 0; i < tasks.length; ++i) {
 			tasks[i] = new HillClimbingTask();
 			tasks[i].sampler = new RandomWalkSampler(i + 10, options);
 		}
 	}
+   
+   @Override
+    public void shutdown()
+    {
+        //System.out.println("shutdown");
+        executorService.shutdownNow();
+    }
 
 	@Override
 	public DependencyInstance decode(DependencyInstance inst,

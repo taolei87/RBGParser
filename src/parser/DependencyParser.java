@@ -292,6 +292,8 @@ public class DependencyParser implements Serializable {
     	if (evalAndSave && options.average) {
             parameters.averageParameters(options.maxNumIters * N);
     	}
+
+        decoder.shutdown();
     }
     
     public int evaluateUnlabelCorrect(DependencyInstance act, DependencyInstance pred) 
@@ -415,7 +417,9 @@ public class DependencyParser implements Serializable {
     			(nWhole + 0.0)/nSents);
     	if (options.pruning && options.learningMode != LearningMode.Basic && pruner != null)
     		pruner.printPruningStats();
-    	
+        
+        decoder.shutdown();
+
     	return (nUCorrect+0.0)/nDeps;
     }
 }
