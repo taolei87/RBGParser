@@ -14,7 +14,7 @@ public class RandomWalkSampler {
 	
 	public static volatile double T = 1.0;
 	public static final int loopThreshold = 10000;
-	public static final double decayFactor = 0.99;	
+	//public static final double decayFactor = 0.99;	
 	public static final double minT = 0.5;
 	
 	public RandomWalkSampler(int seed, Options options) {
@@ -66,16 +66,16 @@ public class RandomWalkSampler {
     				if (lfd.isPruned(candH, curr))
     					continue;
                     
-    				int candLab = options.learnLabel ? staticTypes[candH][curr] : 0;
+    				//int candLab = options.learnLabel ? staticTypes[candH][curr] : 0;
     				
     				double s = lfd.getArcScore(candH, curr);
                     //double s = lfd.getArcNoTensorScore(candH, curr);
-    				s += options.learnLabel ? lfd.getLabeledArcScore(candH, curr, candLab) : 0.0;
+    				//s += options.learnLabel ? lfd.getLabeledArcScore(candH, curr, candLab) : 0.0;
     				
     				if (addLoss) {
     					// cost augmented
-    					s += (inst.heads[curr] != candH ? 1.0 : 0.0) //;
-    						+ (options.learnLabel && inst.deplbids[curr] != candLab ? 1.0 : 0.0);
+    					s += (inst.heads[curr] != candH ? 1.0 : 0.0) ;
+    						//+ (options.learnLabel && inst.deplbids[curr] != candLab ? 1.0 : 0.0);
     				}
                     score[size] = s;
                     depList[size] = candH;
@@ -93,7 +93,8 @@ public class RandomWalkSampler {
     				++loopCount;
                     ++cnt;
                     if (cnt % loopThreshold == 0) {
-                    	T = Math.max(minT, T*decayFactor);
+                    	//T = Math.max(minT, T*decayFactor);
+                    	T = Math.max(minT, T-0.1);
                     }
                     //DEBUG
     				//if (cnt >= 1000000) {

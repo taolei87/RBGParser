@@ -244,7 +244,8 @@ public class DependencyParser implements Serializable {
                             RandomWalkSampler.T);
     			}
 
-    			DependencyInstance inst = new DependencyInstance(lstTrain[i]);
+    			//DependencyInstance inst = new DependencyInstance(lstTrain[i]);
+    			DependencyInstance inst = lstTrain[i];
     			LocalFeatureData lfd = new LocalFeatureData(inst, this, true);
     		    GlobalFeatureData gfd = null;
     		    int n = inst.length;

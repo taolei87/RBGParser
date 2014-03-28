@@ -1,6 +1,7 @@
 package parser;
 
 import parser.Options.LearningMode;
+import parser.decoding.DependencyDecoder;
 import utils.FeatureVector;
 import utils.Utils;
 
@@ -12,6 +13,7 @@ public class LocalFeatureData {
 	Parameters parameters;
 	
 	DependencyParser pruner;
+	DependencyDecoder prunerDecoder;
 	
 	int len;						// sentence length
 	int ntypes;						// number of label types
@@ -52,11 +54,13 @@ public class LocalFeatureData {
 			DependencyParser parser, boolean indexGoldArcs) 
 	{
 		this.inst = inst;
-		this.pipe = parser.pipe;
-		this.options = parser.options;
-		this.parameters = parser.parameters;
-		this.pruner = parser.pruner;
-		
+		pipe = parser.pipe;
+		options = parser.options;
+		parameters = parser.parameters;
+		pruner = parser.pruner;
+		prunerDecoder = pruner == null ? null : 
+			DependencyDecoder.createDependencyDecoder(pruner.options);
+			
 		Utils.Assert(pruner == null || pruner.options.learningMode == LearningMode.Basic);
 		
 		// allocate memory for arrays here
@@ -174,13 +178,18 @@ public class LocalFeatureData {
 				isPruned[i] = true;
 			}
 			
-
-			LocalFeatureData lfd2 = new LocalFeatureData(inst, pruner, false);			
-			boolean[] vis = new boolean[len];
+			// Use the threshold to prune arcs. 
+			double threshold = Math.log(options.pruningCoeff);
+			LocalFeatureData lfd2 = new LocalFeatureData(inst, pruner, false);
+			GlobalFeatureData gfd2 = null;
+			DependencyInstance pred = prunerDecoder.decode(inst, lfd2, gfd2, false);
+							
 			
-			// Use the threshold to prune arcs. Increase the threshold to store more arcs
+			// Deprecated. Increase the threshold to store more arcs
 			// until there's at least one valid dependency tree ...
-			for (double threshold = Math.log(options.pruningCoeff); ; threshold *= 2) {
+			
+			//boolean[] vis = new boolean[len];
+			//for (double threshold = Math.log(options.pruningCoeff); ; threshold *= 2) {
 				nuparcs = 0;
 				for (int m = 1; m < len; ++m) {								
 					double maxv = Double.NEGATIVE_INFINITY;
@@ -195,21 +204,20 @@ public class LocalFeatureData {
 							double v = lfd2.getArcScore(h, m);
 							
 							if ((includeGoldArcs && h == inst.heads[m]) ||
-							 (v >= maxv + threshold)) {
-								//isPruned[m*len+h] = false;
-								isPruned[m*len+h] = !(v >= maxv + threshold);
+							 (v >= maxv + threshold || h == pred.heads[m])) {
+								isPruned[m*len+h] = !(v >= maxv + threshold || h == pred.heads[m]);
 								arc2id[m*len+h] = nuparcs;
 								nuparcs++;							
 							}
 						}
 				}
 				
-				for (int i = 0; i < len; ++i) vis[i] = true;
-				traverse(0, vis);
-				boolean ok = true;
-				for (int i = 1; i < len; ++i) ok &= (!vis[i]);
-				if (ok) break;
-			}
+			//	for (int i = 0; i < len; ++i) vis[i] = true;
+			//	traverse(0, vis);
+			//	boolean ok = true;
+			//	for (int i = 1; i < len; ++i) ok &= (!vis[i]);
+			//	if (ok) break;
+			//}
 			
 			if (includeGoldArcs)
 				for (int m = 1; m < len; ++m)

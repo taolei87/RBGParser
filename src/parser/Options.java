@@ -119,6 +119,9 @@ public class Options implements Cloneable, Serializable {
             else if (arg.startsWith("pruning:")) {
                 pruning = Boolean.parseBoolean(arg.split(":")[1]);
             }
+            else if (arg.startsWith("thread:")) {
+            	numHcThreads = Integer.parseInt(arg.split(":")[1]);
+            }
 
     	}    	
 
