@@ -37,7 +37,7 @@ public class Options implements Cloneable, Serializable {
 	public boolean projective = false;
 	public boolean learnLabel = true;
 	public boolean pruning = true;
-	public double pruningCoeff = 0.05;
+	public double pruningCoeff = 0.1;
 	
 	public int numHcThreads = 10;		// hill climbing: number of threads
 	public int numHcConverge = 300;		// hill climbing: number of restarts to converge 
@@ -74,7 +74,7 @@ public class Options implements Cloneable, Serializable {
     			test = true;
     		}
     		else if (arg.equals("label")) {
-    			learnLabel = true;
+    			learnLabel = Boolean.parseBoolean(arg.split(":")[1]);
     		}
             else if (arg.equals("non-proj")) {
                 projective = false;

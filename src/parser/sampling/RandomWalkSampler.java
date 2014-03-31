@@ -14,8 +14,9 @@ public class RandomWalkSampler {
 	
 	public static volatile double T = 1.0;
 	public static final int loopThreshold = 10000;
-	//public static final double decayFactor = 0.99;	
+	public static final double decayFactor = 0.99;	
 	public static final double minT = 0.5;
+    //public static final double minT = 1.0;
 	
 	public RandomWalkSampler(int seed, Options options) {
 		r = new Random(seed);
@@ -93,8 +94,8 @@ public class RandomWalkSampler {
     				++loopCount;
                     ++cnt;
                     if (cnt % loopThreshold == 0) {
-                    	//T = Math.max(minT, T*decayFactor);
-                    	T = Math.max(minT, T-0.1);
+                    	T = Math.max(minT, T*decayFactor);
+                    	//T = Math.max(minT, T-0.1);
                     }
                     //DEBUG
     				//if (cnt >= 1000000) {
