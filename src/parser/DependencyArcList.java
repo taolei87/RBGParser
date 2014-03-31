@@ -5,6 +5,8 @@ import utils.Utils;
 public class DependencyArcList {
 	int n;
 	int[] st, edges;
+	int[] left, right;		// span
+	int[] nonproj;			// non-proj
 	
 	public DependencyArcList(int n)
 	{
@@ -19,6 +21,8 @@ public class DependencyArcList {
 		this.st = st;
 		this.edges = edges;
 		constructDepTreeArcList(heads);
+		constructSpan();
+		constructNonproj(heads);
 	}
 	
 	public DependencyArcList(int[] heads)
@@ -26,7 +30,12 @@ public class DependencyArcList {
 		n = heads.length;
 		st = new int[n];
 		edges = new int[n];
+		left = new int[n];
+		right = new int[n];
+		nonproj = new int[n];
 		constructDepTreeArcList(heads);
+		constructSpan();
+		constructNonproj(heads);
 	}
 	
 	public void resize(int n)
@@ -87,5 +96,54 @@ public class DependencyArcList {
 //				Utils.Assert(get(p-1) < get(p));
 //			}
 //		}
+	}
+	
+	private void constructSpan(int id) {
+		left[id] = id;
+		right[id] = id + 1;
+
+		int st = startIndex(id);
+		int ed = endIndex(id);
+
+		for (int p = st; p < ed; ++p) {
+			int cid = get(p);
+			if (right[cid] == 0)
+				constructSpan(cid);
+			if (left[cid] < left[id])
+				left[id] = left[cid];
+			if (right[cid] > right[id])
+				right[id] = right[cid];
+		}
+	}
+	
+	public void constructSpan() {
+		// assume that child list is constructed 
+		for (int i = 0; i < n; ++i) {
+			left[i] = 0;
+			right[i] = 0;
+		}
+		
+		for (int i = 0; i < n; ++i)
+			if (right[i] == 0)
+				constructSpan(i);
+	}
+	
+	public void constructNonproj(int[] heads) {
+		for (int i = 0; i < n; ++i) {
+			nonproj[i] = 0;
+		}
+
+		for (int m = 0; m < n; ++m) {
+			int h = heads[m];
+			int sm = m < h ? m : h;
+			int la = m > h ? m : h;
+			for (int tm = sm + 1; tm < la; ++tm) {
+				// head
+				int th = heads[tm];
+				if (th < sm || th > la) {
+					nonproj[m]++;
+				}
+			}
+		}
 	}
 }

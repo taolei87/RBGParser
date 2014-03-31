@@ -4,13 +4,17 @@ package parser;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
+import parser.DependencyInstance.SpecialPos;
 import parser.Options.LearningMode;
+import parser.Options.PossibleLang;
 import parser.io.DependencyReader;
 import utils.Alphabet;
 import utils.Dictionary;
@@ -31,6 +35,12 @@ public class DependencyPipe implements Serializable {
 	public static int TOKEN_START = 1;
 	public static int TOKEN_END = 2;
 	public static int TOKEN_MID = 3;
+
+	// for punc
+	public static int TOKEN_QUOTE = 4;
+	public static int TOKEN_RRB = 5;
+	public static int TOKEN_LRB = 6;
+
 	
     public transient Options options;
     public Dictionary tagDictionary;
@@ -51,6 +61,11 @@ public class DependencyPipe implements Serializable {
 	private Alphabet wordAlphabet;			// the alphabet of word features (e.g. \phi_h, \phi_m)
 	private Alphabet arcAlphabet;			// the alphabet of 1st order arc features (e.g. \phi_{h->m})
 	
+	// language specific info
+	public int ccDepType;
+	public HashSet<String> conjWord;
+	public HashMap<String, String> coarseMap;
+	
 	public DependencyPipe(Options options) throws IOException 
 	{
 		tagDictionary = new Dictionary();
@@ -63,6 +78,112 @@ public class DependencyPipe implements Serializable {
 		
 		numArcFeats = 0;
 		numWordFeats = 0;
+		
+		loadLanguageInfo();
+	}
+	
+	/***
+	 * load language specific information
+	 * ccDepType: coordination dependency type
+	 * conjWord: word considered as a conjunction
+	 * coarseMap: fine-to-coarse map 
+	 */
+	public void loadLanguageInfo() throws IOException {
+		// load coarse map
+		BufferedReader br = new BufferedReader(new FileReader(options.unimapFile));
+		coarseMap = new HashMap<String, String>();
+		String str = null;
+		while ((str = br.readLine()) != null) {
+			String[] data = str.split("\\s+");
+			coarseMap.put(data[0], data[1]);
+		}
+		br.close();
+		
+		// decide ccDepType
+		PossibleLang lang = options.lang;
+		if (lang == PossibleLang.Arabic || lang == PossibleLang.Slovene
+				|| lang == PossibleLang.Chinese || lang == PossibleLang.Czech
+				|| lang == PossibleLang.Dutch) {
+			ccDepType = 0;
+		} else if (lang == PossibleLang.Bulgarian || lang == PossibleLang.German
+				|| lang == PossibleLang.Portuguese || lang == PossibleLang.Spanish) {
+			ccDepType = 1;
+		} else if (lang == PossibleLang.Danish || lang == PossibleLang.English08) {
+			ccDepType = 2;
+		} else if (lang == PossibleLang.Japanese) {
+			ccDepType = 3;
+		} else if (lang == PossibleLang.Swedish) {
+			ccDepType = 4;
+		} else if (lang == PossibleLang.Turkish) {
+			ccDepType = 5;
+		} else {
+			ccDepType = 0;
+		}
+		
+		// fill conj word
+		switch (lang) {
+		case Turkish:
+			conjWord.add("ve");
+			conjWord.add("veya");
+			break;
+		case Arabic:
+			conjWord.add("w");
+			conjWord.add(">w");
+			conjWord.add(">n");
+			break;
+		case Bulgarian:
+			conjWord.add("и");
+			conjWord.add("или");
+			break;
+		case Chinese:
+			conjWord.add("和");
+			conjWord.add("或");
+			break;
+		case Czech:
+			conjWord.add("a");
+			conjWord.add("ale");
+			conjWord.add("i");
+			conjWord.add("nebo");
+			break;
+		case Danish:
+			conjWord.add("og");
+			conjWord.add("eller");
+			break;
+		case Dutch:
+			conjWord.add("en");
+			conjWord.add("of");
+			break;
+		case English08:
+			conjWord.add("and");
+			conjWord.add("or");
+			break;
+		case German:
+			conjWord.add("und");
+			conjWord.add("oder");
+			break;
+		case Japanese:
+			conjWord.add("ya");
+			break;
+		case Portuguese:
+			conjWord.add("e");
+			conjWord.add("ou");
+			break;
+		case Slovene:
+			conjWord.add("in");
+			conjWord.add("ali");
+			break;
+		case Spanish:
+			conjWord.add("y");
+			conjWord.add("e");
+			conjWord.add("o");
+			break;
+		case Swedish:
+			conjWord.add("och");
+			conjWord.add("eller");
+			break;
+		default:
+			break;
+		}
 	}
 	
 	/***
@@ -90,6 +211,9 @@ public class DependencyPipe implements Serializable {
 		wordDictionary.lookupIndex("#TOKEN_START#");
 		wordDictionary.lookupIndex("#TOKEN_MID#");
 		wordDictionary.lookupIndex("#TOKEN_END#");
+		wordDictionary.lookupIndex("\"");
+		wordDictionary.lookupIndex(")");
+		wordDictionary.lookupIndex("(");
 				
 		DependencyReader reader = DependencyReader.createDependencyReader(options);
 		reader.startReading(file);
@@ -97,7 +221,7 @@ public class DependencyPipe implements Serializable {
 		
 		int cnt = 0;
 		while (inst != null) {
-			inst.setInstIds(tagDictionary, wordDictionary, typeAlphabet, wordVecDictionary);			
+			inst.setInstIds(tagDictionary, wordDictionary, typeAlphabet, wordVecDictionary, coarseMap, conjWord, options.lang);			
 			inst = reader.nextInstance();
 			
 			++cnt;
@@ -138,7 +262,6 @@ public class DependencyPipe implements Serializable {
 		
 		HashSet<String> posTagSet = new HashSet<String>();
 		HashSet<String> cposTagSet = new HashSet<String>();
-		HashSet<String> mcposTagSet = new HashSet<String>();
 		DependencyReader reader = DependencyReader.createDependencyReader(options);
 		reader.startReading(file);
 		
@@ -152,7 +275,7 @@ public class DependencyPipe implements Serializable {
 				if (inst.cpostags != null) cposTagSet.add(inst.cpostags[i]);
 			}
 			
-			inst.setInstIds(tagDictionary, wordDictionary, typeAlphabet, wordVecDictionary);
+			inst.setInstIds(tagDictionary, wordDictionary, typeAlphabet, wordVecDictionary, coarseMap, conjWord, options.lang);
 			
 		    initFeatureAlphabets(inst);
 				
@@ -281,7 +404,7 @@ public class DependencyPipe implements Serializable {
 		int cnt = 0;
 		while(inst != null) {
 			
-			inst.setInstIds(tagDictionary, wordDictionary, typeAlphabet, wordVecDictionary);
+			inst.setInstIds(tagDictionary, wordDictionary, typeAlphabet, wordVecDictionary, coarseMap, conjWord, options.lang);
 			
 		    //createFeatures(inst);
 			lt.add(new DependencyInstance(inst));		    
@@ -313,7 +436,7 @@ public class DependencyPipe implements Serializable {
     	DependencyInstance inst = reader.nextInstance();
     	if (inst == null) return null;
     	
-    	inst.setInstIds(tagDictionary, wordDictionary, typeAlphabet, wordVecDictionary);
+    	inst.setInstIds(tagDictionary, wordDictionary, typeAlphabet, wordVecDictionary, coarseMap, conjWord, options.lang);
     			
 	    //createFeatures(inst);
 	    
@@ -810,7 +933,6 @@ public class DependencyPipe implements Serializable {
     {
     	
     	int[] pos = inst.postagids;
-        int[] posA = inst.cpostagids;
         int[] toks = inst.formids;
         int[][] feats = inst.featids;
         
@@ -1733,6 +1855,417 @@ public class DependencyPipe implements Serializable {
      *  Functions that create global feature vectors
      *  
      ************************************************************************/
+
+    public int findLeftNearestChild(DependencyArcList arclis, int pid, int id) {
+    	// find the pid's child which is left closest to id
+    	int ret = -1;
+    	int st = arclis.startIndex(pid);
+    	int en = arclis.endIndex(pid);
+    	
+    	for (int i = en - 1; i >= st; --i)
+    		if (arclis.get(i) < id) {
+    			ret = arclis.get(i);
+    			break;
+    		}
+    	return ret;
+    }
+
+    public int findRightNearestChild(DependencyArcList arclis, int pid, int id) {
+    	// find the pid's child which is right closest to id
+    	int ret = -1;
+    	int st = arclis.startIndex(pid);
+    	int en = arclis.endIndex(pid);
+
+    	for (int i = st; i < en; ++i)
+    		if (arclis.get(i) > id) {
+    			ret = arclis.get(i);
+    			break;
+    		}
+    	return ret;
+    }
+
+    public int[] findConjArg(DependencyArcList arclis, int[] deps, int arg) {
+    	// 0: head; 1:left; 2:right
+    	int head = -1;
+    	int left = -1;
+    	int right = -1;
+
+    	if (ccDepType == 0) {
+    		// head left arg right
+    		//   0   2    1    2
+    		right = findRightNearestChild(arclis, arg, arg);
+    		left = findLeftNearestChild(arclis, arg, arg);
+    		head = deps[arg];
+    	} else if (ccDepType == 1) {
+    		// head left arg right
+    		//   0   1    2    2
+    		if (deps[arg] < arg) {
+    			left = deps[arg];
+    			if (left != -1) {
+    				right = findRightNearestChild(arclis, left, arg);
+    				head = deps[left];
+    			}
+    		}
+    	} else if (ccDepType == 2) {
+    		// head left arg right
+    		//   0   1    2    3
+    		if (deps[arg] < arg) {
+    			left = deps[arg];
+    			if (left != -1)
+    				head = deps[left];
+    			right = findRightNearestChild(arclis, arg, arg);
+    		}
+    	} else if (ccDepType == 3) {
+    		// left arg right head
+    		//  3    3   4     0
+    		if (deps[arg] > arg && deps[deps[arg]] > deps[arg]) {
+    			right = deps[arg];
+    			left = findLeftNearestChild(arclis, right, arg);
+    			head = deps[right];
+    		}
+
+    	} else if (ccDepType == 4) {
+    		// head left arg right
+    		//  0    1    4    2
+    		if (deps[arg] > arg) {
+    			right = deps[arg];
+    			if (deps[right] < arg) {
+    				left = deps[right];
+    				if (left != -1) {
+    					head = deps[left];
+    				}
+    			}
+    		}
+    	} else if (ccDepType == 5) {
+    		// left arg right head
+    		//  2    3    4    0
+    		if (deps[arg] > arg) {
+    			right = deps[arg];
+    			left = findLeftNearestChild(arclis, arg, arg);
+    			if (right != -1)
+    				head = deps[right];
+    		}
+    	} else {
+    		Utils.Assert(false);
+    	}
+
+    	int[] ret = new int[3];
+    	ret[0] = head;
+    	ret[1] = left;
+    	ret[2] = right;
+    	return ret;
+    }
+
+    public int getMSTRightBranch(DependencyInstance s, DependencyArcList arclis, int id) {
+    	int node = 1;
+    	int st = arclis.startIndex(id);
+    	int en = arclis.endIndex(id);
+    	
+    	for (int i = en - 1; i >= st; --i) {
+    		//if (s.pos[s.child[id][i]].equals("PNX"))
+    		if (SpecialPos.PNX == s.specialPos[arclis.get(i)])
+    			continue;
+    		node += getMSTRightBranch(s, arclis, arclis.get(i));
+    		break;
+    	}
+    	return node;
+    }
+
+    public FeatureVector createFeatureVectorPP(DependencyInstance inst, int gp, int par, int c) {
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
+
+    	int[] posA = inst.cpostagids;
+    	int[] lemma = inst.lemmaids != null ? inst.lemmaids : inst.formids;
+
+    	int HC = posA[gp];
+    	int MC = posA[c];
+    	int HL = lemma[gp];
+    	int ML = lemma[c];
+    	int PL = lemma[par];
+
+    	long code = 0;
+
+    	code = createArcCodePP(PP_HC_MC, HC, MC);
+    	addArcFeature(code, fv);
+
+    	code = createArcCodeWP(PP_HL_MC, HL, MC);
+    	addArcFeature(code, fv);
+
+    	code = createArcCodeWP(PP_HC_ML, ML, HC);
+    	addArcFeature(code, fv);
+
+    	code = createArcCodeWW(PP_HL_ML, HL, ML);
+    	addArcFeature(code, fv);
+
+    	code = createArcCodeWPP(PP_PL_HC_MC, PL, HC, MC);
+    	addArcFeature(code, fv);
+
+    	code = createArcCodeWWP(PP_PL_HL_MC, PL, HL, MC);
+    	addArcFeature(code, fv);
+
+    	code = createArcCodeWWP(PP_PL_HC_ML, PL, ML, HC);
+    	addArcFeature(code, fv);
+
+    	//code = fe->genCodeWWW(HighOrder::PP_PL_HL_ML, HL, ML, PL);
+    	//addArcFeature(code, fv);
+    	
+    	return fv;
+    }
+
+    public FeatureVector createFeatureVectorCC1(DependencyInstance inst, int left, int arg, int right) {
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
+    	
+    	int[] pos = inst.postagids;
+    	int[] word = inst.formids;
+    	int[] posA = inst.cpostagids;
+    	int[][] feats = inst.featids;
+
+    	int CP = pos[arg];
+    	int CW = word[arg];
+    	int LP = pos[left];
+    	int RP = pos[right];
+    	int LC = posA[left];
+    	int RC = posA[right];
+
+    	long code = 0;
+
+    	code = createArcCodePPP(CC_CP_LP_RP, CP, LP, RP);
+    	addArcFeature(code, fv);
+
+    	code = createArcCodePPP(CC_CP_LC_RC, CP, LC, RC);
+    	addArcFeature(code, fv);
+
+    	code = createArcCodeWPP(CC_CW_LP_RP, CW, LP, RP);
+    	addArcFeature(code, fv);
+
+    	code = createArcCodeWPP(CC_CW_LC_RC, CW, LC, RC);
+    	addArcFeature(code, fv);
+    	
+    	if (feats[left] != null && feats[right] != null) {
+        	for (int i = 0; i < feats[left].length; ++i) {
+        		if (feats[left][i] <= 0)
+        			continue;
+        		for (int j = 0; j < feats[right].length; ++j) {
+        			if (feats[right][j] <= 0)
+        				continue;
+        			if (feats[left][i] == feats[right][j]) {
+        				code = createArcCodePPP(CC_LC_RC_FID, feats[left][i], LC, RC);
+        				addArcFeature(code, fv);
+        				break;
+        			}
+        		}
+        	}
+    	}
+    	
+    	return fv;
+    }
+
+    public FeatureVector createFeatureVectorCC2(DependencyInstance inst, int arg, int head, int child) {
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
+
+    	int[] pos = inst.postagids;
+    	int[] word = inst.formids;
+    	int[] posA = inst.cpostagids;
+    	int[] lemma = inst.lemmaids != null ? inst.lemmaids : inst.formids;
+    	int[][] feats = inst.featids;
+
+    	int CP = pos[arg];
+    	int CW = word[arg];
+    	int HC = posA[head];
+    	int HL = lemma[head];
+    	int AC = posA[child];
+    	int AL = lemma[child];
+
+    	long code = 0;
+
+    	code = createArcCodePPP(CC_CP_HC_AC, CP, HC, AC);
+    	addArcFeature(code, fv);
+
+    	code = createArcCodeWWP(CC_CP_HL_AL, HL, AL, CP);
+    	addArcFeature(code, fv);
+
+    	code = createArcCodeWPP(CC_CW_HC_AC, CW, HC, AC);
+    	addArcFeature(code, fv);
+
+    	//code = fe->genCodeWWW(HighOrder::CC_CW_HL_AL, CW, HL, AL);
+    	//addArcFeature(code, fv);
+
+    	code = createArcCodePP(HP_MP, pos[head], pos[child]);
+    	addArcFeature(code, fv);
+
+    	code = createArcCodePP(HP_MP, posA[head], posA[child]);
+    	addArcFeature(code, fv);
+
+    	code = createArcCodeWP(HW_MP, lemma[head], pos[child]);
+    	addArcFeature(code, fv);
+
+    	code = createArcCodeWP(MW_HP, lemma[child], pos[head]);
+    	addArcFeature(code, fv);
+
+    	code = createArcCodeWW(HW_MW, lemma[head], lemma[child]);
+    	addArcFeature(code, fv);
+
+    	if (feats[head] != null && feats[child] != null) {
+    		for (int fh = 0; fh < feats[head].length; ++fh) {
+    			if (feats[head][fh] <= 0)
+    				continue;
+    			for (int fc = 0; fc < feats[child].length; ++fc) {
+    				if (feats[child][fc] <= 0)
+    					continue;
+
+    				int IDH = feats[head][fh];
+    				int IDM = feats[child][fc];
+
+    				code = createArcCodePP(HP_MP, IDH, IDM);
+    				addArcFeature(code, fv);
+    			}
+    		}
+    	}
+    	
+    	return fv;
+    }
+
+    public FeatureVector createFeatureVectorPNX(DependencyInstance inst, int head, int arg, int pair) {
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
+    	
+    	int[] pos = inst.postagids;
+    	int[] word = inst.formids;
+
+    	int flag = (head - arg) * (head - pair) < 0 ? 0 : 1;
+    	flag = (flag + 1);
+
+    	long code = 0;
+
+    	code = createArcCodeW(PNX_MW, word[arg]);
+    	addArcFeature(code | flag, fv);
+
+    	code = createArcCodeWP(PNX_HP_MW, pos[head], word[arg]);
+    	addArcFeature(code | flag, fv);
+    	
+    	return fv;
+    }
+
+    public FeatureVector createChildNumFeatureVector(DependencyInstance s, int id, int leftNum, int rightNum) {
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
+    	
+    	int childNum = Math.min(GlobalFeatureData.MAX_CHILD_NUM, leftNum + rightNum);
+    	int HP = s.postagids[id];
+    	long code = 0;
+
+    	code = createArcCodePP(CN_HP_NUM, HP, childNum);
+    	addArcFeature(code, fv);
+
+    	code = createArcCodePPP(CN_HP_LNUM_RNUM, HP, leftNum, rightNum);
+    	addArcFeature(code, fv);
+    	
+    	return fv;
+    }
+
+    public FeatureVector createSpanFeatureVector(DependencyInstance s, int id, int end, int punc, int bin) {
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
+    	
+    	int HP = s.postagids[id];
+    	int HC = s.cpostagids[id];
+    	int epFlag = (end << 1) | punc;
+
+    	long code = 0;
+
+    	code = createArcCodePPP(HV_HP, HP, epFlag, bin);
+    	addArcFeature(code, fv);
+
+    	code = createArcCodePPP(HV_HC, HC, epFlag, bin);
+    	addArcFeature(code, fv);
+    	
+    	return fv;
+    }
+
+    public FeatureVector createNeighborFeatureVector(DependencyInstance s, int par, int id, int left, int right) {
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
+    	
+    	int HP = s.postagids[id];
+    	int HC = s.cpostagids[id];
+    	int HL = s.lemmaids[id];
+    	int GC = s.cpostagids[par];
+    	int GL = s.lemmaids[par];
+
+    	long code = 0;
+
+    	code = createArcCodePPP(NB_HP_LC_RC, HP, left, right);
+    	addArcFeature(code, fv);
+
+    	code = createArcCodePPP(NB_HC_LC_RC, HC, left, right);
+    	addArcFeature(code, fv);
+
+    	code = createArcCodeWPP(NB_HL_LC_RC, HL, left, right);
+    	addArcFeature(code, fv);
+
+    	code = createArcCodePPPP(NB_GC_HC_LC_RC, GC, HC, left, right);
+    	addArcFeature(code, fv);
+
+    	code = createArcCodeWPPP(NB_GC_HL_LC_RC, HL, GC, left, right);
+    	addArcFeature(code, fv);
+
+    	code = createArcCodeWPPP(NB_GL_HC_LC_RC, GL, HC, left, right);
+    	addArcFeature(code, fv);
+    	
+    	return fv;
+    }
+
+    int findPuncCounterpart(int[] word, int arg) {
+    	int quoteID = TOKEN_QUOTE;
+    	int lrbID = TOKEN_LRB;
+    	int rrbID = TOKEN_RRB;
+    	if (word[arg] == quoteID) {
+    		boolean left = false;
+    		int prev = -1;
+    		int curr = -1;
+    		for (int i = 1; i < word.length; ++i) {
+    			if (word[i] == quoteID) {
+    				left = !left;
+    				prev = curr;
+    				curr = i;
+    			}
+    			if (i == arg) {
+    				break;
+    			}
+    		}
+    		if (left) {
+    			// left quote
+    			curr = -1;
+    			for (int i = arg + 1; i < word.length; ++i) {
+    				if (word[i] == quoteID) {
+    					curr = i;
+    					break;
+    				}
+    			}
+    		} else {
+    			// right quote
+    			curr = prev;
+    		}
+    		return curr;
+    	} else if (word[arg] == lrbID) {
+    		// left bracket
+    		int curr = -1;
+    		for (int i = arg + 1; i < word.length; ++i) {
+    			if (word[i] == rrbID) {
+    				curr = i;
+    				break;
+    			}
+    		}
+    		return curr;
+    	} else if (word[arg] == rrbID) {
+    		int curr = -1;
+    		for (int i = arg - 1; i >= 0; --i) {
+    			if (word[i] == lrbID) {
+    				curr = i;
+    				break;
+    			}
+    		}
+    		return curr;
+    	}
+
+    	return -1;
+    }
 
     /************************************************************************
      *  Region end #

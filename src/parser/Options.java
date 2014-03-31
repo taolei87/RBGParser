@@ -16,8 +16,31 @@ public class Options implements Cloneable, Serializable {
 		Full			// full model with global features
 	}
 	
+	public enum PossibleLang {
+		Arabic,
+		Bulgarian,
+		Chinese,
+		Czech,
+		Danish,
+		Dutch,
+		English08,
+		German,
+		Japanese,
+		Portuguese,
+		Slovene,
+		Spanish,
+		Swedish,
+		Turkish,
+		Unknown,
+	}
+	
+	final static String langString[] = {"arabic", "bulgarian", "chinese", "czech", "danish", "dutch",
+			"english08", "german", "japanese", "portuguese", "slovene", "spanish",
+			"swedish", "turkish"};
+	
 	public String trainFile = null;
 	public String testFile = null;
+	public String unimapFile = null;
 	public String outFile = null;
 	public boolean train = false;
 	public boolean test = false;	
@@ -37,7 +60,7 @@ public class Options implements Cloneable, Serializable {
 	public boolean projective = false;
 	public boolean learnLabel = true;
 	public boolean pruning = true;
-	public double pruningCoeff = 0.1;
+	public double pruningCoeff = 0.05;
 	
 	public int numHcThreads = 10;		// hill climbing: number of threads
 	public int numHcConverge = 300;		// hill climbing: number of restarts to converge 
@@ -56,6 +79,9 @@ public class Options implements Cloneable, Serializable {
 	public boolean useGGP = true;		// use great-grandparent
 	public boolean usePSC = true;		// use parent-sibling-child
 	public boolean useHO = true;
+	
+	// language specific info
+	PossibleLang lang;
     
 	public Options() {
 		
@@ -77,7 +103,7 @@ public class Options implements Cloneable, Serializable {
     			test = true;
     		}
     		else if (arg.equals("label")) {
-    			learnLabel = Boolean.parseBoolean(arg.split(":")[1]);
+    			learnLabel = true;
     		}
             else if (arg.equals("non-proj")) {
                 projective = false;
@@ -90,6 +116,9 @@ public class Options implements Cloneable, Serializable {
     		}
     		else if (arg.startsWith("test-file:")) {
     			testFile = arg.split(":")[1];
+    		}
+    		else if (arg.startsWith("unimap-file:")) {
+    			unimapFile = arg.split(":")[1];
     		}
     		else if (arg.startsWith("output-file:")) {
     			outFile = arg.split(":")[1];
@@ -151,6 +180,8 @@ public class Options implements Cloneable, Serializable {
     		default:
     			break;
     	}
+    	
+    	lang = findLang(trainFile != null ? trainFile : testFile);
     }
     
     public void printOptions() {
@@ -180,6 +211,15 @@ public class Options implements Cloneable, Serializable {
         System.out.println("use high-order: " + useHO);
 
     	System.out.println("------\n");
+    }
+    
+    PossibleLang findLang(String file) {
+    	for (PossibleLang lang : PossibleLang.values())
+    		if (file.indexOf(langString[lang.ordinal()]) != -1) {
+    			return lang;
+    		}
+    	System.out.println("Warning: unknow language");
+    	return PossibleLang.Unknown;
     }
     
 }

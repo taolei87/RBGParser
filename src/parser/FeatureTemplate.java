@@ -237,6 +237,65 @@ public class FeatureTemplate {
 		PL_NC,
 		PC_NL,
 
+		// pp attachment
+		PP_HC_MC,
+		PP_HL_MC,
+		PP_HC_ML,
+		PP_HL_ML,
+
+		PP_PL_HC_MC,
+		PP_PL_HL_MC,
+		PP_PL_HC_ML,
+		PP_PL_HL_ML,
+
+		// conjunction
+		CC_CP_LP_RP,
+		CC_CP_LC_RC,
+		CC_CW_LP_RP,
+		CC_CW_LC_RC,
+
+		CC_LC_RC_FID,
+
+		CC_CP_HC_AC,
+		CC_CP_HL_AL,
+		CC_CW_HC_AC,
+		CC_CW_HL_AL,
+
+		// PNX
+		PNX_MW,
+		PNX_HP_MW,
+
+		// right branch
+		RB,
+
+		// child num
+		CN_HP_NUM,
+		CN_HP_LNUM_RNUM,
+		CN_STR,
+
+		// heavy
+		HV_HP,
+		HV_HC,
+
+		// neighbor
+		NB_HP_LC_RC,
+		NB_HC_LC_RC,
+		NB_HL_LC_RC,
+		NB_GC_HC_LC_RC,
+		NB_GC_HL_LC_RC,
+		NB_GL_HC_LC_RC,
+
+		// non-proj
+		NP,
+		NP_MC,
+		NP_HC,
+		NP_HL,
+		NP_ML,
+		NP_HC_MC,
+		NP_HL_MC,
+		NP_HC_ML,
+		NP_HL_ML,
+
 		/*************************************************
 		 * word embedding feature  
 		 * ***********************************************/

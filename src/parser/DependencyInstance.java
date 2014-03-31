@@ -7,11 +7,17 @@ import java.io.Serializable;
 import java.util.*;
 import java.io.*;
 
+import parser.Options.PossibleLang;
+
 import utils.Alphabet;
 import utils.Dictionary;
 
 public class DependencyInstance implements Serializable {
 	
+	public enum SpecialPos {
+		C, P, PNX, V, AJ, N, OTHER,
+	}
+
 	private static final long serialVersionUID = 1L;
 	
 	public int length;
@@ -29,7 +35,7 @@ public class DependencyInstance implements Serializable {
 	public String[] postags;
 	
 	// MOST-COARSE-POS: the coarsest part-of-speech tags (about 11 in total)
-	//public String[] mcpostags;
+	public SpecialPos[] specialPos;
 	
 	// FEATURES: some features associated with the elements separated by "|", e.g. "PAST|3P"
 	public String[][] feats;
@@ -83,7 +89,7 @@ public class DependencyInstance implements Serializable {
     
     public DependencyInstance(DependencyInstance a) {
     	//this(a.forms, a.lemmas, a.cpostags, a.postags, a.feats, a.heads, a.deprels);
-    	//mcpostags = a.mcpostags;
+    	specialPos = a.specialPos;
     	length = a.length;
     	heads = a.heads;
     	formids = a.formids;
@@ -101,7 +107,8 @@ public class DependencyInstance implements Serializable {
     //}
     
     public void setInstIds(Dictionary tagDict, Dictionary wordDict, 
-    		Alphabet typeAlphabet, Dictionary wordVecDict) {
+    		Alphabet typeAlphabet, Dictionary wordVecDict, 
+    		HashMap<String, String> coarseMap, HashSet<String> conjWord, PossibleLang lang) {
     	    	
     	formids = new int[length];    	
 		deprelids = new int[length];
@@ -138,6 +145,28 @@ public class DependencyInstance implements Serializable {
 				if (wvid > 0) wordVecIds[i] = wvid; else wordVecIds[i] = -1; 
 			}
 		}
+		
+		// set special pos
+		specialPos = new SpecialPos[length];
+		for (int i = 0; i < length; ++i) {
+			if (coarseMap.containsKey(postags[i])) {
+				String cpos = coarseMap.get(postags[i]);
+				if ((cpos.equals("CONJ")
+						|| PossibleLang.Japanese == lang) && conjWord.contains(forms[i]))
+					specialPos[i] = SpecialPos.C;
+				else if (cpos.equals("ADP"))
+					specialPos[i] = SpecialPos.P;
+				else if (cpos.equals("."))
+					specialPos[i] = SpecialPos.PNX;
+				else if (cpos.equals("VERB"))
+					specialPos[i] = SpecialPos.V;
+				else
+					specialPos[i] = SpecialPos.OTHER;
+			}
+			else {
+				System.out.println("Can't find coarse map: " + postags[i]);
+				coarseMap.put(postags[i], "X");
+			}
+		}
     }
-    
 }
