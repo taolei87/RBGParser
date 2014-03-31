@@ -40,7 +40,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		tasks = new HillClimbingTask[options.numHcThreads];
 		for (int i = 0; i < tasks.length; ++i) {
 			tasks[i] = new HillClimbingTask();
-			tasks[i].sampler = new RandomWalkSampler(i + 10, options);
+			tasks[i].sampler = new RandomWalkSampler(i, options);
 		}
 	}
    
