@@ -53,6 +53,9 @@ public class Options implements Cloneable, Serializable {
 	public boolean useHB = true;		// use head bigram
 	public boolean useGS = true;		// use grand sibling
 	public boolean useTS = true;		// use tri-sibling
+	public boolean useGGP = true;		// use great-grandparent
+	public boolean usePSC = true;		// use parent-sibling-child
+	public boolean useHO = true;
     
 	public Options() {
 		
@@ -132,10 +135,16 @@ public class Options implements Cloneable, Serializable {
     			useHB = false;
     			useGS = false;
     			useTS = false;
+    			useGGP = false;
+    			usePSC = false;
+    			useHO = false;
     			break;
     		case Standard:
     			useGS = false;
     			useTS = false;
+    			useGGP = false;
+    			usePSC = false;
+    			useHO = false;
     			break;
     		case Full:
     			break;
@@ -168,6 +177,7 @@ public class Options implements Cloneable, Serializable {
         System.out.println("use head bigram: " + useHB);
         System.out.println("use grand siblings: " + useGS);
         System.out.println("use tri-siblings: " + useTS);
+        System.out.println("use high-order: " + useHO);
 
     	System.out.println("------\n");
     }
