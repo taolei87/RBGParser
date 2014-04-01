@@ -147,26 +147,26 @@ public class DependencyInstance implements Serializable {
 		}
 		
 		// set special pos
-		specialPos = new SpecialPos[length];
-		for (int i = 0; i < length; ++i) {
-			if (coarseMap.containsKey(postags[i])) {
-				String cpos = coarseMap.get(postags[i]);
-				if ((cpos.equals("CONJ")
-						|| PossibleLang.Japanese == lang) && conjWord.contains(forms[i]))
-					specialPos[i] = SpecialPos.C;
-				else if (cpos.equals("ADP"))
-					specialPos[i] = SpecialPos.P;
-				else if (cpos.equals("."))
-					specialPos[i] = SpecialPos.PNX;
-				else if (cpos.equals("VERB"))
-					specialPos[i] = SpecialPos.V;
-				else
-					specialPos[i] = SpecialPos.OTHER;
-			}
-			else {
-				System.out.println("Can't find coarse map: " + postags[i]);
-				coarseMap.put(postags[i], "X");
-			}
-		}
+//		specialPos = new SpecialPos[length];
+//		for (int i = 0; i < length; ++i) {
+//			if (coarseMap.containsKey(postags[i])) {
+//				String cpos = coarseMap.get(postags[i]);
+//				if ((cpos.equals("CONJ")
+//						|| PossibleLang.Japanese == lang) && conjWord.contains(forms[i]))
+//					specialPos[i] = SpecialPos.C;
+//				else if (cpos.equals("ADP"))
+//					specialPos[i] = SpecialPos.P;
+//				else if (cpos.equals("."))
+//					specialPos[i] = SpecialPos.PNX;
+//				else if (cpos.equals("VERB"))
+//					specialPos[i] = SpecialPos.V;
+//				else
+//					specialPos[i] = SpecialPos.OTHER;
+//			}
+//			else {
+//				System.out.println("Can't find coarse map: " + postags[i]);
+//				coarseMap.put(postags[i], "X");
+//			}
+//		}
     }
 }

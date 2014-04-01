@@ -81,8 +81,8 @@ public class LowRankParam implements Comparator<Integer> {
 			double invSqrtW = 0;
 			
 			for (int j = 0; j < N; ++j)
-				params.U[i][j] = Ut[i*N+j] + rnd.nextGaussian() * invSqrtU;
-			Utils.normalize(params.U[i]);
+				params.U[i][j] = (Ut[i*N+j] + rnd.nextGaussian() * invSqrtU);//*1.527525;
+			//Utils.normalize(params.U[i]);
 			
 			double[] A2 = new double[nCols];
 			for (int j = 0; j < nCols; ++j)
@@ -98,15 +98,20 @@ public class LowRankParam implements Comparator<Integer> {
 			//params.V[i] = Ut2;
 			//params.W[i] = Vt2;
 			for (int j = 0; j < M; ++j)
-				params.V[i][j] = Ut2[j] + invSqrtV * rnd.nextGaussian();
-			Utils.normalize(params.V[i]);
+				params.V[i][j] = (Ut2[j] + invSqrtV * rnd.nextGaussian());//*1.527525;
+			//Utils.normalize(params.V[i]);
 			
 			for (int j = 0; j < D; ++j)
-				params.W[i][j] = Vt2[j] + invSqrtW * rnd.nextGaussian();
-			Utils.normalize(params.W[i]);
-			
+				params.W[i][j] = (Vt2[j] + invSqrtW * rnd.nextGaussian());//*1.527525;
+			//Utils.normalize(params.W[i]);
+		    
+            double coeff = Math.pow(S[i]*S2[0], 1.0/3);
+            for (int j = 0; j < N; ++j)
+                params.U[i][j] *= coeff;
+            for (int j = 0; j < M; ++j)
+                params.V[i][j] *= coeff;
 			for (int j = 0; j < D; ++j)
-				params.W[i][j] *= S[i] * S2[0];
+				params.W[i][j] *= coeff;//S[i] * S2[0];
 		}
 		
 		for (int i = 0; i < maxRank; ++i) {
