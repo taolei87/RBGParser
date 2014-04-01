@@ -237,6 +237,38 @@ public class FeatureTemplate {
 		PL_NC,
 		PC_NL,
 
+		// ggpc
+		GGC_GC_HC_MC,
+		GGL_GC_HC_MC,
+		GGC_GL_HC_MC,
+		GGC_GC_HL_MC,
+		GGC_GC_HC_ML,
+
+		GGC_HC_MC,
+		GGL_HC_MC,
+		GGC_HL_MC,
+		GGC_HC_ML,
+		GGC_GC_MC,
+		GGL_GC_MC,
+		GGC_GL_MC,
+		GGC_GC_ML,
+		GGC_MC,
+		GGL_MC,
+		GGC_ML,
+		GGL_ML,
+
+		// psc
+		HC_MC_CC_SC,
+		HL_MC_CC_SC,
+		HC_ML_CC_SC,
+		HC_MC_CL_SC,
+		HC_MC_CC_SL,
+
+		HC_CC_SC,
+		HL_CC_SC,
+		HC_CL_SC,
+		HC_CC_SL,
+
 		// pp attachment
 		PP_HC_MC,
 		PP_HL_MC,
@@ -270,6 +302,7 @@ public class FeatureTemplate {
 
 		// child num
 		CN_HP_NUM,
+		CN_HL_NUM,
 		CN_HP_LNUM_RNUM,
 		CN_STR,
 
