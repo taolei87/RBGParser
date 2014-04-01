@@ -223,6 +223,8 @@ public class DependencyParser implements Serializable {
     	
     	for (int iIter = 0; iIter < options.maxNumIters; ++iIter) {
     	    
+    		if (pruner != null) pruner.resetPruningStats();
+    		
             // use this offset to change the udpate ordering of U, V and W
             // when N is a multiple of 3, such that U, V and W get updated
             // on each sentence.
