@@ -11,17 +11,15 @@ import parser.LowRankParam;
 import parser.Options;
 import parser.Parameters;
 import parser.Options.LearningMode;
+import utils.FeatureVector;
 
 public class BasicArcPruner extends DependencyParser {
 	
-	Options options;
-	DependencyPipe pipe;
-	Parameters parameters;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	
-	double pruningGoldHits = 0;
-	double pruningTotGold = 1e-30;
-	double pruningTotUparcs = 0;
-	double pruningTotArcs = 1e-30;
 	
 	@Override
 	public void train(DependencyInstance[] lstTrain) 
@@ -49,8 +47,9 @@ public class BasicArcPruner extends DependencyParser {
 	public void trainIter(DependencyInstance[] lstTrain) throws IOException
 	{
 		int N = lstTrain.length;
+		int updCnt = 0;
     	
-    	for (int iIter = 0; iIter < options.maxNumIters; ++iIter) {
+		for (int iIter = 0; iIter < options.maxNumIters; ++iIter) {
 			
 			long start = 0;
 			double loss = 0;
@@ -65,10 +64,43 @@ public class BasicArcPruner extends DependencyParser {
     		    
     		    for (int m = 1; m < n; ++m) {
     		    	
+    		    	int goldhead = inst.heads[m];
+    		    	FeatureVector goldfv = lfd.getArcFeatureVector(goldhead, m);
+    		    	double goldscore = parameters.dotProduct(goldfv);
+    		    	
+    		    	int predhead = -1;
+    		    	FeatureVector predfv = null;
+    		    	double best = Double.NEGATIVE_INFINITY;
+    		    	
+    		    	for (int h = 0; h < n; ++h)
+    		    		if (h != m) {
+    		    			FeatureVector fv = lfd.getArcFeatureVector(h, m);
+    		    			double va = parameters.dotProduct(fv)
+    		    					+ (h != goldhead ? 1.0 : 0.0);
+    		    			if (va > best) {
+    		    				best = va;
+    		    				predhead = h;
+    		    				predfv = fv;
+    		    			}
+    		    		}
+    		    	
+    		    	if (goldhead != predhead) {
+    		    		++updCnt;
+    		    		loss += best - goldscore;
+    		    		parameters.updateTheta(goldfv, predfv, best - goldscore, updCnt);
+    		    	} else ++uas;
+    		    	++tot;
     		    }
 			}
+			
+    		System.out.printf("%n  Iter %d\tloss=%.4f\tuas=%.4f\t[%ds]%n", iIter+1,
+    				loss, uas/(tot+0.0),
+    				(System.currentTimeMillis() - start)/1000);
     		
     	}
+    	
+		if (options.average)
+			parameters.averageParameters(updCnt);
 
 	}
 	 	

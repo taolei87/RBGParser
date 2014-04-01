@@ -14,6 +14,7 @@ import java.util.zip.GZIPOutputStream;
 import parser.Options.LearningMode;
 import parser.decoding.DependencyDecoder;
 import parser.io.DependencyReader;
+import parser.pruning.BasicArcPruner;
 import parser.sampling.RandomWalkSampler;
 
 public class DependencyParser implements Serializable {
@@ -24,9 +25,9 @@ public class DependencyParser implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	
-	Options options;
-	DependencyPipe pipe;
-	Parameters parameters;
+	protected Options options;
+	protected DependencyPipe pipe;
+	protected Parameters parameters;
 	
 	DependencyParser pruner;
 	
@@ -55,7 +56,8 @@ public class DependencyParser implements Serializable {
 			prunerOptions.learnLabel = false;
 			prunerOptions.gamma = 1.0;
 			
-			pruner = new DependencyParser();
+			//pruner = new DependencyParser();
+			pruner = new BasicArcPruner();
 			pruner.options = prunerOptions;
 			
 			DependencyPipe pipe = new DependencyPipe(prunerOptions);
@@ -122,7 +124,8 @@ public class DependencyParser implements Serializable {
         pipe = (DependencyPipe) in.readObject();
         parameters = (Parameters) in.readObject();
         if (options.pruning && options.learningMode != LearningMode.Basic)
-        	pruner = (DependencyParser) in.readObject();
+        	//pruner = (DependencyParser) in.readObject();
+        	pruner = (BasicArcPruner) in.readObject();
         pipe.options = options;
         parameters.options = options;        
         in.close();

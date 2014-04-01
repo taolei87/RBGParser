@@ -501,6 +501,11 @@ public class LocalFeatureData {
 		return score;
 	}
 	
+	public FeatureVector getArcFeatureVector(int h, int m)
+	{
+		return arcFvs[h*len+m];
+	}
+	
 	public FeatureVector getFeatureVector(DependencyInstance now)
 	{
 		FeatureVector fv = new FeatureVector(size);

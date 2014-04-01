@@ -79,7 +79,7 @@ public class DependencyPipe implements Serializable {
 		numArcFeats = 0;
 		numWordFeats = 0;
 		
-		loadLanguageInfo();
+		//loadLanguageInfo();
 	}
 	
 	/***

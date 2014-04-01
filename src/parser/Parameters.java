@@ -312,6 +312,28 @@ public class Parameters implements Serializable {
         return loss;
 	}
 	
+	public void updateTheta(FeatureVector gold, FeatureVector pred, double loss,
+			int updCnt) 
+	{
+		FeatureVector fv = new FeatureVector(size);
+		fv.addEntries(gold);
+		fv.addEntries(pred, -1.0);
+		
+		double l2norm = fv.Squaredl2NormUnsafe();
+		double alpha = loss/l2norm;
+	    alpha = Math.min(C, alpha);
+	    if (alpha > 0) {
+			// update theta
+    		double coeff = alpha, coeff2 = coeff * updCnt;
+    		for (int i = 0, K = fv.size(); i < K; ++i) {
+	    		int x = fv.x(i);
+	    		double z = fv.value(i);
+	    		params[x] += coeff * z;
+	    		total[x] += coeff2 * z;
+    		}
+	    }
+	}
+	
     private FeatureVector getdU(int k, LocalFeatureData lfd, int[] actDeps, int[] predDeps) 
     {
     	double[][] wpV = lfd.wpV;
