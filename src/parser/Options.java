@@ -102,13 +102,13 @@ public class Options implements Cloneable, Serializable {
     		else if (arg.equals("test")) {
     			test = true;
     		}
-    		else if (arg.equals("label")) {
+    		else if (arg.startsWith("label")) {
     			learnLabel = Boolean.parseBoolean(arg.split(":")[1]);;
     		}
             else if (arg.equals("non-proj")) {
                 projective = false;
             }
-            else if (arg.equals("average:")) {
+            else if (arg.startsWith("average:")) {
             	average = Boolean.parseBoolean(arg.split(":")[1]);
             }
     		else if (arg.startsWith("train-file:")) {
