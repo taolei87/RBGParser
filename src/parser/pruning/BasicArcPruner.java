@@ -28,7 +28,7 @@ public class BasicArcPruner extends DependencyParser {
     	long start = 0, end = 0;
     	        
 		System.out.println("=============================================");
-		System.out.printf(" Training:%n");
+		System.out.printf(" Training Pruner:%n");
 		System.out.println("=============================================");
 		
 		start = System.currentTimeMillis();
@@ -93,7 +93,7 @@ public class BasicArcPruner extends DependencyParser {
     		    }
 			}
 			
-    		System.out.printf("%n  Iter %d\tloss=%.4f\tuas=%.4f\t[%ds]%n", iIter+1,
+    		System.out.printf("  Iter %d\tloss=%.4f\tuas=%.4f\t[%ds]%n", iIter+1,
     				loss, uas/(tot+0.0),
     				(System.currentTimeMillis() - start)/1000);
     		

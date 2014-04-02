@@ -32,9 +32,6 @@ public class HillClimbingDecoder extends DependencyDecoder {
 	
 	public HillClimbingDecoder(Options options) {
 		this.options = options;
-		totalLoopCount = 0;
-		totalClimbTime = 0;
-		totalClimbAndSampleTime = 0;
         executorService = Executors.newFixedThreadPool(options.numHcThreads);
 		decodingService = new ExecutorCompletionService<Object>(executorService);
 		tasks = new HillClimbingTask[options.numHcThreads];
@@ -80,11 +77,6 @@ public class HillClimbingDecoder extends DependencyDecoder {
 			}
 		}
 		
-		for (int i = 0; i < tasks.length; ++i) {
-			totalLoopCount += tasks[i].sampler.loopCount / (totRuns + 0.0);
-			totalClimbTime += tasks[i].climbTime;
-			totalClimbAndSampleTime += tasks[i].climbAndSampleTime;
-		}
 		
 //		HillClimbingThread[] lstThreads = new HillClimbingThread[options.numHcThreads];
 //		for (int i = 0; i < lstThreads.length; ++i) {
@@ -110,8 +102,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		
 		RandomWalkSampler sampler;
 		int converge;
-		
-		long climbTime, climbAndSampleTime;
+	
 		int n, size;
 		int[] dfslis;
 		DependencyArcList arcLis;
@@ -129,18 +120,12 @@ public class HillClimbingDecoder extends DependencyDecoder {
 				arcLis = new DependencyArcList(n);
 			else
 				arcLis.resize(n);
-            
-			climbTime = 0;
-			climbAndSampleTime = 0;
 			
 			while (!stopped) {
-				
-				long startClimbAndSample = System.currentTimeMillis();
 
 				DependencyInstance now = sampler.randomWalkSampling(
 						inst, lfd, staticTypes, addLoss);
 				
-				long startClimb = System.currentTimeMillis();
 				// hill climb
 				int[] heads = now.heads;
 				int[] deplbids = now.deplbids;
@@ -180,10 +165,6 @@ public class HillClimbingDecoder extends DependencyDecoder {
                     //    System.out.println(cnt);
                     //}
 				}
-				
-				long end = System.currentTimeMillis();
-				climbTime += end - startClimb;
-				climbAndSampleTime += end - startClimbAndSample;
 				
 				if (options.learnLabel) {
 					for (int m = 1; m < n; ++m)
