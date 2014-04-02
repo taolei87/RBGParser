@@ -11,18 +11,11 @@ public class DependencyArcList {
 	public DependencyArcList(int n)
 	{
 		this.n = n;
-		this.st = new int[n];
-		this.edges = new int[n];
-	}
-	
-	public DependencyArcList(int[] heads, int[] st, int[] edges)
-	{
-		n = heads.length;
-		this.st = st;
-		this.edges = edges;
-		constructDepTreeArcList(heads);
-		constructSpan();
-		constructNonproj(heads);
+		st = new int[n];
+		edges = new int[n];
+        left = new int[n];
+        right = new int[n];
+        nonproj = new int[n];
 	}
 	
 	public DependencyArcList(int[] heads)
@@ -43,6 +36,9 @@ public class DependencyArcList {
 		if (n > st.length) {
 			st = new int[n];
 			edges = new int[n];
+            left = new int[n];
+            right = new int[n];
+            nonproj = new int[n];
 		}
 		this.n = n;
 	}

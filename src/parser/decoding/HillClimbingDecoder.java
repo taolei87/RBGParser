@@ -215,7 +215,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
                     + (addLoss && options.learnLabel && staticTypes[heads[m]][m]
                         != inst.deplbids[m] ? 1 : 0)
 					+ lfd.getPartialScore(heads, m)
-					+ gfd.getScore(inst);
+					;//+ gfd.getScore(inst);
 		}
 		
 		private double calcScore(DependencyInstance now) 
@@ -233,7 +233,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
                             1 : 0);
 			 
 			score += lfd.getScore(now);
-			score += gfd.getScore(now);	
+			//score += gfd.getScore(now);	
 			return score;
 		}
 		

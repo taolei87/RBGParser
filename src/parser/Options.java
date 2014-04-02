@@ -56,7 +56,7 @@ public class Options implements Cloneable, Serializable {
 	public boolean initTensorWithPretrain = true;
 	
 	//public LearningMode learningMode = LearningMode.Basic;
-	public LearningMode learningMode = LearningMode.Full;
+	public LearningMode learningMode = LearningMode.Standard;
 	public boolean projective = false;
 	public boolean learnLabel = true;
 	public boolean pruning = true;
@@ -76,9 +76,9 @@ public class Options implements Cloneable, Serializable {
 	public boolean useHB = true;		// use head bigram
 	public boolean useGS = true;		// use grand sibling
 	public boolean useTS = true;		// use tri-sibling
-	public boolean useGGP = true;		// use great-grandparent
-	public boolean usePSC = true;		// use parent-sibling-child
-	public boolean useHO = true;
+	public boolean useGGP = false;		// use great-grandparent
+	public boolean usePSC = false;		// use parent-sibling-child
+	public boolean useHO = false;
 	
 	// language specific info
 	PossibleLang lang;
