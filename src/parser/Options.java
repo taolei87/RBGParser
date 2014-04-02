@@ -208,6 +208,8 @@ public class Options implements Cloneable, Serializable {
         System.out.println("use head bigram: " + useHB);
         System.out.println("use grand siblings: " + useGS);
         System.out.println("use tri-siblings: " + useTS);
+        System.out.println("use great-grandparent: " + useGGP);
+        System.out.println("use parent-sibling-child: " + usePSC);
         System.out.println("use high-order: " + useHO);
 
     	System.out.println("------\n");

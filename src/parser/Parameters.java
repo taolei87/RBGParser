@@ -208,7 +208,7 @@ public class Parameters implements Serializable {
     	double Fi = getHammingDis(actDeps, actLabs, predDeps, predLabs);
     	
     	FeatureVector dt = lfd.getFeatureDifference(gold, pred);
-    	//dt.addEntries(gfd.getFeatureDifference(gold, pred));
+    	dt.addEntries(gfd.getFeatureDifference(gold, pred));
     	
     	FeatureVector dtl = new FeatureVector(size);
     	if (options.learnLabel) {

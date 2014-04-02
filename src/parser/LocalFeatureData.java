@@ -424,6 +424,28 @@ public class LocalFeatureData {
 							score += getTriSibScore(h, m, s, s2);
 					}
 					
+					if (x < m) break;
+					
+				}
+			}
+
+			for (int h = 0; h < len; ++h) {
+				
+				int st = arcLis.startIndex(h);
+				int ed = arcLis.endIndex(h);
+				
+				for (int p = st; p+1 < ed; ++p) {
+					// mod and sib
+					int m = arcLis.get(p);
+					int s = arcLis.get(p+1);
+					
+					// gp-sibling
+					int gp = heads[h];
+					if (options.useGS && gp >= 0) {
+						if (x == h || (m <= x && x <= s))
+							score += getGPSibScore(gp, h, m, s);
+					}
+					
 					// parent, sibling and child
 					if (options.usePSC) {
 						// mod's child
@@ -445,28 +467,6 @@ public class LocalFeatureData {
 							if ((m <= x && x <= s) || x == c)
 								score += getPSCScore(h, s, c, m);
 						}
-					}
-
-					if (x < m) break;
-					
-				}
-			}
-
-			for (int h = 0; h < len; ++h) {
-				
-				int st = arcLis.startIndex(h);
-				int ed = arcLis.endIndex(h);
-				
-				for (int p = st; p+1 < ed; ++p) {
-					// mod and sib
-					int m = arcLis.get(p);
-					int s = arcLis.get(p+1);
-					
-					// gp-sibling
-					int gp = heads[h];
-					if (options.useGS && gp >= 0) {
-						if (x == h || (m <= x && x <= s))
-							score += getGPSibScore(gp, h, m, s);
 					}
 				}
 			}

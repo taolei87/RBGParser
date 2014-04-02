@@ -241,7 +241,7 @@ public class DependencyParser implements Serializable {
                 		    		
     		for (int i = 0; i < N; ++i) {
     			
-    			if ((i + 1) % 1000 == 0) {
+    			if ((i + 1) % 10 == 0) {
                     System.out.printf("    %d (HC=%.2fs SP=%.2fs LC=%.2f T=%.2f)", (i+1),
                             decoder.totalClimbTime / 1000.0,
                             (decoder.totalClimbAndSampleTime - decoder.totalClimbTime) / 1000.0,
@@ -252,8 +252,8 @@ public class DependencyParser implements Serializable {
     			//DependencyInstance inst = new DependencyInstance(lstTrain[i]);
     			DependencyInstance inst = lstTrain[i];
     			LocalFeatureData lfd = new LocalFeatureData(inst, this, true);
-    		    GlobalFeatureData gfd = null;
-    		    //GlobalFeatureData gfd = new GlobalFeatureData(lfd);
+    		    GlobalFeatureData gfd = new GlobalFeatureData(lfd);
+    		    
     		    int n = inst.length;
     		    
     		    DependencyInstance predInst = decoder.decode(inst, lfd, gfd, true);
@@ -372,7 +372,7 @@ public class DependencyParser implements Serializable {
     	DependencyInstance inst = pipe.createInstance(reader);    	
     	while (inst != null) {
     		LocalFeatureData lfd = new LocalFeatureData(inst, this, true);
-    		GlobalFeatureData gfd = null; 
+    		GlobalFeatureData gfd = new GlobalFeatureData(lfd); 
     		
     		++nSents;
             

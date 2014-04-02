@@ -47,7 +47,9 @@ public class GlobalFeatureData {
 	}
 
 	public FeatureVector getPPFeatureVector(int gp, int h, int m) {
-		Utils.Assert(lfd.arc2id[h * lfd.len + gp] >= 0 && lfd.arc2id[m * lfd.len + h] > 0);
+		// (h,m) may not be an arc
+
+		Utils.Assert(lfd.arc2id[h * lfd.len + gp] >= 0);
 		
 		int pos = (h * lfd.len + gp) * lfd.len + m;		// h is preposition, different from conj/punc
 		FeatureDataItem item = ppcc1[pos];
@@ -165,7 +167,9 @@ public class GlobalFeatureData {
 	}
 	
 	public double getPPScore(int gp, int h, int m) {
-		Utils.Assert(lfd.arc2id[h * lfd.len + gp] >= 0 && lfd.arc2id[m * lfd.len + h] > 0);
+		// (h,m) may not be an arc
+		
+		Utils.Assert(lfd.arc2id[h * lfd.len + gp] >= 0);
 		
 		int pos = (h * lfd.len + gp) * lfd.len + m;		// h is preposition, different from conj/punc
 		if (ppcc1[pos] == null)
@@ -280,7 +284,7 @@ public class GlobalFeatureData {
 			// pp attachment
 			if (SpecialPos.P == specialPos[i]) {
 				int par = heads[i];
-				int[] c = lfd.pipe.findPPArg(now, arcLis, i);
+				int[] c = lfd.pipe.findPPArg(heads, specialPos, arcLis, i);
 				for (int z = 0; z < c.length; ++z) {
 					if (par != -1 && c[z] != -1) {
 						fv.addEntries(getPPFeatureVector(par, i, c[z]));
@@ -311,7 +315,7 @@ public class GlobalFeatureData {
 			}
 		}
 
-		int rb = lfd.pipe.getMSTRightBranch(now, arcLis, 0);
+		int rb = lfd.pipe.getMSTRightBranch(specialPos, arcLis, 0, 0);
 		
 		code = lfd.pipe.createArcCodeP(Arc.RB, 0x0);
 		lfd.pipe.addArcFeature(code, (double)rb / len, fv);
@@ -367,13 +371,18 @@ public class GlobalFeatureData {
 	}
 	
 	public double getScore(DependencyInstance now) {
+		return getScore(now.heads);
+	}
+	
+	public double getScore(int[] heads) {
+		DependencyInstance now = lfd.inst;
+		
 		FeatureVector tmpFv = new FeatureVector(lfd.size);
 		double score = 0.0;	
 		
 		if (!lfd.options.useHO)
 			return score;
 		
-		int[] heads = now.heads;
 		int[] toks = now.formids;
 		int len = now.length;
 		DependencyArcList arcLis = new DependencyArcList(heads);
@@ -397,7 +406,7 @@ public class GlobalFeatureData {
 			// pp attachment
 			if (SpecialPos.P == specialPos[i]) {
 				int par = heads[i];
-				int[] c = lfd.pipe.findPPArg(now, arcLis, i);
+				int[] c = lfd.pipe.findPPArg(heads, specialPos, arcLis, i);
 				for (int z = 0; z < c.length; ++z) {
 					if (par != -1 && c[z] != -1) {
 						score += getPPScore(par, i, c[z]);
@@ -428,7 +437,7 @@ public class GlobalFeatureData {
 			}
 		}
 
-		int rb = lfd.pipe.getMSTRightBranch(now, arcLis, 0);
+		int rb = lfd.pipe.getMSTRightBranch(specialPos, arcLis, 0, 0);
 		
 		code = lfd.pipe.createArcCodeP(Arc.RB, 0x0);
 		lfd.pipe.addArcFeature(code, (double)rb / len, tmpFv);

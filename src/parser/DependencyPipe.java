@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 
 import parser.DependencyInstance.SpecialPos;
+import parser.FeatureTemplate.Arc;
 import parser.Options.LearningMode;
 import parser.Options.PossibleLang;
 import parser.io.DependencyReader;
@@ -79,7 +80,7 @@ public class DependencyPipe implements Serializable {
 		numArcFeats = 0;
 		numWordFeats = 0;
 		
-		//loadLanguageInfo();
+		loadLanguageInfo();
 	}
 	
 	/***
@@ -98,6 +99,8 @@ public class DependencyPipe implements Serializable {
 			coarseMap.put(data[0], data[1]);
 		}
 		br.close();
+		
+		coarseMap.put("<root-POS>", "ROOT");
 		
 		// decide ccDepType
 		PossibleLang lang = options.lang;
@@ -121,6 +124,7 @@ public class DependencyPipe implements Serializable {
 		}
 		
 		// fill conj word
+		conjWord = new HashSet<String>();
 		switch (lang) {
 		case Turkish:
 			conjWord.add("ve");
@@ -500,6 +504,27 @@ public class DependencyPipe implements Serializable {
 						int s2 = arcLis.get(p + 2);
 						createTriSibFeatureVector(inst, h, m, s, s2);
 					}
+					
+					// parent, sibling and child
+					if (options.usePSC) {
+						// mod's child
+						int mst = arcLis.startIndex(m);
+						int med = arcLis.endIndex(m);
+						
+						for (int mp = mst; mp < med; ++mp) {
+							int c = arcLis.get(mp);
+							createPSCFeatureVector(inst, h, m, c, s);
+						}
+						
+						// sib's child
+						int sst = arcLis.startIndex(s);
+						int sed = arcLis.endIndex(s);
+						
+						for (int sp = sst; sp < sed; ++sp) {
+							int c = arcLis.get(sp);
+							createPSCFeatureVector(inst, h, s, c, m);
+						}
+					}
     			}
     		}
 			
@@ -520,6 +545,121 @@ public class DependencyPipe implements Serializable {
 					Utils.Assert(h2 >= 0);
 					
 					createHeadBiFeatureVector(inst, m, h, h2);
+				}
+				
+				// great-grandparent
+				if (options.useGGP && gp != -1 && heads[gp] != -1) {
+					int ggp = heads[gp];
+					createGGPCFeatureVector(inst, ggp, gp, h, m);
+				}
+			}
+			
+			// global feature
+			if (options.useHO) {
+				FeatureVector fv = new FeatureVector(arcAlphabet.size());
+				
+				// non-proj
+				for (int i = 0; i < n; ++i) {
+					if (heads[i] == -1)
+						continue;
+					int num = getBinnedDistance(arcLis.nonproj[i]);
+					createNonprojFeatureVector(inst, num, heads[i], i);
+				}
+
+				int[] toks = inst.formids;
+				int[] pos = inst.postagids;
+				int[] posA = inst.cpostagids;
+				SpecialPos[] specialPos = inst.specialPos;
+				int[] spanLeft = arcLis.left;
+				int[] spanRight = arcLis.right;
+
+				long code = 0;
+
+				for (int i = 0; i < n; ++i) {
+					// pp attachment
+					if (SpecialPos.P == specialPos[i]) {
+						int par = heads[i];
+						int[] c = findPPArg(inst.heads, inst.specialPos, arcLis, i);
+						for (int z = 0; z < c.length; ++z) {
+							if (par != -1 && c[z] != -1) {
+								createPPFeatureVector(inst, par, i, c[z]);
+							}
+						}
+					}
+
+					// conjunction pos
+					if (SpecialPos.C == specialPos[i]) {
+						int[] arg = findConjArg(arcLis, heads, i);
+						int head = arg[0];
+						int left = arg[1];
+						int right = arg[2];
+						if (left != -1 && right != -1 && left < right) {
+							createCC1FeatureVector(inst, left, i, right);
+							if (head != -1) {
+								createCC2FeatureVector(inst, i, head, left);
+								createCC2FeatureVector(inst, i, head, right);
+							}
+						}
+					}
+
+					// punc head
+					if (SpecialPos.PNX == specialPos[i]) {
+						int j = findPuncCounterpart(toks, i);
+						if (j != -1 && heads[i] == heads[j])
+							createPNXFeatureVector(inst, heads[i], i, j);
+					}
+				}
+
+				int rb = getMSTRightBranch(specialPos, arcLis, 0, 0);
+				
+				code = createArcCodeP(Arc.RB, 0x0);
+				addArcFeature(code, (double)rb / n, fv);
+				
+				for (int m = 1; m < n; ++m) {
+
+					// child num
+					int leftNum = 0;
+					int rightNum = 0;
+					int maxDigit = 64 - Arc.numArcFeatBits - 4;
+					int maxChildStrNum = (maxDigit / tagNumBits) - 1;
+					int childStrNum = 0;
+					code = pos[m];
+					
+					int st = arcLis.startIndex(m);
+					int ed = arcLis.endIndex(m);
+					
+					for (int j = st; j < ed; ++j) {
+						int cid = arcLis.get(j);
+						if (SpecialPos.PNX != specialPos[cid]) {
+							if (cid < m && leftNum < GlobalFeatureData.MAX_CHILD_NUM)
+								leftNum++;
+							else if (cid > m && rightNum < GlobalFeatureData.MAX_CHILD_NUM)
+								rightNum++;
+							if (childStrNum < maxChildStrNum) {
+								code = ((code << tagNumBits) | pos[cid]);
+								childStrNum++;
+							}
+						}
+					}
+					code = ((code << Arc.numArcFeatBits) | Arc.CN_STR.ordinal()) << 4;
+					addArcFeature(code, fv);
+
+					createChildNumFeatureVector(inst, m, leftNum, rightNum);
+
+					// span
+					int end = spanRight[m] == n ? 1 : 0;
+					int punc = (spanRight[m] < n && SpecialPos.PNX == specialPos[spanRight[m]]) ? 1 : 0;
+					int bin = Math.min(GlobalFeatureData.MAX_SPAN_LENGTH, (spanRight[m] - spanLeft[m]));
+					createSpanFeatureVector(inst, m, end, punc, bin);
+
+					if (heads[m] != -1) {
+						// neighbors
+						int leftID = spanLeft[m] > 0 ? posA[spanLeft[m] - 1] : DependencyPipe.TOKEN_START;
+						int rightID = spanRight[m] < n ? posA[spanRight[m]] : DependencyPipe.TOKEN_END;
+						if (leftID > 0 && rightID > 0) {
+							createNeighborFeatureVector(inst, heads[m], m, leftID, rightID);
+						}
+					}
 				}
 			}
         }		
@@ -2119,13 +2259,13 @@ public class DependencyPipe implements Serializable {
     	return ret;
     }
 
-    public int[] findPPArg(DependencyInstance s, DependencyArcList arclis, int arg) {
+    public int[] findPPArg(int[] heads, SpecialPos[] specialPos, DependencyArcList arclis, int arg) {
     	int st = arclis.startIndex(arg);
     	int ed = arclis.endIndex(arg);
     	
     	int c = st == ed ? -1 : arclis.get(st);
     	int c2 = -1;
-    	if (c != -1 && s.specialPos[c] == SpecialPos.C) {
+    	if (c != -1 && specialPos[c] == SpecialPos.C) {
     		if (ccDepType == 0) {
     			// prep is head
     			c2 = findRightNearestChild(arclis, c, c);
@@ -2141,7 +2281,7 @@ public class DependencyPipe implements Serializable {
     		// others not valid
     	}
     	int len = 0;
-    	int head = s.heads[arg];
+    	int head = heads[arg];
     	if (c != -1 && c != head)
     		len++;
     	if (c2 != -1 && c2 != head)
@@ -2160,16 +2300,20 @@ public class DependencyPipe implements Serializable {
     	return ret;
     }
 
-    public int getMSTRightBranch(DependencyInstance s, DependencyArcList arclis, int id) {
+    public int getMSTRightBranch(SpecialPos[] specialPos, DependencyArcList arclis, int id, int dep) {
     	int node = 1;
     	int st = arclis.startIndex(id);
     	int en = arclis.endIndex(id);
     	
+    	if (dep > 10000) {
+    		System.out.println("get right branch bug");
+    		System.exit(0);
+    	}
     	for (int i = en - 1; i >= st; --i) {
     		//if (s.pos[s.child[id][i]].equals("PNX"))
-    		if (SpecialPos.PNX == s.specialPos[arclis.get(i)])
+    		if (SpecialPos.PNX == specialPos[arclis.get(i)])
     			continue;
-    		node += getMSTRightBranch(s, arclis, arclis.get(i));
+    		node += getMSTRightBranch(specialPos, arclis, arclis.get(i), dep + 1);
     		break;
     	}
     	return node;

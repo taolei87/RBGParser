@@ -40,6 +40,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		tasks = new HillClimbingTask[options.numHcThreads];
 		for (int i = 0; i < tasks.length; ++i) {
 			tasks[i] = new HillClimbingTask();
+			tasks[i].id = i;
 			tasks[i].sampler = new RandomWalkSampler(i, options);
 		}
 	}
@@ -54,7 +55,6 @@ public class HillClimbingDecoder extends DependencyDecoder {
 	@Override
 	public DependencyInstance decode(DependencyInstance inst,
 			LocalFeatureData lfd, GlobalFeatureData gfd, boolean addLoss) {
-				
 		this.inst = inst;
 		this.lfd = lfd;
 		this.gfd = gfd;
@@ -108,6 +108,8 @@ public class HillClimbingDecoder extends DependencyDecoder {
 	
 	public class HillClimbingTask implements Runnable {
 		
+		public int id;
+		
 		RandomWalkSampler sampler;
 		int converge;
 		
@@ -136,7 +138,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 			while (!stopped) {
 				
 				long startClimbAndSample = System.currentTimeMillis();
-
+				
 				DependencyInstance now = sampler.randomWalkSampling(
 						inst, lfd, staticTypes, addLoss);
 				
@@ -148,8 +150,10 @@ public class HillClimbingDecoder extends DependencyDecoder {
                 int cnt = 0;
 				boolean more;
 				for (;;) {
-					more = false;					
+					//System.out.println("aaa: " + id);
+					more = false;
 					depthFirstSearch(heads);
+					//System.out.println("bbb: " + id);
 					Utils.Assert(size == n-1);
 					for (int i = 0; i < size; ++i) {
 						int m = dfslis[i];
@@ -158,6 +162,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 						double maxScore = calcScore(heads, m);
 						//double maxScore = calcScore(now);
 						
+						//System.out.println("ccc: " + id);
 						for (int h = 0; h < n; ++h)
 							if (h != m && h != bestHead && !lfd.isPruned(h, m)
 								&& !isAncestorOf(heads, m, h)) {
@@ -171,14 +176,16 @@ public class HillClimbingDecoder extends DependencyDecoder {
 								}
 							}
 						heads[m] = bestHead;
+						//System.out.println("ddd: " + id);
 					}
+					//System.out.println("eee: " + id);
 					if (!more) break;					
 
                     //DEBUG
-                    //++cnt;
-                    //if (cnt % 10000 == 0) {
-                    //    System.out.println(cnt);
-                    //}
+                    ++cnt;
+                    if (cnt % 100 == 0) {
+                        System.out.println(cnt);
+                    }
 				}
 				
 				long end = System.currentTimeMillis();
@@ -227,14 +234,15 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		
 		private double calcScore(int[] heads, int m)
 		{
-			return ((addLoss && heads[m] != inst.heads[m]) ? 1 : 0)
+			double score = ((addLoss && heads[m] != inst.heads[m]) ? 1 : 0)
 					+ (options.learnLabel ? 
-						lfd.getLabeledArcScore(heads[m], m, staticTypes[heads[m]][m])
-						: 0.0)
-                    + (addLoss && options.learnLabel && staticTypes[heads[m]][m]
-                        != inst.deplbids[m] ? 1 : 0)
-					+ lfd.getPartialScore(heads, m)
-					+ gfd.getScore(inst);
+							lfd.getLabeledArcScore(heads[m], m, staticTypes[heads[m]][m])
+							: 0.0)
+	                    + (addLoss && options.learnLabel && staticTypes[heads[m]][m]
+	                        != inst.deplbids[m] ? 1 : 0)
+						+ lfd.getPartialScore(heads, m)
+						+ gfd.getScore(heads);
+			return score;
 		}
 		
 		private double calcScore(DependencyInstance now) 
@@ -259,6 +267,8 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		private void depthFirstSearch(int[] heads)
 		{
 			arcLis.constructDepTreeArcList(heads);
+			arcLis.constructSpan();
+			arcLis.constructNonproj(heads);
 			size = 0;
             //dfscnt = 0;
 			dfs(0);
