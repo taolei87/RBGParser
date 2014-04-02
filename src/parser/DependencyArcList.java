@@ -11,8 +11,8 @@ public class DependencyArcList {
 	public DependencyArcList(int n)
 	{
 		this.n = n;
-		this.st = new int[n];
-		this.edges = new int[n];
+		st = new int[n];
+		edges = new int[n];
 		left = new int[n];
 		right = new int[n];
 		nonproj = new int[n];
@@ -72,7 +72,7 @@ public class DependencyArcList {
 		for (int i = 1; i < n; ++i)
 			st[i] += st[i-1];
 		
-		Utils.Assert(st[n-1] == n-1);
+		//Utils.Assert(st[n-1] == n-1);
 		
 		for (int i = n-1; i > 0; --i) {
 			int j = heads[i];
@@ -80,23 +80,23 @@ public class DependencyArcList {
 			edges[st[j]] = i;
 		}
 		
-		for (int i = 0; i < n; ++i) {
-			int st = startIndex(i);
-			int ed = endIndex(i);
-			if (i > 0)
-				Utils.Assert(startIndex(i) == endIndex(i-1));
-			if (st < ed)
-				Utils.Assert(heads[get(st)] == i);
-			for (int p = st+1; p < ed; ++p) {
-				Utils.Assert(heads[get(p)] == i);
-				Utils.Assert(get(p-1) < get(p));
-			}
-		}
-		
-		// no loop
-		for (int i = 1; i < n; ++i) {
-			Utils.Assert(!isAncestorOf(heads, i, heads[i]));
-		}
+//		for (int i = 0; i < n; ++i) {
+//			int st = startIndex(i);
+//			int ed = endIndex(i);
+//			if (i > 0)
+//				Utils.Assert(startIndex(i) == endIndex(i-1));
+//			if (st < ed)
+//				Utils.Assert(heads[get(st)] == i);
+//			for (int p = st+1; p < ed; ++p) {
+//				Utils.Assert(heads[get(p)] == i);
+//				Utils.Assert(get(p-1) < get(p));
+//			}
+//		}
+//		
+//		// no loop
+//		for (int i = 1; i < n; ++i) {
+//			Utils.Assert(!isAncestorOf(heads, i, heads[i]));
+//		}
 	}
 	
 	private boolean isAncestorOf(int[] heads, int par, int ch) 
@@ -107,11 +107,11 @@ public class DependencyArcList {
 			ch = heads[ch];
 
             //DEBUG
-            ++cnt;
-            if (cnt > 10000) {
-                System.out.println("DEAD LOOP in isAncestorOf !!!!");
-                System.exit(1);
-            }
+            //++cnt;
+            //if (cnt > 10000) {
+                //System.out.println("DEAD LOOP in isAncestorOf !!!!");
+                //System.exit(1);
+            //}
 		}
 		return false;
 	}

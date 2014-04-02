@@ -12,10 +12,10 @@ public class RandomWalkSampler {
 	
 	public int loopCount;
 	
-	public static volatile double T = 1.0;
-	public static final int loopThreshold = 10000;
-	public static final double decayFactor = 0.99;	
-	public static final double minT = 0.5;
+	//public static volatile double T = 1.0;
+	//public static final int loopThreshold = 10000;
+	//public static final double decayFactor = 0.99;	
+	//public static final double minT = 0.5;
     //public static final double minT = 1.0;
 	
 	public RandomWalkSampler(int seed, Options options) {
@@ -40,7 +40,7 @@ public class RandomWalkSampler {
     public DependencyInstance randomWalkSampling(DependencyInstance inst,
     		LocalFeatureData lfd, int[][] staticTypes, boolean addLoss)
     {
-        int cnt = 0;
+        //int cnt = 0;
     	int len = inst.length;
     	
 		DependencyInstance predInst = new DependencyInstance(inst);
@@ -92,11 +92,11 @@ public class RandomWalkSampler {
     			if (predInst.heads[curr] != -1 && !inTree[curr]) {
     				cycleErase(predInst.heads, predInst.deplbids, curr);
     				++loopCount;
-                    ++cnt;
-                    if (cnt % loopThreshold == 0) {
-                    	T = Math.max(minT, T*decayFactor);
-                    	//T = Math.max(minT, T-0.1);
-                    }
+                    //++cnt;
+                    //if (cnt % loopThreshold == 0) {
+                    //	T = Math.max(minT, T*decayFactor);
+                    //	//T = Math.max(minT, T-0.1);
+                    //}
                     //DEBUG
     				//if (cnt >= 1000000) {
     				//	System.out.println("\tRndWalk Loop " + cnt);
@@ -124,16 +124,16 @@ public class RandomWalkSampler {
     }
     
     private int samplePoint(double[] score, int N, Random r) {
-    	double T = RandomWalkSampler.T;
+    	//double T = RandomWalkSampler.T;
     	double sumScore = Double.NEGATIVE_INFINITY;
     	for (int i = 0; i < N; i++) {
-    		sumScore = Utils.logSumExp(sumScore, score[i]*T);
+    		sumScore = Utils.logSumExp(sumScore, score[i]/**T*/);
     	}
     	double logp = Math.log(r.nextDouble() + 1e-60);
     	double cur = Double.NEGATIVE_INFINITY;
     	int ret = 0;
     	for (; ret < N; ret++) {
-    		cur = Utils.logSumExp(cur, score[ret]*T);
+    		cur = Utils.logSumExp(cur, score[ret]/**T*/);
     		if (logp + sumScore < cur)
     			break;
     	}

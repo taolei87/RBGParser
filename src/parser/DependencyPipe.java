@@ -416,7 +416,7 @@ public class DependencyPipe implements Serializable {
 			inst = reader.nextInstance();
 			cnt++;
 			if (options.maxNumSent != -1 && cnt >= options.maxNumSent) break;
-			if (cnt % 100 == 0)
+			if (cnt % 1000 == 0)
 				System.out.printf("%d ", cnt);
 		}
 				

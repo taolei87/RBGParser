@@ -220,6 +220,7 @@ public class DependencyParser implements Serializable {
     			.createDependencyDecoder(options);
     	
     	int N = lstTrain.length;
+    	int printPeriod = 10000 < N ? N/10 : 1000;
     	
     	for (int iIter = 0; iIter < options.maxNumIters; ++iIter) {
     	    
@@ -234,19 +235,12 @@ public class DependencyParser implements Serializable {
     		double loss = 0;
     		int uas = 0, tot = 0;
     		start = System.currentTimeMillis();
-    		
-    		decoder.totalLoopCount = 0;
-    		decoder.totalClimbAndSampleTime = 0;
-    		decoder.totalClimbTime = 0;
                 		    		
     		for (int i = 0; i < N; ++i) {
     			
-    			if ((i + 1) % 10 == 0) {
-                    System.out.printf("    %d (HC=%.2fs SP=%.2fs LC=%.2f T=%.2f)", (i+1),
-                            decoder.totalClimbTime / 1000.0,
-                            (decoder.totalClimbAndSampleTime - decoder.totalClimbTime) / 1000.0,
-                            decoder.totalLoopCount / (i+1.0),
-                            RandomWalkSampler.T);
+    			if ((i + 1) % printPeriod == 0) {
+				System.out.printf("  %d (time=%ds)", (i+1),
+					(System.currentTimeMillis()-start)/1000);
     			}
 
     			//DependencyInstance inst = new DependencyInstance(lstTrain[i]);

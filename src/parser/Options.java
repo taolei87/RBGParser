@@ -56,7 +56,7 @@ public class Options implements Cloneable, Serializable {
 	public boolean initTensorWithPretrain = true;
 	
 	//public LearningMode learningMode = LearningMode.Basic;
-	public LearningMode learningMode = LearningMode.Full;
+	public LearningMode learningMode = LearningMode.Standard;
 	public boolean projective = false;
 	public boolean learnLabel = true;
 	public boolean pruning = true;
@@ -154,6 +154,15 @@ public class Options implements Cloneable, Serializable {
             else if (arg.startsWith("thread:")) {
             	numHcThreads = Integer.parseInt(arg.split(":")[1]);
             }
+            else if (arg.startsWith("model:")) {
+            	String str = arg.split(":")[1];
+            	if (str.equals("basic"))
+            		learningMode = LearningMode.Basic;
+            	else if (str.equals("standard"))
+            		learningMode = LearningMode.Standard;
+            	else if (str.equals("full"))
+            		learningMode = LearningMode.Full;
+            }
 
     	}    	
 
@@ -169,8 +178,6 @@ public class Options implements Cloneable, Serializable {
     			useHO = false;
     			break;
     		case Standard:
-    			useGS = false;
-    			useTS = false;
     			useGGP = false;
     			usePSC = false;
     			useHO = false;
@@ -201,6 +208,7 @@ public class Options implements Cloneable, Serializable {
         System.out.println("word-vector:" + wordVectorFile);
         System.out.println("projective: " + projective);
         System.out.println("pruning: " + pruning);
+        System.out.println("converge iter: " + numHcConverge);
         
         System.out.println();
         System.out.println("use consecutive siblings: " + useCS);
@@ -211,6 +219,7 @@ public class Options implements Cloneable, Serializable {
         System.out.println("use great-grandparent: " + useGGP);
         System.out.println("use parent-sibling-child: " + usePSC);
         System.out.println("use high-order: " + useHO);
+        System.out.println("model: " + learningMode.name());
 
     	System.out.println("------\n");
     }
