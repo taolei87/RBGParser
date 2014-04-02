@@ -13,16 +13,9 @@ public class DependencyArcList {
 		this.n = n;
 		this.st = new int[n];
 		this.edges = new int[n];
-	}
-	
-	public DependencyArcList(int[] heads, int[] st, int[] edges)
-	{
-		n = heads.length;
-		this.st = st;
-		this.edges = edges;
-		constructDepTreeArcList(heads);
-		constructSpan();
-		constructNonproj(heads);
+		left = new int[n];
+		right = new int[n];
+		nonproj = new int[n];
 	}
 	
 	public DependencyArcList(int[] heads)
@@ -43,6 +36,9 @@ public class DependencyArcList {
 		if (n > st.length) {
 			st = new int[n];
 			edges = new int[n];
+			left = new int[n];
+			right = new int[n];
+			nonproj = new int[n];
 		}
 		this.n = n;
 	}
@@ -84,18 +80,40 @@ public class DependencyArcList {
 			edges[st[j]] = i;
 		}
 		
-//		for (int i = 0; i < n; ++i) {
-//			int st = startIndex(i);
-//			int ed = endIndex(i);
-//			if (i > 0)
-//				Utils.Assert(startIndex(i) == endIndex(i-1));
-//			if (st < ed)
-//				Utils.Assert(heads[get(st)] == i);
-//			for (int p = st+1; p < ed; ++p) {
-//				Utils.Assert(heads[get(p)] == i);
-//				Utils.Assert(get(p-1) < get(p));
-//			}
-//		}
+		for (int i = 0; i < n; ++i) {
+			int st = startIndex(i);
+			int ed = endIndex(i);
+			if (i > 0)
+				Utils.Assert(startIndex(i) == endIndex(i-1));
+			if (st < ed)
+				Utils.Assert(heads[get(st)] == i);
+			for (int p = st+1; p < ed; ++p) {
+				Utils.Assert(heads[get(p)] == i);
+				Utils.Assert(get(p-1) < get(p));
+			}
+		}
+		
+		// no loop
+		for (int i = 1; i < n; ++i) {
+			Utils.Assert(!isAncestorOf(heads, i, heads[i]));
+		}
+	}
+	
+	private boolean isAncestorOf(int[] heads, int par, int ch) 
+	{
+        int cnt = 0;
+		while (ch != 0) {
+			if (ch == par) return true;
+			ch = heads[ch];
+
+            //DEBUG
+            ++cnt;
+            if (cnt > 10000) {
+                System.out.println("DEAD LOOP in isAncestorOf !!!!");
+                System.exit(1);
+            }
+		}
+		return false;
 	}
 	
 	private void constructSpan(int id) {
