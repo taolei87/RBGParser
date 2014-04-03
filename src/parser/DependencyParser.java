@@ -45,7 +45,7 @@ public class DependencyParser implements Serializable {
 		options.printOptions();
 		
 		DependencyParser pruner = null;
-		if (options.train && options.pruning) {
+		if (options.train && options.pruning && options.learningMode != LearningMode.Basic) {
 			Options prunerOptions = new Options();
 			prunerOptions.processArguments(args);
 			prunerOptions.maxNumIters = 10;
@@ -159,6 +159,7 @@ public class DependencyParser implements Serializable {
         	options.R = 0;
         	options.gamma = 1.0;
         	options.maxNumIters = options.numPretrainIters;
+            options.useHO = false;
         	parameters.gamma = 1.0;
         	parameters.rank = 0;
     		System.out.println("=============================================");
@@ -182,6 +183,7 @@ public class DependencyParser implements Serializable {
     		options.R = optionsBak.R;
     		options.gamma = optionsBak.gamma;
     		options.maxNumIters = optionsBak.maxNumIters;
+            options.useHO = optionsBak.useHO;
     		parameters.rank = optionsBak.R;
     		parameters.gamma = optionsBak.gamma;
     		parameters.clearTheta();

@@ -215,9 +215,9 @@ public class DependencyPipe implements Serializable {
 		wordDictionary.lookupIndex("#TOKEN_START#");
 		wordDictionary.lookupIndex("#TOKEN_MID#");
 		wordDictionary.lookupIndex("#TOKEN_END#");
-		wordDictionary.lookupIndex("\"");
-		wordDictionary.lookupIndex(")");
-		wordDictionary.lookupIndex("(");
+		wordDictionary.lookupIndex("form=\"");
+		wordDictionary.lookupIndex("form=)");
+		wordDictionary.lookupIndex("form=(");
 				
 		DependencyReader reader = DependencyReader.createDependencyReader(options);
 		reader.startReading(file);
@@ -2487,7 +2487,8 @@ public class DependencyPipe implements Serializable {
     	code = createArcCodeW(PNX_MW, word[arg]);
     	addArcFeature(code | flag, fv);
 
-    	code = createArcCodeWP(PNX_HP_MW, pos[head], word[arg]);
+    	//code = createArcCodeWP(PNX_HP_MW, pos[head], word[arg]);
+	code = createArcCodeWP(PNX_HP_MW, word[arg], pos[head]);
     	addArcFeature(code | flag, fv);
     	
     	return fv;

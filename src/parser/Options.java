@@ -63,7 +63,7 @@ public class Options implements Cloneable, Serializable {
 	public double pruningCoeff = 0.1;
 	
 	public int numHcThreads = 10;		// hill climbing: number of threads
-	public int numHcConverge = 150;		// hill climbing: number of restarts to converge 
+	public int numHcConverge = 300;		// hill climbing: number of restarts to converge 
 	
 	public boolean average = true;
 	public double C = 0.01;
@@ -78,7 +78,7 @@ public class Options implements Cloneable, Serializable {
 	public boolean useTS = true;		// use tri-sibling
 	public boolean useGGP = true;		// use great-grandparent
 	public boolean usePSC = true;		// use parent-sibling-child
-	public boolean useHO = true;
+	public boolean useHO = true; //false;
 	
 	// language specific info
 	PossibleLang lang;

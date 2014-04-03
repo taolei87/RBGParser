@@ -67,16 +67,16 @@ public class RandomWalkSampler {
     				if (lfd.isPruned(candH, curr))
     					continue;
                     
-    				//int candLab = options.learnLabel ? staticTypes[candH][curr] : 0;
+    				int candLab = options.learnLabel ? staticTypes[candH][curr] : 0;
     				
     				double s = lfd.getArcScore(candH, curr);
                     //double s = lfd.getArcNoTensorScore(candH, curr);
-    				//s += options.learnLabel ? lfd.getLabeledArcScore(candH, curr, candLab) : 0.0;
+    				s += options.learnLabel ? lfd.getLabeledArcScore(candH, curr, candLab) : 0.0;
     				
     				if (addLoss) {
     					// cost augmented
-    					s += (inst.heads[curr] != candH ? 1.0 : 0.0) ;
-    						//+ (options.learnLabel && inst.deplbids[curr] != candLab ? 1.0 : 0.0);
+    					s += (inst.heads[curr] != candH ? 1.0 : 0.0) //;
+    						+ (options.learnLabel && inst.deplbids[curr] != candLab ? 1.0 : 0.0);
     				}
                     score[size] = s;
                     depList[size] = candH;
