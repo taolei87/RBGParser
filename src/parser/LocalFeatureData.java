@@ -125,7 +125,7 @@ public class LocalFeatureData {
 							lbFvs[i][t][j][k] = pipe.createLabelFeatures(
 									inst, i, t, j == 1, k == 1);
 							lbScores[i][t][j][k] = parameters.dotProduct(
-									lbFvs[i][t][j][k]);
+									lbFvs[i][t][j][k]) * gamma;
 						}
 		}
 	}

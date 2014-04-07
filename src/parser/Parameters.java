@@ -216,9 +216,11 @@ public class Parameters implements Serializable {
     		//dtl.addEntries(gfd.getLabeledFeatureDifference(gold, pred));
     	}
     	
-        double loss = - dt.dotProduct(params)*gamma - dtl.dotProduct(params) + Fi;
-        double l2norm = dt.Squaredl2NormUnsafe() * gamma * gamma + dtl.Squaredl2NormUnsafe();
-        
+        //double loss = - dt.dotProduct(params)*gamma - dtl.dotProduct(params) + Fi;
+        //double l2norm = dt.Squaredl2NormUnsafe() * gamma * gamma + dtl.Squaredl2NormUnsafe();
+        double loss = - dt.dotProduct(params)*gamma - dtl.dotProduct(params)*gamma + Fi;
+        double l2norm = dt.Squaredl2NormUnsafe() * gamma * gamma + dtl.Squaredl2NormUnsafe() * gamma * gamma;
+    	
         int updId = (updCnt + offset) % 3;
         if ( updId == 1 ) {
         	// update U
@@ -259,8 +261,8 @@ public class Parameters implements Serializable {
 		    		params[x] += coeff * z;
 		    		total[x] += coeff2 * z;
 	    		}
-	    		coeff = alpha;
-	    		coeff2 = alpha * updCnt;
+	    		//coeff = alpha;
+	    		//coeff2 = alpha * updCnt;
 	    		for (int i = 0, K = dtl.size(); i < K; ++i) {
 		    		int x = dtl.x(i);
 		    		double z = dtl.value(i);
@@ -403,8 +405,9 @@ public class Parameters implements Serializable {
 		double dis = 0;
 		for (int i = 1; i < actDeps.length; ++i)
 			if (options.learnLabel) {
-				if (actDeps[i] != predDeps[i]) dis += 1;
-				if (actLabs[i] != predLabs[i]) dis += 1;
+				//if (actDeps[i] != predDeps[i]) dis += 1;
+				//if (actLabs[i] != predLabs[i]) dis += 1;
+				if (actDeps[i] != predDeps[i] || actLabs[i] != predLabs[i]) dis += 1;
 			} else {
 				if (actDeps[i] != predDeps[i]) dis += 1;
 			}

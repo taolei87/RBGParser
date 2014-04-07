@@ -40,7 +40,7 @@ public class RandomWalkSampler {
     public DependencyInstance randomWalkSampling(DependencyInstance inst,
     		LocalFeatureData lfd, int[][] staticTypes, boolean addLoss)
     {
-        //int cnt = 0;
+        int cnt = 0;
     	int len = inst.length;
     	
 		DependencyInstance predInst = new DependencyInstance(inst);
@@ -64,9 +64,9 @@ public class RandomWalkSampler {
                 size = 0;
 
     			for (int candH = 0; candH < len; candH++) {
-    				if (lfd.isPruned(candH, curr))
+    				if (candH == curr || lfd.isPruned(candH, curr))
     					continue;
-                    
+    				
     				int candLab = options.learnLabel ? staticTypes[candH][curr] : 0;
     				
     				double s = lfd.getArcScore(candH, curr);
@@ -75,8 +75,10 @@ public class RandomWalkSampler {
     				
     				if (addLoss) {
     					// cost augmented
-    					s += (inst.heads[curr] != candH ? 1.0 : 0.0) //;
-    						+ (options.learnLabel && inst.deplbids[curr] != candLab ? 1.0 : 0.0);
+    					//s += (inst.heads[curr] != candH ? 1.0 : 0.0) //;
+    					//	+ (options.learnLabel && inst.deplbids[curr] != candLab ? 1.0 : 0.0);
+    					s += (inst.heads[curr] == candH && ((!options.learnLabel) || inst.deplbids[curr] == candLab)) ? 
+    							0.0 : 1.0;
     				}
                     score[size] = s;
                     depList[size] = candH;
@@ -92,13 +94,13 @@ public class RandomWalkSampler {
     			if (predInst.heads[curr] != -1 && !inTree[curr]) {
     				cycleErase(predInst.heads, predInst.deplbids, curr);
     				++loopCount;
-                    //++cnt;
+                    ++cnt;
                     //if (cnt % loopThreshold == 0) {
                     //	T = Math.max(minT, T*decayFactor);
                     //	//T = Math.max(minT, T-0.1);
                     //}
                     //DEBUG
-    				//if (cnt >= 1000000) {
+    				//if (cnt >= 100000) {
     				//	System.out.println("\tRndWalk Loop " + cnt);
     				//	dumpScoreTable(len, inst, lfd, staticTypes, addLoss);    					                        
                     //}
