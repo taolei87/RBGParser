@@ -75,10 +75,18 @@ public class RandomWalkSampler {
     				
     				if (addLoss) {
     					// cost augmented
+    					
+    					// loss type 1
     					//s += (inst.heads[curr] != candH ? 1.0 : 0.0) //;
     					//	+ (options.learnLabel && inst.deplbids[curr] != candLab ? 1.0 : 0.0);
-    					s += (inst.heads[curr] == candH && ((!options.learnLabel) || inst.deplbids[curr] == candLab)) ? 
-    							0.0 : 1.0;
+    					
+    					// loss type 2
+    					//s += (inst.heads[curr] == candH && ((!options.learnLabel) || inst.deplbids[curr] == candLab)) ? 
+    					//		0.0 : 1.0;
+    					
+    					// loss type 3
+    					s += inst.heads[curr] != candH ? 2.0 :
+    						((options.learnLabel && inst.deplbids[curr] != candLab) ? 1.0 : 0.0);
     				}
                     score[size] = s;
                     depList[size] = candH;
