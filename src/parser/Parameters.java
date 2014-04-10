@@ -410,12 +410,12 @@ public class Parameters implements Serializable {
 				//if (actDeps[i] != predDeps[i] || actLabs[i] != predLabs[i]) dis += 1;		// loss type 2
 				
 				// loss type 3
-				dis += actDeps[i] != predDeps[i] ? 2.0 : (actLabs[i] != predLabs[i] ? 1.0 : 0.0);
+				dis += actDeps[i] != predDeps[i] ? 1.0 : (actLabs[i] != predLabs[i] ? 0.5 : 0.0);
 			} else {
 				//if (actDeps[i] != predDeps[i]) dis += 1;		// loss type 1&2
 				
 				// loss type 3
-				dis += actDeps[i] != predDeps[i] ? 2.0 : 0;
+				dis += actDeps[i] != predDeps[i] ? 1.0 : 0;
 			}
 		return dis;
     }

@@ -85,8 +85,8 @@ public class RandomWalkSampler {
     					//		0.0 : 1.0;
     					
     					// loss type 3
-    					s += inst.heads[curr] != candH ? 2.0 :
-    						((options.learnLabel && inst.deplbids[curr] != candLab) ? 1.0 : 0.0);
+    					s += inst.heads[curr] != candH ? 1.0 :
+    						((options.learnLabel && inst.deplbids[curr] != candLab) ? 0.5 : 0.0);
     				}
                     score[size] = s;
                     depList[size] = candH;

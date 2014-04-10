@@ -227,7 +227,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 			
 			// loss type 3
 			if (addLoss)
-				score += heads[m] != inst.heads[m] ? 2.0 : ((options.learnLabel && t != inst.deplbids[m]) ? 1.0 : 0.0);
+				score += heads[m] != inst.heads[m] ? 1.0 : ((options.learnLabel && t != inst.deplbids[m]) ? 0.5 : 0.0);
 			
 			return score;
 		}
@@ -251,7 +251,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 				
 				// loss type 3
 				if (addLoss)
-					score += heads[m] != inst.heads[m] ? 2.0 : ((options.learnLabel && deplbids[m] != inst.deplbids[m]) ? 1.0 : 0.0);
+					score += heads[m] != inst.heads[m] ? 1.0 : ((options.learnLabel && deplbids[m] != inst.deplbids[m]) ? 0.5 : 0.0);
 			}
 			score += lfd.getScore(now);
 			score += gfd.getScore(now);	

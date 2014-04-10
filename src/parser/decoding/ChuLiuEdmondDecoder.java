@@ -48,7 +48,7 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
                     
                     // loss type 3
                     if (addLoss)
-                    	va += deps[j] != i ? 2.0 : ((options.learnLabel && labs[j] != t) ? 1.0 : 0.0);
+                    	va += deps[j] != i ? 1.0 : ((options.learnLabel && labs[j] != t) ? 0.5 : 0.0);
                     
                     scores[i][j] = va;
                 }
