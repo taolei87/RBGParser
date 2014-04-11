@@ -67,11 +67,14 @@ public class RandomWalkSampler {
     				s += options.learnLabel ? lfd.getLabeledArcScore(candH, curr, candLab) : 0.0;
     				
     				if (addLoss) {
-						if (labelLossType == 0) {
-							if (candH != inst.heads[curr]) s += 1.0;
-							if (candLab != inst.deplbids[curr]) s += 1.0;
-						} else if (candH != inst.heads[curr] || candLab != inst.deplbids[curr])
-							s += 1.0;
+    					if (options.learnLabel) {
+							if (labelLossType == 0) {
+								if (candH != inst.heads[curr]) s += 1.0;
+								if (candLab != inst.deplbids[curr]) s += 1.0;
+							} else if (candH != inst.heads[curr] || candLab != inst.deplbids[curr])
+								s += 1.0;
+    					} else if (candH != inst.heads[curr])
+    						s += 1.0;
     				}
                     score[size] = s;
                     depList[size] = candH;

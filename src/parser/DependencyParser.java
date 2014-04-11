@@ -55,6 +55,7 @@ public class DependencyParser implements Serializable {
 			prunerOptions.test = false;
 			prunerOptions.learnLabel = false;
 			prunerOptions.gamma = 1.0;
+			prunerOptions.gammaLabel = 1.0;
 			
 			//pruner = new DependencyParser();
 			pruner = new BasicArcPruner();
@@ -158,9 +159,11 @@ public class DependencyParser implements Serializable {
         	options.learningMode = LearningMode.Basic;
         	options.R = 0;
         	options.gamma = 1.0;
+        	options.gammaLabel = 1.0;
         	options.maxNumIters = options.numPretrainIters;
             options.useHO = false;
         	parameters.gamma = 1.0;
+        	parameters.gammaLabel = 1.0;
         	parameters.rank = 0;
     		System.out.println("=============================================");
     		System.out.printf(" Pre-training:%n");
@@ -182,10 +185,12 @@ public class DependencyParser implements Serializable {
     		options.learningMode = optionsBak.learningMode;
     		options.R = optionsBak.R;
     		options.gamma = optionsBak.gamma;
+    		options.gammaLabel = optionsBak.gammaLabel;
     		options.maxNumIters = optionsBak.maxNumIters;
             options.useHO = optionsBak.useHO;
     		parameters.rank = optionsBak.R;
     		parameters.gamma = optionsBak.gamma;
+    		parameters.gammaLabel = optionsBak.gammaLabel;
     		parameters.clearTheta();
             parameters.printUStat();
             parameters.printVStat();
