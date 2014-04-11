@@ -9,31 +9,24 @@ public class RandomWalkSampler {
 	
 	Random r;
 	Options options;
-	
-	public int loopCount;
-	
-	//public static volatile double T = 1.0;
-	//public static final int loopThreshold = 10000;
-	//public static final double decayFactor = 0.99;	
-	//public static final double minT = 0.5;
-    //public static final double minT = 1.0;
+	final int labelLossType;
 	
 	public RandomWalkSampler(int seed, Options options) {
 		r = new Random(seed);
 		this.options = options;
-    	loopCount = 0;
+		labelLossType = options.labelLossType;
 	}
 	
 	public RandomWalkSampler(Options options) {
 		r = new Random(1/*System.currentTimeMillis()*/);
 		this.options = options;
-    	loopCount = 0;
+		labelLossType = options.labelLossType;
 	}
 	
 	public RandomWalkSampler(Random r, Options options) {
 		this.r = r;
 		this.options = options;
-    	loopCount = 0;
+		labelLossType = options.labelLossType;
 	}
 	
 	
@@ -74,11 +67,11 @@ public class RandomWalkSampler {
     				s += options.learnLabel ? lfd.getLabeledArcScore(candH, curr, candLab) : 0.0;
     				
     				if (addLoss) {
-    					// cost augmented
-    					//s += (inst.heads[curr] != candH ? 1.0 : 0.0) //;
-    					//	+ (options.learnLabel && inst.deplbids[curr] != candLab ? 1.0 : 0.0);
-    					s += (inst.heads[curr] == candH && ((!options.learnLabel) || inst.deplbids[curr] == candLab)) ? 
-    							0.0 : 1.0;
+						if (labelLossType == 0) {
+							if (candH != inst.heads[curr]) s += 1.0;
+							if (candLab != inst.deplbids[curr]) s += 1.0;
+						} else if (candH != inst.heads[curr] || candLab != inst.deplbids[curr])
+							s += 1.0;
     				}
                     score[size] = s;
                     depList[size] = candH;
@@ -93,12 +86,7 @@ public class RandomWalkSampler {
     			
     			if (predInst.heads[curr] != -1 && !inTree[curr]) {
     				cycleErase(predInst.heads, predInst.deplbids, curr);
-    				++loopCount;
                     ++cnt;
-                    //if (cnt % loopThreshold == 0) {
-                    //	T = Math.max(minT, T*decayFactor);
-                    //	//T = Math.max(minT, T-0.1);
-                    //}
                     //DEBUG
     				//if (cnt >= 100000) {
     				//	System.out.println("\tRndWalk Loop " + cnt);
@@ -126,16 +114,15 @@ public class RandomWalkSampler {
     }
     
     private int samplePoint(double[] score, int N, Random r) {
-    	//double T = RandomWalkSampler.T;
     	double sumScore = Double.NEGATIVE_INFINITY;
     	for (int i = 0; i < N; i++) {
-    		sumScore = Utils.logSumExp(sumScore, score[i]/**T*/);
+    		sumScore = Utils.logSumExp(sumScore, score[i]);
     	}
     	double logp = Math.log(r.nextDouble() + 1e-60);
     	double cur = Double.NEGATIVE_INFINITY;
     	int ret = 0;
     	for (; ret < N; ret++) {
-    		cur = Utils.logSumExp(cur, score[ret]/**T*/);
+    		cur = Utils.logSumExp(cur, score[ret]);
     		if (logp + sumScore < cur)
     			break;
     	}

@@ -12,10 +12,53 @@ public class Options implements Cloneable, Serializable {
 
 	public enum LearningMode {
 		Basic,			// 1st order arc factored model
-		Standard,		// 2nd order model (3rd order?)
-		Full			// full model with global features
+		Standard,		// 3rd order using similar features as TurboParser
+		Full			// full model with two additional 3rd order features and global features
 	}
+		
+	public String trainFile = null;
+	public String testFile = null;
+	public String unimapFile = null;
+	public String outFile = null;
+	public boolean train = false;
+	public boolean test = false;	
+	public String wordVectorFile = null;
+	public String modelFile = "model.out";
+    public String format = "CONLL";
+    
+	public int maxNumSent = -1;
+    public int numPretrainIters = 1;
+	public int maxNumIters = 10;
+	public boolean initTensorWithPretrain = true;
 	
+	//public LearningMode learningMode = LearningMode.Basic;
+	public LearningMode learningMode = LearningMode.Standard;
+	public boolean projective = false;
+	public boolean learnLabel = true;
+	public boolean pruning = true;
+	public double pruningCoeff = 0.1;
+	public int labelLossType = 1;
+	
+	public int numHcThreads = 10;		// hill climbing: number of threads
+	public int numHcConverge = 300;		// hill climbing: number of restarts to converge 
+	
+	public boolean average = true;
+	public double C = 0.01;
+	public double gamma = 1, gammaLabel = 1;
+	public int R = 50;
+	
+	// feature set
+	public boolean useCS = true;		// use consecutive siblings
+	public boolean useGP = true;		// use grandparent
+	public boolean useHB = true;		// use head bigram
+	public boolean useGS = true;		// use grand sibling
+	public boolean useTS = true;		// use tri-sibling
+	public boolean useGGP = true;		// use great-grandparent
+	public boolean usePSC = true;		// use parent-sibling-child
+	public boolean useHO = true;		// use global feature
+	
+	// CoNLL language specific info
+	// used only in Full learning mode
 	public enum PossibleLang {
 		Arabic,
 		Bulgarian,
@@ -33,56 +76,13 @@ public class Options implements Cloneable, Serializable {
 		Turkish,
 		Unknown,
 	}
+	PossibleLang lang;
 	
 	final static String langString[] = {"arabic", "bulgarian", "chinese", "czech", "danish", "dutch",
 			"english08", "german", "japanese", "portuguese", "slovene", "spanish",
 			"swedish", "turkish"};
 	
-	public String trainFile = null;
-	public String testFile = null;
-	public String unimapFile = null;
-	public String outFile = null;
-	public boolean train = false;
-	public boolean test = false;	
-	public String wordVectorFile = null;
-	public String modelFile = "model.out";
-    public String format = "CONLL";
-    
-    
-    //public boolean evalWithPunc = true;
-	public int maxNumSent = -1;
-    public int numPretrainIters = 1;
-	public int maxNumIters = 10;
-	public boolean initTensorWithPretrain = true;
 	
-	//public LearningMode learningMode = LearningMode.Basic;
-	public LearningMode learningMode = LearningMode.Standard;
-	public boolean projective = false;
-	public boolean learnLabel = true;
-	public boolean pruning = true;
-	public double pruningCoeff = 0.1;
-	
-	public int numHcThreads = 10;		// hill climbing: number of threads
-	public int numHcConverge = 300;		// hill climbing: number of restarts to converge 
-	
-	public boolean average = true;
-	public double C = 0.01;
-	public double gamma = 1;
-	public int R = 50;
-	
-	// feature set
-	public boolean useCS = true;		// use consecutive siblings
-	public boolean useGP = true;		// use grandparent
-	public boolean useHB = true;		// use head bigram
-	public boolean useGS = true;		// use grand sibling
-	public boolean useTS = true;		// use tri-sibling
-	public boolean useGGP = true;		// use great-grandparent
-	public boolean usePSC = true;		// use parent-sibling-child
-	public boolean useHO = true; //false;
-	
-	// language specific info
-	PossibleLang lang;
-    
 	public Options() {
 		
 	}
@@ -103,10 +103,10 @@ public class Options implements Cloneable, Serializable {
     			test = true;
     		}
     		else if (arg.startsWith("label")) {
-    			learnLabel = Boolean.parseBoolean(arg.split(":")[1]);;
+    			learnLabel = Boolean.parseBoolean(arg.split(":")[1]);
     		}
-            else if (arg.equals("non-proj")) {
-                projective = false;
+            else if (arg.startsWith("proj")) {
+                projective = Boolean.parseBoolean(arg.split(":")[1]);
             }
             else if (arg.startsWith("average:")) {
             	average = Boolean.parseBoolean(arg.split(":")[1]);
@@ -134,10 +134,10 @@ public class Options implements Cloneable, Serializable {
             }
             else if (arg.startsWith("gamma:")) {
             	gamma = Double.parseDouble(arg.split(":")[1]);
+            	gammaLabel = gamma;
             }
             else if (arg.startsWith("R:")) {
                 R = Integer.parseInt(arg.split(":")[1]);
-                //Parameters.rank = R;
             }
             else if (arg.startsWith("word-vector:")) {
             	wordVectorFile = arg.split(":")[1];
@@ -176,6 +176,14 @@ public class Options implements Cloneable, Serializable {
     			useGGP = false;
     			usePSC = false;
     			useHO = false;
+    			
+    			// The gamma and loss function used in labeled dependency parsing has been changed;
+    			// Switch to old values and settings in order to reproduce the results on 
+    			// first-order parsing shown in the paper.
+    			labelLossType = 0;
+    			gammaLabel = 1.0;
+    			LowRankParam.oldVersion = true;
+    			
     			break;
     		case Standard:
     			useGGP = false;

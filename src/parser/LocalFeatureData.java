@@ -19,7 +19,7 @@ public class LocalFeatureData {
 	int ntypes;						// number of label types
 	int size;						
 	int rank;								
-	double gamma;
+	double gamma, gammaLabel;
 	
 	int nuparcs;					// number of un-pruned arcs
 	int[] arc2id;					// map (h->m) arc to an id in [0, nuparcs-1]
@@ -67,12 +67,12 @@ public class LocalFeatureData {
 			
 		Utils.Assert(pruner == null || pruner.options.learningMode == LearningMode.Basic);
 		
-		// allocate memory for arrays here
 		len = inst.length;
 		ntypes = pipe.types.length;
 		rank = options.R;
 		size = pipe.numArcFeats;
 		gamma = options.gamma;
+		gammaLabel = options.gammaLabel;
 		
 		wordFvs = new FeatureVector[len];
 		wpU = new double[len][rank];
@@ -125,7 +125,7 @@ public class LocalFeatureData {
 							lbFvs[i][t][j][k] = pipe.createLabelFeatures(
 									inst, i, t, j == 1, k == 1);
 							lbScores[i][t][j][k] = parameters.dotProduct(
-									lbFvs[i][t][j][k]) * gamma;
+									lbFvs[i][t][j][k]) * gammaLabel;
 						}
 		}
 	}
@@ -198,40 +198,27 @@ public class LocalFeatureData {
 			GlobalFeatureData gfd2 = null;
 			DependencyInstance pred = prunerDecoder.decode(inst, lfd2, gfd2, false);
 							
-			
-			// Deprecated. Increase the threshold to store more arcs
-			// until there's at least one valid dependency tree ...
-			
-			//boolean[] vis = new boolean[len];
-			//for (double threshold = Math.log(options.pruningCoeff); ; threshold *= 2) {
-				nuparcs = 0;
-				for (int m = 1; m < len; ++m) {								
-					double maxv = Double.NEGATIVE_INFINITY;
-					for (int h = 0; h < len; ++h)
-						if (h != m) {
-							double v = lfd2.getArcScore(h, m);
-							maxv = Math.max(maxv, v);;
+			nuparcs = 0;
+			for (int m = 1; m < len; ++m) {								
+				double maxv = Double.NEGATIVE_INFINITY;
+				for (int h = 0; h < len; ++h)
+					if (h != m) {
+						double v = lfd2.getArcScore(h, m);
+						maxv = Math.max(maxv, v);;
+					}
+
+				for (int h = 0; h < len; ++h)
+					if (h != m) {
+						double v = lfd2.getArcScore(h, m);
+						
+						if ((includeGoldArcs && h == inst.heads[m]) ||
+						 (v >= maxv + threshold || h == pred.heads[m])) {
+							isPruned[m*len+h] = !(v >= maxv + threshold || h == pred.heads[m]);
+							arc2id[m*len+h] = nuparcs;
+							nuparcs++;							
 						}
-	
-					for (int h = 0; h < len; ++h)
-						if (h != m) {
-							double v = lfd2.getArcScore(h, m);
-							
-							if ((includeGoldArcs && h == inst.heads[m]) ||
-							 (v >= maxv + threshold || h == pred.heads[m])) {
-								isPruned[m*len+h] = !(v >= maxv + threshold || h == pred.heads[m]);
-								arc2id[m*len+h] = nuparcs;
-								nuparcs++;							
-							}
-						}
-				}
-				
-			//	for (int i = 0; i < len; ++i) vis[i] = true;
-			//	traverse(0, vis);
-			//	boolean ok = true;
-			//	for (int i = 1; i < len; ++i) ok &= (!vis[i]);
-			//	if (ok) break;
-			//}
+					}
+			}
 			
 			if (includeGoldArcs)
 				for (int m = 1; m < len; ++m)

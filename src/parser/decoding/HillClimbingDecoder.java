@@ -19,6 +19,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 	LocalFeatureData lfd;
 	GlobalFeatureData gfd;
 	boolean addLoss;
+	final int labelLossType;
 	
 	int[][] staticTypes;
 	
@@ -32,6 +33,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 	
 	public HillClimbingDecoder(Options options) {
 		this.options = options;
+		labelLossType = options.labelLossType;
         executorService = Executors.newFixedThreadPool(options.numHcThreads);
 		decodingService = new ExecutorCompletionService<Object>(executorService);
 		tasks = new HillClimbingTask[options.numHcThreads];
@@ -65,7 +67,6 @@ public class HillClimbingDecoder extends DependencyDecoder {
 			staticTypes = lfd.getStaticTypes();
 		
 		for (int i = 0; i < tasks.length; ++i) {
-			tasks[i].sampler.loopCount = 0;
 			decodingService.submit(tasks[i], null);			
 		}
 		
@@ -76,24 +77,6 @@ public class HillClimbingDecoder extends DependencyDecoder {
 				System.out.println("Hill climbing thread interupted!!!!");
 			}
 		}
-		
-		
-//		HillClimbingThread[] lstThreads = new HillClimbingThread[options.numHcThreads];
-//		for (int i = 0; i < lstThreads.length; ++i) {
-//			lstThreads[i] = new HillClimbingThread();
-//			lstThreads[i].sampler = new RandomWalkSampler(i + 10, options);
-//			lstThreads[i].start();
-//		}
-//		
-//		for (int i = 0; i < lstThreads.length; ++i)
-//			try {
-//				lstThreads[i].join();
-//				totalLoopCount += lstThreads[i].sampler.loopCount / (totRuns + 0.0);
-//				totalClimbTime += lstThreads[i].climbTime;
-//				totalClimbAndSampleTime += lstThreads[i].climbAndSampleTime;
-//			} catch (InterruptedException e) {
-//				System.out.println("Hill climbing thread interupted!!!!");
-//			}
 		
 		return pred;		
 	}
@@ -215,8 +198,13 @@ public class HillClimbingDecoder extends DependencyDecoder {
 			if (options.learnLabel) {
 				int t = staticTypes[heads[m]][m];
 				score += lfd.getLabeledArcScore(heads[m], m, t);
-				if (addLoss && (heads[m] != inst.heads[m] || t != inst.deplbids[m]))
-					score += 1.0;
+				if (addLoss) {
+					if (labelLossType == 0) {
+						if (heads[m] != inst.heads[m]) score += 1.0;
+						if (t != inst.deplbids[m]) score += 1.0;
+					} else if (heads[m] != inst.heads[m] || t != inst.deplbids[m])
+						score += 1.0;
+				}				
 			} 
 			else if (addLoss && heads[m] != inst.heads[m])
 				score += 1.0;
@@ -231,9 +219,15 @@ public class HillClimbingDecoder extends DependencyDecoder {
 			int[] deplbids = now.deplbids;
 			for (int m = 1; m < n; ++m)
 				if (options.learnLabel) {
-					score += lfd.getLabeledArcScore(heads[m], m, deplbids[m]);
-					if (addLoss && (heads[m] != inst.heads[m] || deplbids[m] != inst.deplbids[m]))
-						score += 1.0;
+					int t = deplbids[m];
+					score += lfd.getLabeledArcScore(heads[m], m, t);
+					if (addLoss) {
+						if (labelLossType == 0) {
+							if (heads[m] != inst.heads[m]) score += 1.0;
+							if (t != inst.deplbids[m]) score += 1.0;
+						} else if (heads[m] != inst.heads[m] || t != inst.deplbids[m])
+							score += 1.0;
+					}
 				} else if (addLoss && heads[m] != inst.heads[m])
 					score += 1.0;			 
 			score += lfd.getScore(now);
@@ -272,178 +266,4 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		
 	}
 	
-//	public class HillClimbingThread extends Thread {
-//		
-//		RandomWalkSampler sampler;
-//
-//		int n, converge;
-//		int size;
-//		DependencyArcList arcLis;
-//		int[] dfslis;
-//	    int dfscnt;
-//
-//		public long climbTime;
-//		public long climbAndSampleTime;
-//
-//		public void run()
-//		{
-//			n = inst.length;
-//			converge = options.numHcConverge;
-//			dfslis = new int[n];
-//			arcLis = new DependencyArcList(n);
-//            
-//			climbTime = 0;
-//			climbAndSampleTime = 0;
-//
-//			while (!stopped) {
-//				
-//				long startClimbAndSample = System.currentTimeMillis();
-//
-//				DependencyInstance now = sampler.randomWalkSampling(
-//						inst, lfd, staticTypes, addLoss);
-//				
-//				long startClimb = System.currentTimeMillis();
-//				// hill climb
-//				int[] heads = now.heads;
-//				int[] deplbids = now.deplbids;
-//			    
-//                int cnt = 0;
-//				boolean more;
-//				for (;;) {
-//					more = false;					
-//					depthFirstSearch(heads);
-//					Utils.Assert(size == n-1);
-//					for (int i = 0; i < size; ++i) {
-//						int m = dfslis[i];
-//						
-//						int bestHead = heads[m];
-//						double maxScore = calcScore(heads, m);
-//						//double maxScore = calcScore(now);
-//						
-//						for (int h = 0; h < n; ++h)
-//							if (h != m && h != bestHead && !lfd.isPruned(h, m)
-//								&& !isAncestorOf(heads, m, h)) {
-//								heads[m] = h;
-//								double score = calcScore(heads, m);
-//								//double score = calcScore(now);
-//								if (score > maxScore) {
-//									more = true;
-//									bestHead = h;
-//									maxScore = score;									
-//								}
-//							}
-//						heads[m] = bestHead;
-//					}
-//					if (!more) break;					
-//
-//                    //DEBUG
-//                    //++cnt;
-//                    //if (cnt % 10000 == 0) {
-//                    //    System.out.println(cnt);
-//                    //}
-//				}
-//				
-//				long end = System.currentTimeMillis();
-//				climbTime += end - startClimb;
-//				climbAndSampleTime += end - startClimbAndSample;
-//				
-//				if (options.learnLabel) {
-//					for (int m = 1; m < n; ++m)
-//						deplbids[m] = staticTypes[heads[m]][m];
-//				}
-//				
-//				double score = calcScore(now);
-//				synchronized (pred) {
-//					++totRuns;
-//					if (score > bestScore) {
-//						bestScore = score;
-//						unchangedRuns = 0;
-//						pred.heads = heads;
-//						pred.deplbids = deplbids;
-//					} else {
-//						++unchangedRuns;
-//						if (unchangedRuns >= converge)
-//							stopped = true;
-//					}
-//					
-//				}
-//			}
-//		}
-//		
-//		private boolean isAncestorOf(int[] heads, int par, int ch) 
-//		{
-//            //int cnt = 0;
-//			while (ch != 0) {
-//				if (ch == par) return true;
-//				ch = heads[ch];
-//
-//                //DEBUG
-//                //++cnt;
-//                //if (cnt > 10000) {
-//                //    System.out.println("DEAD LOOP in isAncestorOf !!!!");
-//                //    System.exit(1);
-//                //}
-//			}
-//			return false;
-//		}
-//		
-//		private double calcScore(int[] heads, int m)
-//		{
-//			return ((addLoss && heads[m] != inst.heads[m]) ? 1 : 0)
-//					+ (options.learnLabel ? 
-//						lfd.getLabeledArcScore(heads[m], m, staticTypes[heads[m]][m])
-//						: 0.0)
-//                    + (addLoss && options.learnLabel && staticTypes[heads[m]][m]
-//                        != inst.deplbids[m] ? 1 : 0)
-//					+ lfd.getPartialScore(heads, m);
-//			//		+ gfd.getStructureScore(heads, m);
-//		}
-//		
-//		private double calcScore(DependencyInstance now) 
-//		{
-//			double score = 0;
-//			int[] heads = now.heads;
-//			int[] deplbids = now.deplbids;
-//			for (int m = 1; m < n; ++m)
-//				score += (options.learnLabel ? 
-//                            lfd.getLabeledArcScore(heads[m], m, deplbids[m])
-//                            : 0)
-//					   + ((addLoss && heads[m] != inst.heads[m]) ? 1 : 0)
-//                       + ((addLoss && options.learnLabel && 
-//                            staticTypes[heads[m]][m] != inst.deplbids[m]) ?
-//                            1 : 0);
-//			 
-//			score += lfd.getScore(now);
-//			return score;
-//		}
-//		
-//		private void depthFirstSearch(int[] heads)
-//		{
-//			arcLis.constructDepTreeArcList(heads);
-//			size = 0;
-//            //dfscnt = 0;
-//			dfs(0);
-//		}
-//		
-//		
-//		private void dfs(int i)
-//		{
-//            //DEBUG
-//            //++dfscnt;
-//            //if (dfscnt > 10000) {
-//            //    System.out.println("DEAD LOOP in dfs!!!!");
-//            //    System.exit(1);
-//            //}
-//
-//			int l = arcLis.startIndex(i);
-//			int r = arcLis.endIndex(i);
-//			for (int p = l; p < r; ++p) {
-//				int j = arcLis.get(p);
-//				dfs(j);
-//				dfslis[size++] = j;
-//			}
-//		}
-//		
-//	}
-
 }

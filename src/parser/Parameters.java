@@ -15,7 +15,8 @@ public class Parameters implements Serializable {
 	public static final int d = 7;
 	
 	public transient Options options;
-	public double C, gamma;
+	public final int labelLossType;
+	public double C, gamma, gammaLabel;
 	public int size;
 	public int rank;
 	public int N, M, T, D;
@@ -37,8 +38,10 @@ public class Parameters implements Serializable {
 		total = new double[size];
 
 		this.options = options;
+		this.labelLossType = options.labelLossType;
 		C = options.C;
 		gamma = options.gamma;
+		gammaLabel = options.gammaLabel;
 		rank = options.R;
 		
 		N = pipe.numWordFeats;
@@ -213,13 +216,10 @@ public class Parameters implements Serializable {
     	FeatureVector dtl = new FeatureVector(size);
     	if (options.learnLabel) {
     		dtl = lfd.getLabeledFeatureDifference(gold, pred);
-    		//dtl.addEntries(gfd.getLabeledFeatureDifference(gold, pred));
     	}
     	
-        //double loss = - dt.dotProduct(params)*gamma - dtl.dotProduct(params) + Fi;
-        //double l2norm = dt.Squaredl2NormUnsafe() * gamma * gamma + dtl.Squaredl2NormUnsafe();
-        double loss = - dt.dotProduct(params)*gamma - dtl.dotProduct(params)*gamma + Fi;
-        double l2norm = dt.Squaredl2NormUnsafe() * gamma * gamma + dtl.Squaredl2NormUnsafe() * gamma * gamma;
+        double loss = - dt.dotProduct(params)*gamma - dtl.dotProduct(params)*gammaLabel + Fi;
+        double l2norm = dt.Squaredl2NormUnsafe() * gamma * gamma + dtl.Squaredl2NormUnsafe() * gammaLabel * gammaLabel;
     	
         int updId = (updCnt + offset) % 3;
         if ( updId == 1 ) {
@@ -261,8 +261,8 @@ public class Parameters implements Serializable {
 		    		params[x] += coeff * z;
 		    		total[x] += coeff2 * z;
 	    		}
-	    		//coeff = alpha;
-	    		//coeff2 = alpha * updCnt;
+	    		coeff = alpha * gammaLabel;
+	    		coeff2 = alpha * updCnt;
 	    		for (int i = 0, K = dtl.size(); i < K; ++i) {
 		    		int x = dtl.x(i);
 		    		double z = dtl.value(i);
@@ -405,9 +405,10 @@ public class Parameters implements Serializable {
 		double dis = 0;
 		for (int i = 1; i < actDeps.length; ++i)
 			if (options.learnLabel) {
-				//if (actDeps[i] != predDeps[i]) dis += 1;
-				//if (actLabs[i] != predLabs[i]) dis += 1;
-				if (actDeps[i] != predDeps[i] || actLabs[i] != predLabs[i]) dis += 1;
+				if (labelLossType == 0) {
+					if (actDeps[i] != predDeps[i]) dis += 1;
+					if (actLabs[i] != predLabs[i]) dis += 1;
+				} else if (actDeps[i] != predDeps[i] || actLabs[i] != predLabs[i]) dis += 1;
 			} else {
 				if (actDeps[i] != predDeps[i]) dis += 1;
 			}
