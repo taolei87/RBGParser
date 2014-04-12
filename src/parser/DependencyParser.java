@@ -223,6 +223,7 @@ public class DependencyParser implements Serializable {
     
     public void trainIter(DependencyInstance[] lstTrain, boolean evalAndSave) throws IOException
     {
+
     	DependencyDecoder decoder = DependencyDecoder
     			.createDependencyDecoder(options);
     	

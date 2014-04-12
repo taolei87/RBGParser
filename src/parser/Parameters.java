@@ -262,7 +262,7 @@ public class Parameters implements Serializable {
 		    		total[x] += coeff2 * z;
 	    		}
 	    		coeff = alpha * gammaLabel;
-	    		coeff2 = alpha * updCnt;
+	    		coeff2 = coeff * updCnt;
 	    		for (int i = 0, K = dtl.size(); i < K; ++i) {
 		    		int x = dtl.x(i);
 		    		double z = dtl.value(i);
