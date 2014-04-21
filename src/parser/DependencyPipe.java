@@ -2499,7 +2499,7 @@ public class DependencyPipe implements Serializable {
     	
     	int childNum = Math.min(GlobalFeatureData.MAX_CHILD_NUM, leftNum + rightNum);
     	int HP = s.postagids[id];
-    	int HL = s.lemmaids[id];
+    	int HL = s.lemmaids == null ? s.formids[id] : s.lemmaids[id];
     	
     	long code = 0;
 
@@ -2535,12 +2535,13 @@ public class DependencyPipe implements Serializable {
 
     public FeatureVector createNeighborFeatureVector(DependencyInstance s, int par, int id, int left, int right) {
     	FeatureVector fv = new FeatureVector(arcAlphabet.size());
-    	
+        
+        int[] tokens = s.lemmaids == null ? s.formids : s.lemmaids;
     	int HP = s.postagids[id];
     	int HC = s.cpostagids[id];
-    	int HL = s.lemmaids[id];
+    	int HL = tokens[id];
     	int GC = s.cpostagids[par];
-    	int GL = s.lemmaids[par];
+    	int GL = tokens[par];
 
     	long code = 0;
 
