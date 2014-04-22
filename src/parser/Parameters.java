@@ -406,8 +406,8 @@ public class Parameters implements Serializable {
 		for (int i = 1; i < actDeps.length; ++i)
 			if (options.learnLabel) {
 				if (labelLossType == 0) {
-					if (actDeps[i] != predDeps[i]) dis += 1;
-					if (actLabs[i] != predLabs[i]) dis += 1;
+					if (actDeps[i] != predDeps[i]) dis += 0.5;
+					if (actLabs[i] != predLabs[i]) dis += 0.5;
 				} else if (actDeps[i] != predDeps[i] || actLabs[i] != predLabs[i]) dis += 1;
 			} else {
 				if (actDeps[i] != predDeps[i]) dis += 1;

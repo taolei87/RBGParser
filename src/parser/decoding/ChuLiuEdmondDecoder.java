@@ -44,8 +44,8 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
                         va += lfd.getLabeledArcScore(i,j,t);
                         if (addLoss) {
                         	if (labelLossType == 0) {
-                        		if (labs[j] != t) va += 1.0;
-                        		if (deps[j] != i) va += 1.0;
+                        		if (labs[j] != t) va += 0.5;
+                        		if (deps[j] != i) va += 0.5;
                         	} else if (labs[j] != t || deps[j] != i) va += 1.0;
                         }                                            
                     } 

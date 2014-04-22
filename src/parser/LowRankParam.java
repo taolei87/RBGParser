@@ -14,7 +14,7 @@ import utils.Utils;
 
 public class LowRankParam implements Comparator<Integer> {
 	
-	public static boolean oldVersion = false;
+	public static boolean averageNorm = false;
 	
 	public int N, M, D;
 	public TIntArrayList xlis, ylis, zlis;
@@ -104,7 +104,7 @@ public class LowRankParam implements Comparator<Integer> {
 			for (int j = 0; j < D; ++j)
 				params.W[i][j] = (Vt2[j] + invSqrtW * rnd.nextGaussian());		    
 			
-			if (oldVersion) {				
+			if (!averageNorm) {				
 				// in order to reproduce results on 1st order parsing shown in the paper
 				for (int j = 0; j < D; ++j)
 					params.W[i][j] *= S[i] * S2[0];				

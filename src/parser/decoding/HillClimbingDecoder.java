@@ -200,8 +200,8 @@ public class HillClimbingDecoder extends DependencyDecoder {
 				score += lfd.getLabeledArcScore(heads[m], m, t);
 				if (addLoss) {
 					if (labelLossType == 0) {
-						if (heads[m] != inst.heads[m]) score += 1.0;
-						if (t != inst.deplbids[m]) score += 1.0;
+						if (heads[m] != inst.heads[m]) score += 0.5;
+						if (t != inst.deplbids[m]) score += 0.5;
 					} else if (heads[m] != inst.heads[m] || t != inst.deplbids[m])
 						score += 1.0;
 				}				
@@ -223,8 +223,8 @@ public class HillClimbingDecoder extends DependencyDecoder {
 					score += lfd.getLabeledArcScore(heads[m], m, t);
 					if (addLoss) {
 						if (labelLossType == 0) {
-							if (heads[m] != inst.heads[m]) score += 1.0;
-							if (t != inst.deplbids[m]) score += 1.0;
+							if (heads[m] != inst.heads[m]) score += 0.5;
+							if (t != inst.deplbids[m]) score += 0.5;
 						} else if (heads[m] != inst.heads[m] || t != inst.deplbids[m])
 							score += 1.0;
 					}

@@ -69,8 +69,8 @@ public class RandomWalkSampler {
     				if (addLoss) {
     					if (options.learnLabel) {
 							if (labelLossType == 0) {
-								if (candH != inst.heads[curr]) s += 1.0;
-								if (candLab != inst.deplbids[curr]) s += 1.0;
+								if (candH != inst.heads[curr]) s += 0.5;
+								if (candLab != inst.deplbids[curr]) s += 0.5;
 							} else if (candH != inst.heads[curr] || candLab != inst.deplbids[curr])
 								s += 1.0;
     					} else if (candH != inst.heads[curr])

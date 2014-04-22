@@ -34,10 +34,10 @@ public class Options implements Cloneable, Serializable {
 	//public LearningMode learningMode = LearningMode.Basic;
 	public LearningMode learningMode = LearningMode.Standard;
 	public boolean projective = false;
-	public boolean learnLabel = true;
+	public boolean learnLabel = false;
 	public boolean pruning = true;
 	public double pruningCoeff = 0.1;
-	public int labelLossType = 1;
+	public int labelLossType = 0;
 	
 	public int numHcThreads = 10;		// hill climbing: number of threads
 	public int numHcConverge = 300;		// hill climbing: number of restarts to converge 
@@ -134,7 +134,7 @@ public class Options implements Cloneable, Serializable {
             }
             else if (arg.startsWith("gamma:")) {
             	gamma = Double.parseDouble(arg.split(":")[1]);
-            	gammaLabel = gamma;
+            	//gammaLabel = gamma;
             }
             else if (arg.startsWith("R:")) {
                 R = Integer.parseInt(arg.split(":")[1]);
@@ -165,6 +165,8 @@ public class Options implements Cloneable, Serializable {
             }
 
     	}    	
+        
+        //gammaLabel = 1.0;
 
     	switch (learningMode) {
     		case Basic:
@@ -176,14 +178,6 @@ public class Options implements Cloneable, Serializable {
     			useGGP = false;
     			usePSC = false;
     			useHO = false;
-    			
-    			// The gamma and loss function used in labeled dependency parsing has been changed;
-    			// Switch to old values and settings in order to reproduce the results on 
-    			// first-order parsing shown in the paper.
-    			labelLossType = 0;
-    			gammaLabel = 1.0;
-    			LowRankParam.oldVersion = true;
-    			
     			break;
     		case Standard:
     			useGGP = false;
@@ -211,7 +205,8 @@ public class Options implements Cloneable, Serializable {
     	System.out.println("label: " + learnLabel);
         System.out.println("max-sent: " + maxNumSent);      
         System.out.println("C: " + C);
-        System.out.println("gamma: " + gamma);
+        System.out.println("label-loss-type: " + labelLossType);
+        System.out.println("gamma: " + gamma + " " + gammaLabel);
         System.out.println("R: " + R);
         System.out.println("word-vector:" + wordVectorFile);
         System.out.println("projective: " + projective);
