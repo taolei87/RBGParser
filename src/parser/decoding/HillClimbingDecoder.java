@@ -26,11 +26,14 @@ public class HillClimbingDecoder extends DependencyDecoder {
 	double bestScore;	
 	int unchangedRuns, totRuns;
 	volatile boolean stopped;
+    int bestHeadChanges, bestHcSteps;
     
     ExecutorService executorService;
 	ExecutorCompletionService<Object> decodingService;
 	HillClimbingTask[] tasks;
-    
+
+    long totBestHeadChanges = 0, totBestHcSteps = 0, totDecodeRuns = 0;
+
 	public HillClimbingDecoder(Options options) {
 		this.options = options;
 		labelLossType = options.labelLossType;
@@ -71,6 +74,16 @@ public class HillClimbingDecoder extends DependencyDecoder {
         }
         return (sumHeadChanges + 0.0) / (sumHcRuns + 0.0);
     }
+    
+    public double averageHcSteps2()
+    {
+        return (totBestHcSteps + 0.0) / (totDecodeRuns + 0.0);
+    }
+
+    public double averageHeadChanges2()
+    { 
+        return (totBestHeadChanges + 0.0) / (totDecodeRuns + 0.0);
+    }
 
 	@Override
 	public DependencyInstance decode(DependencyInstance inst,
@@ -84,6 +97,10 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		totRuns = 0;
 		unchangedRuns = 0;
 		stopped = false;
+        
+        bestHeadChanges = 0;
+        bestHcSteps = 0;
+
 		if (options.learnLabel)
 			staticTypes = lfd.getStaticTypes();
 		
@@ -98,7 +115,11 @@ public class HillClimbingDecoder extends DependencyDecoder {
 				System.out.println("Hill climbing thread interupted!!!!");
 			}
 		}
-		
+	        
+        totBestHeadChanges += bestHeadChanges;
+        totBestHcSteps += bestHcSteps;
+        ++totDecodeRuns;
+
 		return pred;		
 	}
 	
@@ -114,7 +135,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		DependencyArcList arcLis;
         
         long totHeadChanges = 0, totHcSteps = 0, totHcRuns = 0;
-
+        
 		@Override
 		public void run() {
 		    
@@ -142,7 +163,8 @@ public class HillClimbingDecoder extends DependencyDecoder {
 
                 boolean[] changed = new boolean[n];			    
                 for (int i = 0; i < n; ++i) changed[i] = false;
-
+                
+                int hcSteps = 0;
                 int cnt = 0;
 				boolean more;
 				for (;;) {
@@ -167,6 +189,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 									bestHead = h;
 									maxScore = score;									
                                     ++totHcSteps;
+                                    ++hcSteps;
                                     changed[m] = true;
 								}
 							}
@@ -185,9 +208,13 @@ public class HillClimbingDecoder extends DependencyDecoder {
 					for (int m = 1; m < n; ++m)
 						deplbids[m] = staticTypes[heads[m]][m];
 				}
-
+                
+                int headChanges = 0;
                 for (int i = 0; i < n; ++i)
-                    if (changed[i]) ++totHeadChanges;
+                    if (changed[i]) {
+                        ++totHeadChanges;
+                        ++headChanges;
+                    }
 				
 				double score = calcScore(now);
 				synchronized (pred) {
@@ -197,6 +224,10 @@ public class HillClimbingDecoder extends DependencyDecoder {
 						unchangedRuns = 0;
 						pred.heads = heads;
 						pred.deplbids = deplbids;
+
+                        bestHcSteps = hcSteps;
+                        bestHeadChanges = headChanges;
+
 					} else {
 						++unchangedRuns;
 						if (unchangedRuns >= converge)

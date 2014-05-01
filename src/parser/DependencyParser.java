@@ -279,9 +279,11 @@ public class DependencyParser implements Serializable {
     				(System.currentTimeMillis() - start)/1000);
 
             if (decoder instanceof HillClimbingDecoder)
-                System.out.printf("\t\tAvgHCSteps=%.2f\tAvgHeadChg=%.2f%n",
+                System.out.printf("\t\tavgstps=%.2f\tavgchgs=%.2f\tavgstps2=%.2f\tavgchgs2=%.2f%n",
                         ((HillClimbingDecoder)decoder).averageHcSteps(),
-                        ((HillClimbingDecoder)decoder).averageHeadChanges());
+                        ((HillClimbingDecoder)decoder).averageHeadChanges(),
+                        ((HillClimbingDecoder)decoder).averageHcSteps2(),
+                        ((HillClimbingDecoder)decoder).averageHeadChanges2());
     		
     		if (options.learningMode != LearningMode.Basic && options.pruning && pruner != null)
     			pruner.printPruningStats();
@@ -432,9 +434,11 @@ public class DependencyParser implements Serializable {
     			(nLCorrect+0.0)/nDeps,
     			(nWhole + 0.0)/nSents);
         if (decoder instanceof HillClimbingDecoder)
-                System.out.printf("  AvgHCSteps=%.2f\tAvgHeadChg=%.2f%n",
+                System.out.printf("\t\tavgstps=%.2f\tavgchgs=%.2f\tavgstps2=%.2f\tavgchgs2=%.2f%n",
                         ((HillClimbingDecoder)decoder).averageHcSteps(),
-                        ((HillClimbingDecoder)decoder).averageHeadChanges());
+                        ((HillClimbingDecoder)decoder).averageHeadChanges(),
+                        ((HillClimbingDecoder)decoder).averageHcSteps2(),
+                        ((HillClimbingDecoder)decoder).averageHeadChanges2());
     	if (options.pruning && options.learningMode != LearningMode.Basic && pruner != null)
     		pruner.printPruningStats();
         
