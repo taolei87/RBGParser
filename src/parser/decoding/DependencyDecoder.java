@@ -12,8 +12,8 @@ public abstract class DependencyDecoder {
 	
 	public static DependencyDecoder createDependencyDecoder(Options options)
 	{
-		if (options.projective) {
-			System.out.println("WARNING: projective parsing not supported. "
+		if (options.learningMode != LearningMode.Basic && options.projective) {
+			System.out.println("WARNING: high-order projective parsing not supported. "
 					+ "Switched to non-projective parsing.");
 			options.projective = false;
 		}
@@ -21,11 +21,12 @@ public abstract class DependencyDecoder {
 		if (options.learningMode == LearningMode.Basic) {
 			if (!options.projective)
 				return new ChuLiuEdmondDecoder(options);
-			// TODO: CYK 1st order decoder
+			else
+				return new CYKDecoder(options);			
 		} else
 			return new HillClimbingDecoder(options);
 		
-		return null;
+		//return null;
 	}
     
     public void shutdown()
