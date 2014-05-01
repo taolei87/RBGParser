@@ -205,19 +205,22 @@ public class DependencyPipe implements Serializable {
 		System.out.print("Creating dictionaries ... ");
 		
 		// all forms, lemmas, pos etc should be 1-base indexed.
-		tagDictionary.lookupIndex("#ZERO_INDEX#");
-		wordDictionary.lookupIndex("#ZERO_INDEX#");
+		//tagDictionary.lookupIndex("#ZERO_INDEX#");
+		//wordDictionary.lookupIndex("#ZERO_INDEX#");
 		
 		// special symbols used in features
 		tagDictionary.lookupIndex("#TOKEN_START#");
-		tagDictionary.lookupIndex("#TOKEN_MID#");
 		tagDictionary.lookupIndex("#TOKEN_END#");		
+		tagDictionary.lookupIndex("#TOKEN_MID#");
 		wordDictionary.lookupIndex("#TOKEN_START#");
-		wordDictionary.lookupIndex("#TOKEN_MID#");
 		wordDictionary.lookupIndex("#TOKEN_END#");
+		wordDictionary.lookupIndex("#TOKEN_MID#");
 		wordDictionary.lookupIndex("form=\"");
 		wordDictionary.lookupIndex("form=)");
 		wordDictionary.lookupIndex("form=(");
+
+        Utils.Assert(wordDictionary.lookupIndex("form=(") == TOKEN_LRB);
+        Utils.Assert(wordDictionary.lookupIndex("form=\"") == TOKEN_QUOTE);
 				
 		DependencyReader reader = DependencyReader.createDependencyReader(options);
 		reader.startReading(file);
