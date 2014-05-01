@@ -270,10 +270,14 @@ public class DependencyPipe implements Serializable {
 		reader.startReading(file);
 		
 		DependencyInstance inst = reader.nextInstance();
+        long tokens = 0;
 		int cnt = 0;
 		
 		while(inst != null) {
-			
+
+		    ++cnt;
+            tokens += (inst.length - 1);
+
 			for (int i = 0; i < inst.length; ++i) {
 				if (inst.postags != null) posTagSet.add(inst.postags[i]);
 				if (inst.cpostags != null) cposTagSet.add(inst.cpostags[i]);
@@ -284,7 +288,7 @@ public class DependencyPipe implements Serializable {
 		    initFeatureAlphabets(inst);
 				
 		    inst = reader.nextInstance();
-		    cnt++;
+
 	        if (options.maxNumSent != -1 && cnt >= options.maxNumSent) break;
 		}
 		
@@ -292,7 +296,8 @@ public class DependencyPipe implements Serializable {
 		reader.close();
 		
 		System.out.printf("[%d ms]%n", System.currentTimeMillis() - start);
-		
+        
+        System.out.printf("Average sentence length: %.2f%n", (tokens+0.0)/(cnt+0.0));
 		System.out.printf("Num of CONLL fine POS tags: %d%n", posTagSet.size());
 		System.out.printf("Num of CONLL coarse POS tags: %d%n", cposTagSet.size());
 		System.out.printf("Num of Features: %d %d%n", 

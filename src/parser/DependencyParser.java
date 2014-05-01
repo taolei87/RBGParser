@@ -13,6 +13,7 @@ import java.util.zip.GZIPOutputStream;
 
 import parser.Options.LearningMode;
 import parser.decoding.DependencyDecoder;
+import parser.decoding.HillClimbingDecoder;
 import parser.io.DependencyReader;
 import parser.pruning.BasicArcPruner;
 import parser.sampling.RandomWalkSampler;
@@ -276,6 +277,11 @@ public class DependencyParser implements Serializable {
     		System.out.printf("%n  Iter %d\tloss=%.4f\tuas=%.4f\t[%ds]%n", iIter+1,
     				loss, uas/(tot+0.0),
     				(System.currentTimeMillis() - start)/1000);
+
+            if (decoder instanceof HillClimbingDecoder)
+                System.out.printf("\t\tAvgHCSteps=%.2f\tAvgHeadChg=%.2f%n",
+                        ((HillClimbingDecoder)decoder).averageHcSteps(),
+                        ((HillClimbingDecoder)decoder).averageHeadChanges());
     		
     		if (options.learningMode != LearningMode.Basic && options.pruning && pruner != null)
     			pruner.printPruningStats();
@@ -420,10 +426,15 @@ public class DependencyParser implements Serializable {
     	
     	System.out.printf("  Tokens: %d%n", nDeps);
     	System.out.printf("  Sentences: %d%n", nSents);
+        System.out.printf("  Avg Length: %.2f%n", (nDeps + 0.0)/(nSents + 0.0));
     	System.out.printf("  UAS=%.6f\tLAS=%.6f\tCAS=%.6f%n",
     			(nUCorrect+0.0)/nDeps,
     			(nLCorrect+0.0)/nDeps,
     			(nWhole + 0.0)/nSents);
+        if (decoder instanceof HillClimbingDecoder)
+                System.out.printf("  AvgHCSteps=%.2f\tAvgHeadChg=%.2f%n",
+                        ((HillClimbingDecoder)decoder).averageHcSteps(),
+                        ((HillClimbingDecoder)decoder).averageHeadChanges());
     	if (options.pruning && options.learningMode != LearningMode.Basic && pruner != null)
     		pruner.printPruningStats();
         
