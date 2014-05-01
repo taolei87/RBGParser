@@ -2499,7 +2499,7 @@ public class DependencyPipe implements Serializable {
     	
     	int childNum = Math.min(GlobalFeatureData.MAX_CHILD_NUM, leftNum + rightNum);
     	int HP = s.postagids[id];
-    	int HL = s.lemmaids[id];
+    	int HL = s.lemmaids != null ? s.lemmaids[id] : s.formids[id];
     	
     	long code = 0;
 
@@ -2538,9 +2538,9 @@ public class DependencyPipe implements Serializable {
     	
     	int HP = s.postagids[id];
     	int HC = s.cpostagids[id];
-    	int HL = s.lemmaids[id];
+    	int HL = s.lemmaids != null ? s.lemmaids[id] : s.formids[id];
     	int GC = s.cpostagids[par];
-    	int GL = s.lemmaids[par];
+    	int GL = s.lemmaids != null ? s.lemmaids[par] : s.formids[id];
 
     	long code = 0;
 
