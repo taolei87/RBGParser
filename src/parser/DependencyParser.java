@@ -375,7 +375,7 @@ public class DependencyParser implements Serializable {
     	
     	DependencyDecoder decoder = DependencyDecoder.createDependencyDecoder(options);   	
     	int nUCorrect = 0, nLCorrect = 0;
-    	int nDeps = 0, nWhole = 0, nSents = 0;
+    	int nTokens = 0, nDeps = 0, nWhole = 0, nSents = 0;
     	
     	DependencyInstance inst = pipe.createInstance(reader);    	
     	while (inst != null) {
@@ -394,6 +394,7 @@ public class DependencyParser implements Serializable {
                 }
             }
             nDeps += nToks;
+		nTokens += (inst.length - 1);
     		    		
             DependencyInstance predInst = decoder.decode(inst, lfd, gfd, false);
 
@@ -423,10 +424,11 @@ public class DependencyParser implements Serializable {
     	
     	reader.close();
     	if (out != null) out.close();
-    	
+
+    	System.out.printf("  Tokens (+puncs): %d%n", nTokens);
     	System.out.printf("  Tokens: %d%n", nDeps);
-    	System.out.printf("  Sentences: %d%n", nSents);
-        System.out.printf("  Avg Length: %.2f%n", (nDeps + 0.0)/(nSents + 0.0));
+	    	System.out.printf("  Sentences: %d%n", nSents);
+        System.out.printf("  Avg Length: %.2f%n", (nTokens + 0.0)/(nSents + 0.0));
     	System.out.printf("  UAS=%.6f\tLAS=%.6f\tCAS=%.6f%n",
     			(nUCorrect+0.0)/nDeps,
     			(nLCorrect+0.0)/nDeps,
