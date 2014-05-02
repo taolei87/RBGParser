@@ -435,12 +435,16 @@ public class DependencyParser implements Serializable {
     			(nUCorrect+0.0)/nDeps,
     			(nLCorrect+0.0)/nDeps,
     			(nWhole + 0.0)/nSents);
-        if (decoder instanceof HillClimbingDecoder)
+        if (decoder instanceof HillClimbingDecoder) {
                 System.out.printf("\t\tavgstps=%.2f\tavgchgs=%.2f\tavgstps2=%.2f\tavgchgs2=%.2f%n",
                         ((HillClimbingDecoder)decoder).averageHcSteps(),
                         ((HillClimbingDecoder)decoder).averageHeadChanges(),
                         ((HillClimbingDecoder)decoder).averageHcSteps2(),
                         ((HillClimbingDecoder)decoder).averageHeadChanges2());
+                System.out.printf("\t\tavgnpchgs=%.2f\tavgspuas=%.2f%n",
+                        ((HillClimbingDecoder)decoder).averageHeadChangesNp(),
+                        ((HillClimbingDecoder)decoder).averageSamplingUAS());
+        }
     	if (options.pruning && options.learningMode != LearningMode.Basic && pruner != null)
     		pruner.printPruningStats();
         

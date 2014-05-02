@@ -87,6 +87,27 @@ public class HillClimbingDecoder extends DependencyDecoder {
         return (totBestHeadChanges + 0.0) / (totDecodeRuns + 0.0);
     }
 
+    public double averageSamplingUAS()
+    {
+        long sumStartCorrect = 0, sumStartDeps = 0;
+        for (int i = 0; i < tasks.length; ++i) {
+            sumStartCorrect += tasks[i].totStartCorrect;
+            sumStartDeps += tasks[i].totStartDeps;
+        }
+        return (sumStartCorrect + 0.0) / (sumStartDeps + 0.0);
+    }
+
+    public double averageHeadChangesNp()
+    {
+        long sumHeadChanges = 0, sumHcRuns = 0;
+        for (int i = 0; i < tasks.length; ++i) {
+            sumHeadChanges += tasks[i].totHeadChangesNp;
+            sumHcRuns += tasks[i].totHcRuns;
+        }
+        return (sumHeadChanges + 0.0) / (sumHcRuns + 0.0);
+    }
+    
+
 	@Override
 	public DependencyInstance decode(DependencyInstance inst,
 			LocalFeatureData lfd, GlobalFeatureData gfd, boolean addLoss) {
@@ -138,7 +159,9 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		DependencyArcList arcLis;
         
         long totHeadChanges = 0, totHcSteps = 0, totHcRuns = 0;
-        
+        long totHeadChangesNp = 0;
+        long totStartCorrect = 0, totStartDeps = 0;
+
 		@Override
 		public void run() {
 		    
@@ -171,6 +194,14 @@ public class HillClimbingDecoder extends DependencyDecoder {
                 int[] oldHeads = new int[n];
                 for (int i = 0; i < n; ++i) oldHeads[i] = heads[i];
                 
+                for (int i = 1; i < n; ++i) {
+                    if (inst.forms != null && 
+                            inst.forms[i].matches("[-!\"#%&'()*,./:;?@\\[\\]_{}、]+")) continue;
+                    ++totStartDeps;
+                    if (oldHeads[i] == inst.heads[i])
+                        ++totStartCorrect; 
+                }
+
                 int hcSteps = 0;
                 int cnt = 0;
 				boolean more;
@@ -224,6 +255,9 @@ public class HillClimbingDecoder extends DependencyDecoder {
                     if (heads[i] != oldHeads[i] /*changed[i]*/) {
                         ++totHeadChanges;
                         ++headChanges;
+                        if (inst.forms != null && 
+                            inst.forms[i].matches("[-!\"#%&'()*,./:;?@\\[\\]_{}、]+")) continue;
+                        ++totHeadChangesNp;
                     }
 				
 				double score = calcScore(now);
