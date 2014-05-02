@@ -161,8 +161,10 @@ public class HillClimbingDecoder extends DependencyDecoder {
 				int[] heads = now.heads;
 				int[] deplbids = now.deplbids;
 
-                boolean[] changed = new boolean[n];			    
-                for (int i = 0; i < n; ++i) changed[i] = false;
+                //boolean[] changed = new boolean[n];			    
+                //for (int i = 0; i < n; ++i) changed[i] = false;
+                int[] oldHeads = new int[n];
+                for (int i = 0; i < n; ++i) oldHeads[i] = heads[i];
                 
                 int hcSteps = 0;
                 int cnt = 0;
@@ -189,7 +191,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 									more = true;
 									bestHead = h;
 									maxScore = score;									
-                                    changed[m] = true;
+                                    //changed[m] = true;
 								}
 							}
 						heads[m] = bestHead;
@@ -213,8 +215,8 @@ public class HillClimbingDecoder extends DependencyDecoder {
 				}
                 
                 int headChanges = 0;
-                for (int i = 0; i < n; ++i)
-                    if (changed[i]) {
+                for (int i = 1; i < n; ++i)
+                    if (heads[i] != oldHeads[i] /*changed[i]*/) {
                         ++totHeadChanges;
                         ++headChanges;
                     }
