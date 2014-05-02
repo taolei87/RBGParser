@@ -21,6 +21,8 @@ public class HillClimbingDecoder extends DependencyDecoder {
 	boolean addLoss;
 	final int labelLossType;
 	
+    LocalFeatureData prunerLfd;
+
 	int[][] staticTypes;
 	
 	double bestScore;	
@@ -98,6 +100,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		unchangedRuns = 0;
 		stopped = false;
         
+        this.prunerLfd = new LocalFeatureData(inst, lfd.pruner, false);
         bestHeadChanges = 0;
         bestHcSteps = 0;
 
@@ -154,8 +157,10 @@ public class HillClimbingDecoder extends DependencyDecoder {
 			
                 ++totHcRuns;
 
-				DependencyInstance now = sampler.randomWalkSampling(
-						inst, lfd, staticTypes, addLoss);
+				//DependencyInstance now = sampler.randomWalkSampling(
+			    //		inst, lfd, staticTypes, addLoss);
+			    DependencyInstance now = sampler.randomWalkSampling(
+			    		inst, prunerLfd, lfd, staticTypes, addLoss);
 				
 				// hill climb
 				int[] heads = now.heads;

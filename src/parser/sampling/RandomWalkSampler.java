@@ -29,7 +29,84 @@ public class RandomWalkSampler {
 		labelLossType = options.labelLossType;
 	}
 	
-	
+	public DependencyInstance randomWalkSampling(DependencyInstance inst,
+    		LocalFeatureData lfd, LocalFeatureData lfdWithPruning, int[][] staticTypes, boolean addLoss)
+    {
+        int cnt = 0;
+    	int len = inst.length;
+    	
+		DependencyInstance predInst = new DependencyInstance(inst);
+		predInst.heads = new int[len];
+		predInst.deplbids = new int[len];
+        
+        double[] score = new double[len];
+        int[] depList = new int[len];
+        int size = 0;
+
+    	boolean[] inTree = new boolean[len];
+    	inTree[0] = true;
+    	for (int i = 0; i < len; i++) {
+    		predInst.heads[i] = -1;
+    	}
+    	
+    	for (int i = 1; i < len; i++) {
+    		int curr = i;
+    		while (!inTree[curr]) {
+    			// sample new head 
+                size = 0;
+
+    			for (int candH = 0; candH < len; candH++) {
+    				if (candH == curr || lfdWithPruning.isPruned(candH, curr))
+    					continue;
+    				
+    				int candLab = options.learnLabel ? staticTypes[candH][curr] : 0;
+    				
+    				double s = lfd.getArcScore(candH, curr);
+                    //double s = lfd.getArcNoTensorScore(candH, curr);
+    				s += options.learnLabel ? lfd.getLabeledArcScore(candH, curr, candLab) : 0.0;
+    				
+    				if (addLoss) {
+    					if (options.learnLabel) {
+							if (labelLossType == 0) {
+								if (candH != inst.heads[curr]) s += 0.5;
+								if (candLab != inst.deplbids[curr]) s += 0.5;
+							} else if (candH != inst.heads[curr] || candLab != inst.deplbids[curr])
+								s += 1.0;
+    					} else if (candH != inst.heads[curr])
+    						s += 1.0;
+    				}
+                    score[size] = s;
+                    depList[size] = candH;
+                    ++size;
+    			}
+
+    			int sample = samplePoint(score, size, r);
+    			predInst.heads[curr] = depList[sample];
+    			predInst.deplbids[curr] = 
+                    options.learnLabel ? staticTypes[predInst.heads[curr]][curr] : 0;
+    			curr = predInst.heads[curr];
+    			
+    			if (predInst.heads[curr] != -1 && !inTree[curr]) {
+    				cycleErase(predInst.heads, predInst.deplbids, curr);
+                    ++cnt;
+                    //DEBUG
+    				//if (cnt >= 100000) {
+    				//	System.out.println("\tRndWalk Loop " + cnt);
+    				//	dumpScoreTable(len, inst, lfd, staticTypes, addLoss);    					                        
+                    //}
+    			}
+    		}
+    		curr = i;
+    		while (!inTree[curr]) {
+    			inTree[curr] = true;
+    			curr = predInst.heads[curr]; 
+    		}
+    	}
+    	
+    	return predInst;
+    }
+
+
     public DependencyInstance randomWalkSampling(DependencyInstance inst,
     		LocalFeatureData lfd, int[][] staticTypes, boolean addLoss)
     {
