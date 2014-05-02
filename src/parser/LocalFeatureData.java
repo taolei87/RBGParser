@@ -12,7 +12,7 @@ public class LocalFeatureData {
 	Options options;
 	Parameters parameters;
 	
-	DependencyParser pruner;
+	public DependencyParser pruner;
 	DependencyDecoder prunerDecoder;
 	
 	int len;						// sentence length
