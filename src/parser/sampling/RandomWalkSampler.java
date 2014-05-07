@@ -33,7 +33,7 @@ public class RandomWalkSampler {
     public DependencyInstance randomWalkSampling(DependencyInstance inst,
     		LocalFeatureData lfd, int[][] staticTypes, boolean addLoss)
     {
-        int cnt = 0;
+        //int cnt = 0;
     	int len = inst.length;
     	
 		DependencyInstance predInst = new DependencyInstance(inst);
@@ -87,15 +87,15 @@ public class RandomWalkSampler {
                     options.learnLabel ? staticTypes[predInst.heads[curr]][curr] : 0;
     			curr = predInst.heads[curr];
     			
-    			if (predInst.heads[curr] != -1 && !inTree[curr]) {
-    				cycleErase(predInst.heads, predInst.deplbids, curr);
-                    ++cnt;
+    			//if (predInst.heads[curr] != -1 && !inTree[curr]) {
+    			//	cycleErase(predInst.heads, predInst.deplbids, curr);
+                //    ++cnt;
                     //DEBUG
     				//if (cnt >= 100000) {
     				//	System.out.println("\tRndWalk Loop " + cnt);
     				//	dumpScoreTable(len, inst, lfd, staticTypes, addLoss);    					                        
                     //}
-    			}
+    			//}
     		}
     		curr = i;
     		while (!inTree[curr]) {
@@ -107,6 +107,7 @@ public class RandomWalkSampler {
     	return predInst;
     }
 
+    /*
 	private void cycleErase(int[] dep, int[] lab, int i) {
     	while (dep[i] != -1) {
     		int next = dep[i];
@@ -115,6 +116,7 @@ public class RandomWalkSampler {
     		i = next;
     	}
     }
+    */
     
     private int samplePoint(double[] score, int N, Random r) {
     	double sumScore = Double.NEGATIVE_INFINITY;
