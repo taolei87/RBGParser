@@ -12,7 +12,7 @@ public class LocalFeatureData {
 	Options options;
 	Parameters parameters;
 	
-	DependencyParser pruner;
+	public DependencyParser pruner;
 	DependencyDecoder prunerDecoder;
 	
 	int len;						// sentence length
@@ -23,7 +23,7 @@ public class LocalFeatureData {
 	
 	int nuparcs;					// number of un-pruned arcs
 	int[] arc2id;					// map (h->m) arc to an id in [0, nuparcs-1]
-	boolean[] isPruned;				// whether a (h->m) arc is pruned								
+	public boolean[] isPruned;				// whether a (h->m) arc is pruned								
 	
 	FeatureVector[] wordFvs;		// word feature vectors
 	double[][] wpU, wpV;			// word projections U\phi and V\phi
@@ -257,7 +257,12 @@ public class LocalFeatureData {
 			}
 		return staticTypes;
 	}
-	
+    
+    public boolean hasPruning()
+    {
+        return isPruned != null;
+    }
+
 	public boolean isPruned(int h, int m) 
 	{
 		return isPruned[m*len+h];
@@ -330,7 +335,8 @@ public class LocalFeatureData {
 	public double getGPSibScore(int gp, int h, int m, int s) {
 		// m < s
 		int id = arc2id[h*len+gp];
-		
+	    
+        //System.out.println(gp + " " + h + " " + m + " " + s + " " + isPruned(gp, h) + " " + isPruned(h,s) + " " + isPruned(h,m));
 		Utils.Assert(id >= 0 && arc2id[m*len+h] >= 0 && arc2id[s*len+h] >= 0);
 		
 		int pos = (id*len+m)*len+s;

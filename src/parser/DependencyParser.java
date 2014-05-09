@@ -16,6 +16,7 @@ import parser.decoding.DependencyDecoder;
 import parser.io.DependencyReader;
 import parser.pruning.BasicArcPruner;
 import parser.sampling.RandomWalkSampler;
+import parser.decoding.HillClimbingDecoder;
 
 public class DependencyParser implements Serializable {
 	
@@ -57,8 +58,8 @@ public class DependencyParser implements Serializable {
 			prunerOptions.gamma = 1.0;
 			prunerOptions.gammaLabel = 1.0;
 			
-			//pruner = new DependencyParser();
-			pruner = new BasicArcPruner();
+			pruner = new DependencyParser();
+			//pruner = new BasicArcPruner();
 			pruner.options = prunerOptions;
 			
 			DependencyPipe pipe = new DependencyPipe(prunerOptions);
@@ -273,9 +274,15 @@ public class DependencyParser implements Serializable {
                 }
 
     		}
-    		System.out.printf("%n  Iter %d\tloss=%.4f\tuas=%.4f\t[%ds]%n", iIter+1,
+    		System.out.printf("%n  Iterr %d\tloss=%.4f\tuas=%.4f\t[%ds]%n", iIter+1,
     				loss, uas/(tot+0.0),
     				(System.currentTimeMillis() - start)/1000);
+            
+            if (decoder instanceof HillClimbingDecoder)
+                System.out.printf("\t\tHC_UAS st=%.4f\ted=%.4f%n",
+                    ((HillClimbingDecoder)decoder).startUAS(),
+                    ((HillClimbingDecoder)decoder).endUAS());
+                    
     		
     		if (options.learningMode != LearningMode.Basic && options.pruning && pruner != null)
     			pruner.printPruningStats();
@@ -424,6 +431,12 @@ public class DependencyParser implements Serializable {
     			(nUCorrect+0.0)/nDeps,
     			(nLCorrect+0.0)/nDeps,
     			(nWhole + 0.0)/nSents);
+
+        if (decoder instanceof HillClimbingDecoder)
+            System.out.printf("  HC_UAS st=%.4f\ted=%.4f%n",
+                ((HillClimbingDecoder)decoder).startUAS(),
+                ((HillClimbingDecoder)decoder).endUAS());
+                
     	if (options.pruning && options.learningMode != LearningMode.Basic && pruner != null)
     		pruner.printPruningStats();
         

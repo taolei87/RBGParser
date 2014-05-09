@@ -39,7 +39,7 @@ public class Options implements Cloneable, Serializable {
 	public double pruningCoeff = 0.1;
 	public int labelLossType = 0;
 	
-	public int numHcThreads = 10;		// hill climbing: number of threads
+	public int numHcThreads = 1;		// hill climbing: number of threads
 	public int numHcConverge = 300;		// hill climbing: number of restarts to converge 
 	
 	public boolean average = true;

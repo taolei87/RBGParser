@@ -38,6 +38,10 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
                 if (i != j) {
                     oldI[i][j] = i;
                     oldO[i][j] = j;
+                    if (lfd.hasPruning() && lfd.isPruned(i,j)) {
+                        scores[i][j] = -1e+50;
+                        continue;
+                    }
                     double va = lfd.getArcScore(i,j);
                     if (options.learnLabel) {
                         int t = staticTypes[i][j];
@@ -67,7 +71,8 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
 		DependencyInstance predInst = new DependencyInstance(inst);
 		predInst.heads = new int[N];
 		predInst.deplbids = new int[N];
-		
+	    
+        predInst.heads[0] = -1;
         for (int i = 1; i < N; ++i) {
             int j = final_par[i];
             int t = options.learnLabel ? staticTypes[j][i] : 0;
