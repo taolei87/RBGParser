@@ -1,6 +1,7 @@
 package utils;
 
 import gnu.trove.iterator.TLongIntIterator;
+import gnu.trove.map.hash.TIntLongHashMap;
 import gnu.trove.map.hash.TLongIntHashMap;
 
 import java.io.IOException;
@@ -11,13 +12,17 @@ import java.io.Serializable;
 
 public class Alphabet implements Serializable
 {
+	
 	TLongIntHashMap map;
-    int numEntries;
+    TIntLongHashMap mapReverse;
+	
+	int numEntries;
     boolean growthStopped = false;
 
     public Alphabet (int capacity)
     {
     	this.map = new TLongIntHashMap(capacity);
+    	this.mapReverse = new TIntLongHashMap(capacity);
 		numEntries = 0;
     }
     
@@ -33,6 +38,7 @@ public class Alphabet implements Serializable
     	for (TLongIntIterator iter = a.map.iterator(); iter.hasNext();) {
     		iter.advance();
     		map.put(iter.key(), iter.value());
+    		mapReverse.put(iter.value(), iter.key());
     	}
     }
 
@@ -44,6 +50,7 @@ public class Alphabet implements Serializable
 			numEntries++;
 			ret = value + 1;
 		    map.put (entry, ret);
+		    mapReverse.put(ret, entry);
 		}
 		return ret - 1;	// feature id should be 0-based
     }
@@ -56,6 +63,7 @@ public class Alphabet implements Serializable
 			numEntries++;
 			ret = numEntries;
 		    map.put (entry, ret);
+		    mapReverse.put (ret, entry);
 		}
 		return ret - 1;	// feature id should be 0-based
     }
@@ -65,6 +73,11 @@ public class Alphabet implements Serializable
     	return lookupIndex (entry, true);
     }
 	
+    public long lookupCode(int id) 
+    {
+    	return mapReverse.get(id+1);
+    }
+    
     public boolean contains (long entry)
     {
     	return map.contains (entry);
