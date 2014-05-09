@@ -58,8 +58,8 @@ public class DependencyParser implements Serializable {
 			prunerOptions.gamma = 1.0;
 			prunerOptions.gammaLabel = 1.0;
 			
-			pruner = new DependencyParser();
-			//pruner = new BasicArcPruner();
+			//pruner = new DependencyParser();
+			pruner = new BasicArcPruner();
 			pruner.options = prunerOptions;
 			
 			DependencyPipe pipe = new DependencyPipe(prunerOptions);
@@ -283,10 +283,10 @@ public class DependencyParser implements Serializable {
     				loss, uas/(tot+0.0),
     				(System.currentTimeMillis() - start)/1000);
             
-            if (decoder instanceof HillClimbingDecoder)
-                System.out.printf("\t\tHC_UAS st=%.4f\ted=%.4f%n",
-                    ((HillClimbingDecoder)decoder).startUAS(),
-                    ((HillClimbingDecoder)decoder).endUAS());
+            //if (decoder instanceof HillClimbingDecoder)
+            //    System.out.printf("\t\tHC_UAS st=%.4f\ted=%.4f%n",
+            //        ((HillClimbingDecoder)decoder).startUAS(),
+            //        ((HillClimbingDecoder)decoder).endUAS());
                     
     		
     		if (options.learningMode != LearningMode.Basic && options.pruning && pruner != null)
@@ -294,6 +294,8 @@ public class DependencyParser implements Serializable {
     		
     		// evaluate on a development set
     		if (evalAndSave && options.test && ((iIter+1) % 1 == 0 || iIter+1 == options.maxNumIters)) {		
+                pipe.dumpParamNorms(parameters);
+                
     			System.out.println();
 	  			System.out.println("_____________________________________________");
 	  			System.out.println();
