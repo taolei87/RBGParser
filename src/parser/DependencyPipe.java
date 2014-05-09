@@ -3155,4 +3155,48 @@ public class DependencyPipe implements Serializable {
     	}
     	
     }
+    
+    public void dumpParamNorms(Parameters params) {
+        //System.out.println(arcAlphabet.size());	
+    	long[] codes = arcAlphabet.toArray();
+    	
+    	double norm = 0, norm1st = 0, norm2nd = 0, norm3rd = 0, normhigh = 0;
+    	long tot = 0, miss = 0;
+    	
+    	for (long code : codes) {
+    		
+    		int id = arcAlphabet.lookupIndex(code);
+    		if (id < 0) { ++miss; continue; }
+    		
+    		++tot;
+    		int temp = (int) extractArcTemplateCode(code);
+    		double value = params.params[id];
+    		value = value * value;
+    		
+    		Utils.Assert(temp > Arc.FEATURE_TEMPLATE_START.ordinal());
+    		Utils.Assert(temp < Arc.FEATURE_TEMPLATE_END.ordinal());
+    		
+    		norm += value;
+    		if (temp < Arc.FEATURE_1ORDER_END.ordinal())
+    			norm1st += value;
+    		else if (temp < Arc.FEATURE_2ORDER_END.ordinal())
+    			norm2nd += value;
+    		else if (temp < Arc.FEATURE_3ORDER_END.ordinal())
+    			norm3rd += value;
+    		else 
+    			normhigh += value;
+    		
+    	}
+    	
+    	norm = Math.sqrt(norm);
+    	norm1st = Math.sqrt(norm1st);
+    	norm2nd = Math.sqrt(norm2nd);
+    	norm3rd = Math.sqrt(norm3rd);
+    	normhigh = Math.sqrt(normhigh);
+    	
+    	System.out.printf("%nTot params: %d missing: %d%n", tot, miss);
+    	System.out.printf("|\u03b8|^2: %f\t%f\t%f\t%f\t%f%n%n", 
+    			norm, norm1st, norm2nd, norm3rd, normhigh);
+    }
+    	
 }

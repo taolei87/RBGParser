@@ -53,13 +53,13 @@ public class HillClimbingDecoder extends DependencyDecoder {
 
     public double startUAS() 
     {
-        Utils.Assert(tasks.length == 1);
+        //Utils.Assert(tasks.length == 1);
         return (tasks[0].startCorrect + 0.0) / (tasks[0].totDeps + 0.0);
     }
 
     public double endUAS() 
     {
-        Utils.Assert(tasks.length == 1);
+        //Utils.Assert(tasks.length == 1);
         return (tasks[0].endCorrect + 0.0) / (tasks[0].totDeps + 0.0);
     }
 
@@ -125,29 +125,29 @@ public class HillClimbingDecoder extends DependencyDecoder {
 			
 			while (!stopped) {
 				
-				//DependencyInstance now = sampler.randomWalkSampling(
-				//		inst, lfd, staticTypes, addLoss);
+				DependencyInstance now = sampler.randomWalkSampling(
+						inst, lfd, staticTypes, addLoss);
 			    
                 //DependencyInstance now = firstOrdDecoder.decode(
                 //        inst, lfd, gfd, addLoss); 
 
-                LocalFeatureData prunerLfd = new LocalFeatureData(
-                        inst, lfd.pruner, addLoss);
-                prunerLfd.isPruned = lfd.isPruned;
-                DependencyInstance now = firstOrdDecoder.decode(
-                        inst, prunerLfd, null, addLoss); 
+                //LocalFeatureData prunerLfd = new LocalFeatureData(
+                //        inst, lfd.pruner, addLoss);
+                //prunerLfd.isPruned = lfd.isPruned;
+                //DependencyInstance now = firstOrdDecoder.decode(
+                //        inst, prunerLfd, null, addLoss); 
                 
                 //for (int i = 1; i < n; ++i)
                 //    System.out.print(now.heads[i] + " ");
                 //System.out.println();
 
-                for (int i = 1; i < n; ++i)
-                    Utils.Assert(!lfd.isPruned(now.heads[i], i));
+                //for (int i = 1; i < n; ++i)
+                //    Utils.Assert(!lfd.isPruned(now.heads[i], i));
 
-                for (int i = 1; i < n; ++i)
-                    if (now.heads[i] == inst.heads[i])
-                        ++startCorrect;
-                totDeps += (n-1); 
+                //for (int i = 1; i < n; ++i)
+                //    if (now.heads[i] == inst.heads[i])
+                //        ++startCorrect;
+                //totDeps += (n-1); 
 
 				// hill climb
 				int[] heads = now.heads;
@@ -194,9 +194,9 @@ public class HillClimbingDecoder extends DependencyDecoder {
 						deplbids[m] = staticTypes[heads[m]][m];
 				}
 			    
-                for (int i = 1; i < n; ++i)
-                    if (now.heads[i] == inst.heads[i])
-                        endCorrect += 1;
+                //for (int i = 1; i < n; ++i)
+                //    if (now.heads[i] == inst.heads[i])
+                //        endCorrect += 1;
 
 				double score = calcScore(now);
 				synchronized (pred) {
@@ -211,7 +211,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 						if (unchangedRuns >= converge)
 							stopped = true;
 					}
-				    stopped = true;	
+				    //stopped = true;	
 				}
 			}
 		}

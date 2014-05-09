@@ -90,7 +90,12 @@ public class DependencyParser implements Serializable {
 			parser.parameters = parameters;
 			
 			parser.train(lstTrain);
+			
+			pipe.dumpParamNorms(parameters);
+			
 			parser.saveModel();
+			
+
 		}
 		
 		if (options.test) {
