@@ -17,6 +17,7 @@ import parser.io.DependencyReader;
 import parser.pruning.BasicArcPruner;
 import parser.sampling.RandomWalkSampler;
 import parser.decoding.HillClimbingDecoder;
+import parser.decoding.ChuLiuEdmondDecoder;
 import utils.FeatureVector;
 
 public class DependencyParser implements Serializable {
@@ -288,8 +289,9 @@ public class DependencyParser implements Serializable {
                 System.out.printf("\t\tHC_UAS st=%.4f\ted=%.4f%n",
                     ((HillClimbingDecoder)decoder).startUAS(),
                     ((HillClimbingDecoder)decoder).endUAS());
-                    
-    		
+            if (decoder instanceof ChuLiuEdmondDecoder)
+                ((ChuLiuEdmondDecoder)decoder).printLocalOptStats();
+    	
     		if (options.learningMode != LearningMode.Basic && options.pruning && pruner != null)
     			pruner.printPruningStats();
     		
@@ -449,7 +451,9 @@ public class DependencyParser implements Serializable {
             System.out.printf("  HC_UAS st=%.4f\ted=%.4f%n",
                 ((HillClimbingDecoder)decoder).startUAS(),
                 ((HillClimbingDecoder)decoder).endUAS());
-                
+        if (decoder instanceof ChuLiuEdmondDecoder)
+        		((ChuLiuEdmondDecoder)decoder).printLocalOptStats();
+    	 
     	if (options.pruning && options.learningMode != LearningMode.Basic && pruner != null)
     		pruner.printPruningStats();
         
