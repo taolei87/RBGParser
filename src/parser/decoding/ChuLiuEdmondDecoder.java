@@ -1,5 +1,6 @@
 package parser.decoding;
 
+import gnu.trove.list.array.TDoubleArrayList;
 import parser.DependencyInstance;
 import parser.GlobalFeatureData;
 import parser.LocalFeatureData;
@@ -8,14 +9,26 @@ import parser.Options;
 public class ChuLiuEdmondDecoder extends DependencyDecoder {
 	
 	final int labelLossType;
-	
+
+	TDoubleArrayList lstNumOpt;
+
 	public ChuLiuEdmondDecoder(Options options)
 	{
 		this.options = options;
 		this.labelLossType = options.labelLossType;
+		lstNumOpt = new TDoubleArrayList();
 	}
 	
 	private static boolean print = false;
+    
+	public void printLocalOptStats()
+	{
+		lstNumOpt.sort();
+		int N = lstNumOpt.size();
+		for (int i = 1; i < 10; i += 2)
+			System.out.printf("\t%.0f", lstNumOpt.get((int) (N*0.1*i)));
+		System.out.println();
+	}
 	
 	@Override
 	public DependencyInstance decode(DependencyInstance inst,
@@ -64,8 +77,10 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
 
         int[] final_par = new int[M];
         for (int i = 0; i < M; ++i) final_par[i] = -1;
-
-        chuLiuEdmond(N, scores, ok, vis, stack, oldI, oldO, final_par);
+        
+        double numLocalOpt = chuLiuEdmond(N, scores, ok, vis, stack, oldI, oldO, final_par);
+        lstNumOpt.add(numLocalOpt);
+        
         if (print) System.out.println();
         
 		DependencyInstance predInst = new DependencyInstance(inst);
@@ -83,7 +98,7 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
         return predInst;
 	}
 	
-	public void chuLiuEdmond(int N, double[][] scores, boolean[] ok, boolean[] vis,
+	public double chuLiuEdmond(int N, double[][] scores, boolean[] ok, boolean[] vis,
             boolean[] stack, int[][] oldI, int[][] oldO, int[] final_par) {
 
         // find best graph
@@ -147,7 +162,7 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
                     System.out.printf("%d-->%d ", final_par[i], i);
                 System.out.println();
             }
-            return;
+            return 1.0;
         }
         
         if (print) {
@@ -203,7 +218,7 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
             oldO[i][N] = toCircle;
         }
 
-        chuLiuEdmond(N+1, scores, ok, vis, stack, oldI, oldO, final_par);
+        double numLocalOpt = chuLiuEdmond(N+1, scores, ok, vis, stack, oldI, oldO, final_par);
 
         // construct tree from contracted one
         for (int i = 0; i < N; ++i) 
@@ -223,6 +238,9 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
                 System.out.printf("%d-->%d ", final_par[i], i);
             System.out.println();
         }
+        
+        //System.out.printf(" %d", maxLen);
+        return numLocalOpt * maxLen;
 
     }
 }
