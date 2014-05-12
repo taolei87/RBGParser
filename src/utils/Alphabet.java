@@ -116,6 +116,7 @@ public class Alphabet implements Serializable
 		out.writeInt (CURRENT_SERIAL_VERSION);
 		out.writeInt (numEntries);
 		out.writeObject(map);
+        out.writeObject(mapReverse);
 		out.writeBoolean (growthStopped);
 	}
 	
@@ -123,6 +124,7 @@ public class Alphabet implements Serializable
 		int version = in.readInt ();
 		numEntries = in.readInt();
 		map = (TLongIntHashMap)in.readObject();
+        mapReverse = (TIntLongHashMap)in.readObject();
 		growthStopped = in.readBoolean();
     }
 }

@@ -295,8 +295,7 @@ public class DependencyParser implements Serializable {
     		
     		// evaluate on a development set
     		if (evalAndSave && options.test && ((iIter+1) % 1 == 0 || iIter+1 == options.maxNumIters)) {		
-                pipe.dumpParamNorms(parameters);
-                
+               
     			System.out.println();
 	  			System.out.println("_____________________________________________");
 	  			System.out.println();
@@ -304,6 +303,7 @@ public class DependencyParser implements Serializable {
 	  			System.out.println(); 
                 if (options.average) 
                 	parameters.averageParameters((iIter+1)*N);
+                pipe.dumpParamNorms(parameters);
 	  			double res = evaluateSet(false, false);
                 System.out.println();
 	  			System.out.println("_____________________________________________");

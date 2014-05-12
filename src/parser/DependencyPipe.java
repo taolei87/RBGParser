@@ -3223,7 +3223,7 @@ public class DependencyPipe implements Serializable {
     public void dumpScoreStatistics(double[] stat)
     {
     	Utils.Assert(stat != null && stat.length == 5);
-    	System.out.printf("Scores: \t%f\t%f\t%f\t%f\t%f%n%n",
+    	System.out.printf("Scores:\t%f\t%f\t%f\t%f\t%f%n%n",
     			stat[0], stat[1], stat[2], stat[3], stat[4]);
     }
     	
