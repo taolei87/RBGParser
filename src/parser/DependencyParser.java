@@ -48,7 +48,7 @@ public class DependencyParser implements Serializable {
 		options.printOptions();
 		
 		DependencyParser pruner = null;
-		if (options.train && options.pruning && options.learningMode != LearningMode.Basic) {
+		if (options.train && options.pruning /*&& options.learningMode != LearningMode.Basic*/) {
 			Options prunerOptions = new Options();
 			prunerOptions.processArguments(args);
 			prunerOptions.maxNumIters = 10;
@@ -74,6 +74,8 @@ public class DependencyParser implements Serializable {
 			pruner.parameters = parameters;
 			
 			pruner.train(lstTrain);
+			if (options.test && options.testFile != "")
+				pruner.evaluateSet(false, false);
 		}
 		
 		if (options.train) {
@@ -293,7 +295,7 @@ public class DependencyParser implements Serializable {
             if (decoder instanceof ChuLiuEdmondDecoder)
                 ((ChuLiuEdmondDecoder)decoder).printLocalOptStats();
     	
-    		if (options.learningMode != LearningMode.Basic && options.pruning && pruner != null)
+    		if (options.pruning && pruner != null)
     			pruner.printPruningStats();
     		
     		// evaluate on a development set
@@ -457,7 +459,7 @@ public class DependencyParser implements Serializable {
         if (decoder instanceof ChuLiuEdmondDecoder)
         		((ChuLiuEdmondDecoder)decoder).printLocalOptStats();
     	 
-    	if (options.pruning && options.learningMode != LearningMode.Basic && pruner != null)
+    	if (options.pruning && pruner != null)
     		pruner.printPruningStats();
         
         decoder.shutdown();
