@@ -5,6 +5,7 @@ import parser.DependencyInstance;
 import parser.GlobalFeatureData;
 import parser.LocalFeatureData;
 import parser.Options;
+import utils.Utils;
 
 public class ChuLiuEdmondDecoder extends DependencyDecoder {
 	
@@ -78,8 +79,9 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
         int[] final_par = new int[M];
         for (int i = 0; i < M; ++i) final_par[i] = -1;
         
-        double numLocalOpt = chuLiuEdmond(N, scores, ok, vis, stack, oldI, oldO, final_par);
-        lstNumOpt.add(numLocalOpt);
+        double appoxNumLocalOpt = chuLiuEdmond(N, scores, ok, vis, stack, oldI, oldO, final_par);
+        
+
         
         if (print) System.out.println();
         
@@ -94,6 +96,11 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
             predInst.heads[i] = j;
             predInst.deplbids[i] = t;
         }
+        
+        for (int i = 0; i < M; ++i) ok[i] = true;
+        double numLocalOpt = chuLiuEdmond2(N, scores, ok, vis, stack, oldI, oldO, final_par);
+        lstNumOpt.add(numLocalOpt);
+        //System.out.println(appoxNumLocalOpt + " " + numLocalOpt);
         
         return predInst;
 	}
@@ -242,5 +249,183 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
         //System.out.printf(" %d", maxLen);
         return numLocalOpt * maxLen;
 
+    }
+	
+	
+	static int MAXNUM = 10000;
+	public double chuLiuEdmond2(int N, double[][] scores, boolean[] ok, boolean[] vis,
+            boolean[] stack, int[][] oldI, int[][] oldO, int[] final_par) {
+		
+		double tot = 0;
+						
+        // find best graph
+        int[] par = new int[N];
+        par[0] = -1;
+        for (int i = 0; i < N; ++i) par[i] = -1;
+        for (int i = 1; i < N; ++i) if (ok[i]) {
+            par[i] = 0;
+            double max = scores[0][i];
+            for (int j = 1; j < N; ++j) 
+                if (i != j && ok[j] && max < scores[j][i]) {
+                    par[i] = j;
+                    max = scores[j][i]; 
+                }
+        }
+
+        // find the longest circle
+        int maxLen = 0;
+        int start = -1;
+        for (int i = 0; i < N; ++i) vis[i] = false;
+        for (int i = 0; i < N; ++i) stack[i] = false;
+        for (int i = 0; i < N; ++i) {
+            // if this is not a valid node or
+            // it is already visited
+            if (vis[i] || !ok[i]) continue;
+            int j = i;
+            while (j != -1 && !vis[j]) {
+                vis[j] = true;
+                stack[j] = true;
+                j = par[j];
+            }
+
+            if (j != -1 && stack[j]) {
+                // find a circle j --> ... --> j
+                int size = 1, k = par[j];
+                while (k != j) {
+                    k = par[k];
+                    ++size;
+                }
+                // keep the longest circle
+                if (size > maxLen) {
+                    maxLen = size;
+                    start = j;
+                }
+            }
+
+            // clear stack
+            j = i;
+            while (j != -1 && stack[j]) {
+                stack[j] = false;
+                j = par[j];
+            }
+        }
+        
+        // if there's no circle, return the result tree
+        if (maxLen == 0) {
+            for (int i = 0; i < N; ++i) final_par[i] = par[i];
+            if (print) {
+                System.out.printf("Tree: ");
+                for (int i = 0; i < N; ++i) if (final_par[i] != -1)
+                    System.out.printf("%d-->%d ", final_par[i], i);
+                System.out.println();
+            }
+            return 1.0;
+        }
+        
+        if (print) {
+            System.out.printf("Circle: ");
+            for (int i = start; ;) {
+                System.out.printf("%d<--", i);
+                i = par[i];
+                if (i == start) break;
+            }
+            System.out.println(start);
+        }
+
+        // otherwise, contract the circle 
+        // and add a virtual node v_N
+         
+        // get circle cost and mark all nodes on the circle
+        double circleCost = scores[par[start]][start];
+        stack[start] = true;
+        ok[start] = false;
+        for (int i = par[start]; i != start; i = par[i]) {
+            stack[i] = true;
+            ok[i] = false;
+            circleCost += scores[par[i]][i];
+        }
+        
+		int num = 0;
+		for (int i = 1; i <= N; ++i) 
+			if (ok[i]) ++num;
+		//System.out.println("num: " + num + " " + N + " " + maxLen);
+		Utils.Assert(num >= 1);
+		
+		boolean[] ok2 = new boolean[ok.length];
+		for (int i = 0; i < ok2.length; ++i) ok2[i] = ok[i];
+	
+        for (int i = 0; i < N; ++i) {
+            if (stack[i] || !ok[i]) continue;
+            
+            //double maxToCircle = Double.NEGATIVE_INFINITY;
+            double maxFromCircle = Double.NEGATIVE_INFINITY;
+            //int toCircle = -1;
+            int fromCircle = -1;
+
+            for (int j = start; ;) {
+                if (scores[j][i] > maxFromCircle) {
+                    maxFromCircle = scores[j][i];
+                    fromCircle = j;
+                }
+                //double newScore = circleCost + scores[i][j] - scores[par[j]][j];
+                //if (newScore > maxToCircle) {
+                //    maxToCircle = newScore;
+                //    toCircle = j;
+                //}
+                j = par[j];
+                if (j == start) break;
+            }
+
+            scores[N][i] = maxFromCircle;
+            //oldI[N][i] = fromCircle;;
+            //oldO[N][i] = i;
+            //scores[i][N] = maxToCircle;
+            //oldI[i][N] = i;
+            //oldO[i][N] = toCircle;
+        }
+        
+        for (int node = start; ;) {
+        	
+        	if (tot >= MAXNUM) {
+        		long x = 1;
+        		x <<= (num-1);
+        		tot += x;
+        	} else {
+	        	for (int i = 0; i < ok2.length; ++i) ok[i] = ok2[i];
+	        	for (int i = 0; i < N; ++i) {
+	        		if (stack[i] || !ok[i]) continue;
+	        		scores[i][N] = scores[i][node];
+	        		//oldI[i][N] = i;
+	        		//oldO[i][N] = node;
+	        	}
+	        	tot += chuLiuEdmond2(N+1, scores, ok, vis, stack, oldI, oldO, final_par);
+        	}
+        	node = par[node];
+        	if (node == start) break;
+        }
+
+
+//        // construct tree from contracted one
+//        for (int i = 0; i < N; ++i) 
+//            if (final_par[i] == N) final_par[i] = oldI[N][i];
+//        final_par[oldO[final_par[N]][N]] = final_par[N];
+//        for (int i = start; ;) {
+//            int j = par[i];
+//            // j --> i
+//            if (final_par[i] == -1) final_par[i] = j;
+//            i = j;
+//            if (i == start) break;
+//        }
+
+        if (print) {
+            System.out.printf("Tree: ");
+            for (int i = 0; i < N; ++i) if (final_par[i] != -1)
+                System.out.printf("%d-->%d ", final_par[i], i);
+            System.out.println();
+        }
+        
+        //System.out.printf(" %d", maxLen);
+        //return numLocalOpt * maxLen;
+        return tot;
     }
 }
