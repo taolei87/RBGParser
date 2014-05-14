@@ -81,8 +81,6 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
         
         double appoxNumLocalOpt = chuLiuEdmond(N, scores, ok, vis, stack, oldI, oldO, final_par);
         
-
-        
         if (print) System.out.println();
         
 		DependencyInstance predInst = new DependencyInstance(inst);

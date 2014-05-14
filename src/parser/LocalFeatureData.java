@@ -66,6 +66,7 @@ public class LocalFeatureData {
 			DependencyDecoder.createDependencyDecoder(pruner.options);
 			
 		Utils.Assert(pruner == null || pruner.options.learningMode == LearningMode.Basic);
+		Utils.Assert((pruner == null) ==  (options.pruning == false));
 		
 		len = inst.length;
 		ntypes = pipe.types.length;
@@ -88,10 +89,12 @@ public class LocalFeatureData {
 		// calculate 1st order feature vectors and scores
 		initFirstOrderTables();
 		
-		if (options.learningMode != LearningMode.Basic) {
+		if (options.pruning) {
 			// construct unpruned arc list. All arcs are kept if there is no pruner.
 			initArcPruningMap(indexGoldArcs);
-			
+		}
+		
+		if (options.learningMode != LearningMode.Basic) {	
 			// allocate memory for tables of high order features 
 			initHighOrderFeatureTables();
 		}
