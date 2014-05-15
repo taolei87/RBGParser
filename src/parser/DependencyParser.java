@@ -398,7 +398,8 @@ public class DependencyParser implements Serializable {
     		GlobalFeatureData gfd = new GlobalFeatureData(lfd); 
     		
     		++nSents;
-            
+            System.out.printf(" %d", nSents);
+
             int nToks = 0;
             if (evalWithPunc)
     		    nToks = (inst.length - 1);
@@ -439,7 +440,8 @@ public class DependencyParser implements Serializable {
     		
     		inst = pipe.createInstance(reader);
     	}
-    	
+        System.out.println();
+
     	reader.close();
     	if (out != null) out.close();
     	

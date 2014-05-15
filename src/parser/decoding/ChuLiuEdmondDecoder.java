@@ -24,6 +24,7 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
     
 	public void printLocalOptStats()
 	{
+        System.out.printf("\tsize=%d%n", lstNumOpt.size());
 		lstNumOpt.sort();
 		int N = lstNumOpt.size();
 		for (int i = 1; i < 10; i += 2)
