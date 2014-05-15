@@ -54,7 +54,8 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
                     oldI[i][j] = i;
                     oldO[i][j] = j;
                     if (lfd.hasPruning() && lfd.isPruned(i,j)) {
-                        scores[i][j] = -1e+50;
+                        //scores[i][j] = -1e+50;
+                    	scores[i][j] = Double.NEGATIVE_INFINITY;
                         continue;
                     }
                     double va = lfd.getArcScore(i,j);
@@ -119,6 +120,8 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
                     par[i] = j;
                     max = scores[j][i]; 
                 }
+            //DEBUG
+            Utils.Assert(max != Double.NEGATIVE_INFINITY);
         }
 
         // find the longest circle
@@ -269,6 +272,10 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
                     par[i] = j;
                     max = scores[j][i]; 
                 }
+            if (max == Double.NEGATIVE_INFINITY) {
+            	//System.out.println("!!!");
+            	return 0;
+            }
         }
 
         // find the longest circle
@@ -386,9 +393,8 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
         for (int node = start; ;) {
         	
         	if (tot >= MAXNUM) {
-        		long x = 1;
-        		x <<= (num-1);
-        		tot += x;
+        		long x = (1L << (num-1));
+        		tot += x > 0 ? x : Math.pow(2, num-1);
         	} else {
 	        	for (int i = 0; i < ok2.length; ++i) ok[i] = ok2[i];
 	        	for (int i = 0; i < N; ++i) {
