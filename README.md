@@ -1,6 +1,5 @@
 
 ### RBGParser
-
 =========
 
 This project is developed at Natural Language Processing group in MIT. The project contains a Java implementation of a syntactic dependency parser with tensor decomposition, described in the following papers:
@@ -14,7 +13,7 @@ This project is implemented by Tao Lei (taolei [at] csail.mit.edu) and Yuan Zhan
 
 =========
 
-
+<br>
 
 ##### 1. Compilation
 
