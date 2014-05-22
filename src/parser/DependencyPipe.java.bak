@@ -2725,11 +2725,6 @@ public class DependencyPipe implements Serializable {
     	}
     }
     
-    public boolean isHighOrderFid(int id) {
-    	long code = arcAlphabet.lookupCode(id);
-    	return extractArcTemplateCode(code) > Arc.FEATURE_1ORDER_END.ordinal();
-    }
-    
     /************************************************************************
      *  Region end #
      ************************************************************************/
@@ -3166,12 +3161,6 @@ public class DependencyPipe implements Serializable {
     	long[] codes = arcAlphabet.toArray();
     	
     	double norm = 0, norm1st = 0, norm2nd = 0, norm3rd = 0, normhigh = 0;
-    	double max = Double.NEGATIVE_INFINITY, max1st = Double.NEGATIVE_INFINITY, 
-    			max2nd = Double.NEGATIVE_INFINITY, max3rd = Double.NEGATIVE_INFINITY,
-    			maxhigh = Double.NEGATIVE_INFINITY;
-    	double min = Double.POSITIVE_INFINITY, min1st = Double.POSITIVE_INFINITY, 
-    			min2nd = Double.POSITIVE_INFINITY, min3rd = Double.POSITIVE_INFINITY, 
-    			minhigh = Double.POSITIVE_INFINITY; 
     	long tot = 0, miss = 0;
     	
     	for (long code : codes) {
@@ -3182,40 +3171,60 @@ public class DependencyPipe implements Serializable {
     		++tot;
     		int temp = (int) extractArcTemplateCode(code);
     		double value = params.params[id];
-    		double value2 = value * value;
+    		value = value * value;
     		
     		Utils.Assert(temp > Arc.FEATURE_TEMPLATE_START.ordinal());
     		Utils.Assert(temp < Arc.FEATURE_TEMPLATE_END.ordinal());
     		
-    		norm += value2;
-    		max = Math.max(max, value);
-    		min = Math.min(min, value);
-    		if (temp < Arc.FEATURE_1ORDER_END.ordinal()) {
-    			norm1st += value2;
-    			max1st = Math.max(max1st, value);
-    			min1st = Math.min(min1st, value);
-    		} else if (temp < Arc.FEATURE_2ORDER_END.ordinal()) {
-    			norm2nd += value2;
-    			max2nd = Math.max(max2nd, value);
-    			min2nd = Math.min(min2nd, value);
-    		} else if (temp < Arc.FEATURE_3ORDER_END.ordinal()) {
-    			norm3rd += value2;
-    			max3rd = Math.max(max3rd, value);
-    			min3rd = Math.min(min3rd, value);
-    		} else {
-    			normhigh += value2;
-    			maxhigh = Math.max(maxhigh, value);
-    			minhigh = Math.min(minhigh, value);
-    		}
+    		norm += value;
+    		if (temp < Arc.FEATURE_1ORDER_END.ordinal())
+    			norm1st += value;
+    		else if (temp < Arc.FEATURE_2ORDER_END.ordinal())
+    			norm2nd += value;
+    		else if (temp < Arc.FEATURE_3ORDER_END.ordinal())
+    			norm3rd += value;
+    		else 
+    			normhigh += value;
     		
     	}
     	    	
     	System.out.printf("%nTot params: %d missing: %d%n", tot, miss);
-    	System.out.printf("l2:\t%f\t%f\t%f\t%f\t%f%n%n", 
+    	System.out.printf("|\u03b8|^2:\t%f\t%f\t%f\t%f\t%f%n%n", 
     			norm, norm1st, norm2nd, norm3rd, normhigh);
-    	System.out.printf("max:\t%f\t%f\t%f\t%f\t%f%n%n", 
-    			max, max1st, max2nd, max3rd, maxhigh);
-    	System.out.printf("min:\t%f\t%f\t%f\t%f\t%f%n%n", 
-    			min, min1st, min2nd, min3rd, minhigh);
     }
+    
+    public void addScoreStatistics(double[] stat, Parameters params, FeatureVector fv)
+    {
+    	Utils.Assert(stat != null && stat.length == 5);
+    	
+    	for (int i = 0, N = fv.size(); i < N; ++i) {
+    		int id = fv.x(i);
+    		double value = fv.value(i) * params.params[id];
+    		
+    		long code = arcAlphabet.lookupCode(id);
+    		int temp = (int) extractArcTemplateCode(code);
+    		//System.out.println(id + " " + code + " " + temp);
+    		
+    		Utils.Assert(temp > Arc.FEATURE_TEMPLATE_START.ordinal());
+    		Utils.Assert(temp < Arc.FEATURE_TEMPLATE_END.ordinal());
+    		
+    		stat[0] += value;
+    		if (temp < Arc.FEATURE_1ORDER_END.ordinal())
+    			stat[1] += value;
+    		else if (temp < Arc.FEATURE_2ORDER_END.ordinal())
+    			stat[2] += value;
+    		else if (temp < Arc.FEATURE_3ORDER_END.ordinal())
+    			stat[3] += value;
+    		else 
+    			stat[4] += value;
+    	}    	
+    }
+    
+    public void dumpScoreStatistics(double[] stat)
+    {
+    	Utils.Assert(stat != null && stat.length == 5);
+    	System.out.printf("Scores:\t%f\t%f\t%f\t%f\t%f%n%n",
+    			stat[0], stat[1], stat[2], stat[3], stat[4]);
+    }
+    	
 }

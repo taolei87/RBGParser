@@ -47,6 +47,8 @@ public class Options implements Cloneable, Serializable {
 	public double gamma = 1, gammaLabel = 1;
 	public int R = 50;
 	
+	public double lambda = 1.0;
+	
 	// feature set
 	public boolean useCS = true;		// use consecutive siblings
 	public boolean useGP = true;		// use grandparent
@@ -134,6 +136,10 @@ public class Options implements Cloneable, Serializable {
             }
             else if (arg.startsWith("gamma:")) {
             	gamma = Double.parseDouble(arg.split(":")[1]);
+            	//gammaLabel = gamma;
+            }
+            else if (arg.startsWith("lambda:")) {
+            	lambda = Double.parseDouble(arg.split(":")[1]);
             	//gammaLabel = gamma;
             }
             else if (arg.startsWith("R:")) {

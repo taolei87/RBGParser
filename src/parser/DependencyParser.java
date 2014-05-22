@@ -418,6 +418,8 @@ public class DependencyParser implements Serializable {
     	reader.close();
     	if (out != null) out.close();
     	
+    	pipe.dumpParamNorms(parameters);
+    	
     	System.out.printf("  Tokens: %d%n", nDeps);
     	System.out.printf("  Sentences: %d%n", nSents);
     	System.out.printf("  UAS=%.6f\tLAS=%.6f\tCAS=%.6f%n",

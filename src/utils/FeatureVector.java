@@ -116,6 +116,20 @@ public class FeatureVector {
 		
 	}
 	
+	public double Squaredl2NormUnsafe(boolean[] ok, boolean val) {
+
+		if (l2Vec == null || l2Vec.length < nRows) l2Vec = new double[nRows];
+		
+		double sum = 0;
+		for (int i = 0; i < size; ++i) l2Vec[x[i]] += va[i];
+		for (int i = 0; i < size; ++i) {
+			if (ok[x[i]] == val) sum += l2Vec[x[i]] * l2Vec[x[i]];
+			l2Vec[x[i]] = 0;
+		}
+		return sum;
+		
+	}
+	
     public double min() {
         double m = Double.POSITIVE_INFINITY;
         for (int i = 0; i < size; ++i)

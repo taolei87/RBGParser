@@ -16,7 +16,7 @@ public class Parameters implements Serializable {
 	
 	public transient Options options;
 	public final int labelLossType;
-	public double C, gamma, gammaLabel;
+	public double C, gamma, gammaLabel, lambda;
 	public int size;
 	public int rank;
 	public int N, M, T, D;
@@ -27,6 +27,8 @@ public class Parameters implements Serializable {
 	public transient double[][] totalU, totalV, totalW;
 	public transient double[][] backupU, backupV, backupW;
 	
+	public boolean[] isHighOrder;
+	
 	public transient FeatureVector[] dU, dV, dW;
 	
 	public Parameters(DependencyPipe pipe, Options options) 
@@ -36,13 +38,18 @@ public class Parameters implements Serializable {
 		size = pipe.numArcFeats;		
 		params = new double[size];
 		total = new double[size];
-
+		
+		isHighOrder = new boolean[size];
+		for (int i = 0; i < size; ++i)
+			isHighOrder[i] = pipe.isHighOrderFid(i);
+		
 		this.options = options;
 		this.labelLossType = options.labelLossType;
 		C = options.C;
 		gamma = options.gamma;
 		gammaLabel = options.gammaLabel;
 		rank = options.R;
+		lambda = options.lambda;
 		
 		N = pipe.numWordFeats;
 		M = N;
@@ -219,7 +226,10 @@ public class Parameters implements Serializable {
     	}
     	
         double loss = - dt.dotProduct(params)*gamma - dtl.dotProduct(params)*gammaLabel + Fi;
-        double l2norm = dt.Squaredl2NormUnsafe() * gamma * gamma + dtl.Squaredl2NormUnsafe() * gammaLabel * gammaLabel;
+        //double l2norm = dt.Squaredl2NormUnsafe() * gamma * gamma + dtl.Squaredl2NormUnsafe() * gammaLabel * gammaLabel;
+        double l2norm = dt.Squaredl2NormUnsafe(isHighOrder, false) * gamma * gamma 
+        			  + dt.Squaredl2NormUnsafe(isHighOrder,  true) * gamma * gamma / lambda
+        			  + dtl.Squaredl2NormUnsafe() * gammaLabel * gammaLabel;
     	
         int updId = (updCnt + offset) % 3;
         if ( updId == 1 ) {
@@ -248,6 +258,7 @@ public class Parameters implements Serializable {
         	}   
         }
         
+        double invLambda = 1.0/lambda;
         double alpha = loss/l2norm;
     	alpha = Math.min(C, alpha);
     	if (alpha > 0) {
@@ -258,8 +269,13 @@ public class Parameters implements Serializable {
 	    		for (int i = 0, K = dt.size(); i < K; ++i) {
 		    		int x = dt.x(i);
 		    		double z = dt.value(i);
-		    		params[x] += coeff * z;
-		    		total[x] += coeff2 * z;
+		    		if (isHighOrder[x]) {
+		    			params[x] += coeff * z * invLambda;
+		    			total[x] += coeff2 * z * invLambda;
+		    		} else {
+		    			params[x] += coeff * z;
+		    			total[x] += coeff2 * z;
+		    		}
 	    		}
 	    		coeff = alpha * gammaLabel;
 	    		coeff2 = coeff * updCnt;

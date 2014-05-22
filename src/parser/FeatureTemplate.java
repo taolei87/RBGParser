@@ -79,6 +79,7 @@ public class FeatureTemplate {
 	    CORE_LABEL_NTIC,
 	    CORE_LABEL_NTJ,
 
+	    FEATURE_1ORDER_END,
 	    
 		/*************************************************
 		 * 2o feature  
@@ -209,7 +210,9 @@ public class FeatureTemplate {
 		GC_HC_MC_nGC_pHC,
 		GC_HC_MC_nGC_pMC,
 		GC_HC_MC_nHC_pMC,
-
+		
+		FEATURE_2ORDER_END,
+		
 		// gp sibling
 		GC_HC_MC_SC,
 		GL_HC_MC_SC,
@@ -268,7 +271,9 @@ public class FeatureTemplate {
 		HL_CC_SC,
 		HC_CL_SC,
 		HC_CC_SL,
-
+		
+		FEATURE_3ORDER_END,
+		
 		// pp attachment
 		PP_HC_MC,
 		PP_HL_MC,
@@ -328,7 +333,9 @@ public class FeatureTemplate {
 		NP_HL_MC,
 		NP_HC_ML,
 		NP_HL_ML,
-
+		
+		FEATURE_HORDER_END,
+		
 		/*************************************************
 		 * word embedding feature  
 		 * ***********************************************/
