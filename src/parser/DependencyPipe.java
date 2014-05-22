@@ -3218,4 +3218,38 @@ public class DependencyPipe implements Serializable {
     	System.out.printf("min:\t%f\t%f\t%f\t%f\t%f%n%n", 
     			min, min1st, min2nd, min3rd, minhigh);
     }
+    
+    public void addScoreStatistics(double[] stat, Parameters params, FeatureVector fv)
+    {
+    	Utils.Assert(stat != null && stat.length == 5);
+    	
+    	for (int i = 0, N = fv.size(); i < N; ++i) {
+    		int id = fv.x(i);
+    		double value = fv.value(i) * params.params[id];
+    		
+    		long code = arcAlphabet.lookupCode(id);
+    		int temp = (int) extractArcTemplateCode(code);
+    		//System.out.println(id + " " + code + " " + temp);
+    		
+    		Utils.Assert(temp > Arc.FEATURE_TEMPLATE_START.ordinal());
+    		Utils.Assert(temp < Arc.FEATURE_TEMPLATE_END.ordinal());
+    		
+    		stat[0] += value;
+    		if (temp < Arc.FEATURE_1ORDER_END.ordinal())
+    			stat[1] += value;
+    		else if (temp < Arc.FEATURE_2ORDER_END.ordinal())
+    			stat[2] += value;
+    		else if (temp < Arc.FEATURE_3ORDER_END.ordinal())
+    			stat[3] += value;
+    		else 
+    			stat[4] += value;
+    	}    	
+    }
+    
+    public void dumpScoreStatistics(double[] stat)
+    {
+    	Utils.Assert(stat != null && stat.length == 5);
+    	System.out.printf("Scores:\t%f\t%f\t%f\t%f\t%f%n%n",
+    			stat[0], stat[1], stat[2], stat[3], stat[4]);
+    }
 }

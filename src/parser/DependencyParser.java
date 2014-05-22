@@ -16,6 +16,7 @@ import parser.decoding.DependencyDecoder;
 import parser.io.DependencyReader;
 import parser.pruning.BasicArcPruner;
 import parser.sampling.RandomWalkSampler;
+import utils.FeatureVector;
 
 public class DependencyParser implements Serializable {
 	
@@ -367,6 +368,7 @@ public class DependencyParser implements Serializable {
     			new OutputStreamWriter(new FileOutputStream(options.outFile), "UTF8"));
     	}
     	
+    	double[] scoreStat = new double[5];
     	DependencyDecoder decoder = DependencyDecoder.createDependencyDecoder(options);   	
     	int nUCorrect = 0, nLCorrect = 0;
     	int nDeps = 0, nWhole = 0, nSents = 0;
@@ -390,7 +392,9 @@ public class DependencyParser implements Serializable {
             nDeps += nToks;
     		    		
             DependencyInstance predInst = decoder.decode(inst, lfd, gfd, false);
-
+            FeatureVector lfv = lfd.getFeatureVector(predInst);
+            pipe.addScoreStatistics(scoreStat, parameters, lfv);
+            
     		int ua = evaluateUnlabelCorrect(inst, predInst, evalWithPunc), la = 0;
     		if (options.learnLabel)
     			la = evaluateLabelCorrect(inst, predInst, evalWithPunc);
@@ -419,6 +423,7 @@ public class DependencyParser implements Serializable {
     	if (out != null) out.close();
     	
     	pipe.dumpParamNorms(parameters);
+    	pipe.dumpScoreStatistics(scoreStat);
     	
     	System.out.printf("  Tokens: %d%n", nDeps);
     	System.out.printf("  Sentences: %d%n", nSents);
