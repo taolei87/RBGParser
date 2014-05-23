@@ -3223,6 +3223,8 @@ public class DependencyPipe implements Serializable {
     {
     	Utils.Assert(stat != null && stat.length == 15);
     	
+    	double s0 = 0, s1 = 0, s2 = 0, s3 = 0, s4 = 0;
+    	
     	for (int i = 0, N = fv.size(); i < N; ++i) {
     		int id = fv.x(i);
     		double value = fv.value(i) * params.params[id];
@@ -3234,7 +3236,7 @@ public class DependencyPipe implements Serializable {
     		Utils.Assert(temp > Arc.FEATURE_TEMPLATE_START.ordinal());
     		Utils.Assert(temp < Arc.FEATURE_TEMPLATE_END.ordinal());
     		
-    		double s0 = 0, s1 = 0, s2 = 0, s3 = 0, s4 = 0;
+    		
     		
     		stat[0] += value;
     		s0 += value;
@@ -3251,23 +3253,25 @@ public class DependencyPipe implements Serializable {
     			stat[4] += value;
     			s4 += value;
     		}
-    		stat[5] = Math.max(stat[5], s0);
-    		stat[10] = Math.min(stat[10], s0);
     		
-    		s0 = Math.abs(s0) + 1e-50;
-    		s1 /= s0;
-    		s2 /= s0;
-    		s3 /= s0;
-    		s4 /= s0;
-    		stat[6] = Math.max(stat[6], s1);
-    		stat[11] = Math.min(stat[11], s1);
-    		stat[7] = Math.max(stat[7], s2);
-    		stat[12] = Math.min(stat[12], s2);
-    		stat[8] = Math.max(stat[8], s3);
-    		stat[13] = Math.min(stat[13], s3);
-    		stat[9] = Math.max(stat[9], s4);
-    		stat[14] = Math.min(stat[14], s4);
-    	}    	
+    	}   
+    	
+    	stat[5] = Math.max(stat[5], s0);
+		stat[10] = Math.min(stat[10], s0);
+		
+		s0 = Math.abs(s0) + 1e-50;
+		s1 /= s0;
+		s2 /= s0;
+		s3 /= s0;
+		s4 /= s0;
+		stat[6] = Math.max(stat[6], s1);
+		stat[11] = Math.min(stat[11], s1);
+		stat[7] = Math.max(stat[7], s2);
+		stat[12] = Math.min(stat[12], s2);
+		stat[8] = Math.max(stat[8], s3);
+		stat[13] = Math.min(stat[13], s3);
+		stat[9] = Math.max(stat[9], s4);
+		stat[14] = Math.min(stat[14], s4);
     }
     
     public void dumpScoreStatistics(double[] stat)
