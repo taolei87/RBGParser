@@ -19,7 +19,7 @@ public class LocalFeatureData {
 	int ntypes;						// number of label types
 	int size;						
 	int rank;								
-	double gamma, gammaLabel;
+	double gamma, gammaLabel, lambda;
 	
 	int nuparcs;					// number of un-pruned arcs
 	int[] arc2id;					// map (h->m) arc to an id in [0, nuparcs-1]
@@ -73,6 +73,7 @@ public class LocalFeatureData {
 		size = pipe.numArcFeats;
 		gamma = options.gamma;
 		gammaLabel = options.gammaLabel;
+		lambda = options.lambda;
 		
 		wordFvs = new FeatureVector[len];
 		wpU = new double[len][rank];
@@ -112,8 +113,8 @@ public class LocalFeatureData {
 			for (int j = 0; j < len; ++j) 
 				if (i != j) {
 					arcFvs[i*len+j] = pipe.createArcFeatures(inst, i, j);
-                    arcNtScores[i*len+j] = parameters.dotProduct(arcFvs[i*len+j]) * gamma;
-					arcScores[i*len+j] = parameters.dotProduct(arcFvs[i*len+j]) * gamma
+                    arcNtScores[i*len+j] = parameters.dotProduct(arcFvs[i*len+j]) * gamma * (2-lambda);
+					arcScores[i*len+j] = parameters.dotProduct(arcFvs[i*len+j]) * gamma * (2-lambda)
 									+ parameters.dotProduct(wpU[i], wpV[j], i-j) * (1-gamma);
 				}
 		
@@ -696,7 +697,7 @@ public class LocalFeatureData {
 		FeatureDataItem item = trips[pos];
 		if (item == null) {
 			FeatureVector fv = pipe.createTripsFeatureVector(inst, h, m, s);
-			double score = parameters.dotProduct(fv) * gamma;
+			double score = parameters.dotProduct(fv) * gamma * lambda;
 			item = new FeatureDataItem(fv, score);
 			trips[pos] = item;			
 		}
@@ -709,7 +710,7 @@ public class LocalFeatureData {
 		FeatureDataItem item = sib[pos];
 		if (item == null) {					
 			FeatureVector fv = pipe.createSibFeatureVector(inst, m, s/*, false*/);
-			double score = parameters.dotProduct(fv) * gamma;
+			double score = parameters.dotProduct(fv) * gamma * lambda;
 			item = new FeatureDataItem(fv, score);
 			sib[pos] = item;
 		}
@@ -725,7 +726,7 @@ public class LocalFeatureData {
 		FeatureDataItem item = gpc[pos];
 		if (item == null) {
 			FeatureVector fv = pipe.createGPCFeatureVector(inst, gp, h, m);
-			double score = parameters.dotProduct(fv) * gamma;
+			double score = parameters.dotProduct(fv) * gamma * lambda;
 			item = new FeatureDataItem(fv, score);
 			gpc[pos] = item;			
 		}
@@ -742,7 +743,7 @@ public class LocalFeatureData {
 		FeatureDataItem item = headbi[pos];
 		if (item == null) {
 			FeatureVector fv = pipe.createHeadBiFeatureVector(inst, m, h, h2);
-			double score = parameters.dotProduct(fv) * gamma;
+			double score = parameters.dotProduct(fv) * gamma * lambda;
 			item = new FeatureDataItem(fv, score);
 			headbi[pos] = item;			
 		}
@@ -759,7 +760,7 @@ public class LocalFeatureData {
 		FeatureDataItem item = gpsib[pos];
 		if (item == null) {
 			FeatureVector fv = pipe.createGPSibFeatureVector(inst, gp, h, m, s);
-			double score = parameters.dotProduct(fv) * gamma;
+			double score = parameters.dotProduct(fv) * gamma * lambda;
 			item = new FeatureDataItem(fv, score);
 			gpsib[pos] = item;			
 		}
@@ -776,7 +777,7 @@ public class LocalFeatureData {
 		FeatureDataItem item = trisib[pos];
 		if (item == null) {
 			FeatureVector fv = pipe.createTriSibFeatureVector(inst, h, s1, m, s2);
-			double score = parameters.dotProduct(fv) * gamma;
+			double score = parameters.dotProduct(fv) * gamma * lambda;
 			item = new FeatureDataItem(fv, score);
 			trisib[pos] = item;			
 		}
@@ -793,7 +794,7 @@ public class LocalFeatureData {
 		FeatureDataItem item = ggpc[pos];
 		if (item == null) {
 			FeatureVector fv = pipe.createGGPCFeatureVector(inst, ggp, gp, h, m);
-			double score = parameters.dotProduct(fv) * gamma;
+			double score = parameters.dotProduct(fv) * gamma * lambda;
 			item = new FeatureDataItem(fv, score);
 			ggpc[pos] = item;
 		}
@@ -810,7 +811,7 @@ public class LocalFeatureData {
 		FeatureDataItem item = psc[pos];
 		if (item == null) {
 			FeatureVector fv = pipe.createPSCFeatureVector(inst, h, m, c, sib);
-			double score = parameters.dotProduct(fv) * gamma;
+			double score = parameters.dotProduct(fv) * gamma * lambda;
 			item = new FeatureDataItem(fv, score);
 			psc[pos] = item;
 		}

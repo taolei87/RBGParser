@@ -213,6 +213,10 @@ public class FeatureVector {
 		return dotProduct(this, _y, offset);
 	}
 	
+	public double dotProduct(double[] _y, boolean[] ok, boolean val) {
+		return dotProduct(this, _y, ok, val);
+	}
+	
 	private static double[] dpVec;			 //non-sparse vector repr for vector dot product
 	public static double dotProduct(FeatureVector _x, FeatureVector _y) {
 		
@@ -246,6 +250,15 @@ public class FeatureVector {
 		double sum = 0;
 		for (int i = 0; i < _x.size; ++i)
 			sum += _x.va[i] * _y[offset + _x.x[i]];
+		return sum;
+	}
+	
+	public static double dotProduct(FeatureVector _x, double[] _y, boolean[] ok, boolean val) {
+		
+		double sum = 0;
+		for (int i = 0; i < _x.size; ++i)
+			if (ok[_x.x[i]] == val)
+				sum += _x.va[i] * _y[_x.x[i]];
 		return sum;
 	}
 	

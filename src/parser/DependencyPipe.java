@@ -3221,7 +3221,7 @@ public class DependencyPipe implements Serializable {
     
     public void addScoreStatistics(double[] stat, Parameters params, FeatureVector fv)
     {
-    	Utils.Assert(stat != null && stat.length == 5);
+    	Utils.Assert(stat != null && stat.length == 15);
     	
     	for (int i = 0, N = fv.size(); i < N; ++i) {
     		int id = fv.x(i);
@@ -3234,22 +3234,50 @@ public class DependencyPipe implements Serializable {
     		Utils.Assert(temp > Arc.FEATURE_TEMPLATE_START.ordinal());
     		Utils.Assert(temp < Arc.FEATURE_TEMPLATE_END.ordinal());
     		
+    		double s0 = 0, s1 = 0, s2 = 0, s3 = 0, s4 = 0;
+    		
     		stat[0] += value;
-    		if (temp < Arc.FEATURE_1ORDER_END.ordinal())
+    		s0 += value;
+    		if (temp < Arc.FEATURE_1ORDER_END.ordinal()) {
     			stat[1] += value;
-    		else if (temp < Arc.FEATURE_2ORDER_END.ordinal())
+    			s1 += value;
+    		} else if (temp < Arc.FEATURE_2ORDER_END.ordinal()) {
     			stat[2] += value;
-    		else if (temp < Arc.FEATURE_3ORDER_END.ordinal())
+    			s2 += value;
+    		} else if (temp < Arc.FEATURE_3ORDER_END.ordinal()) {
     			stat[3] += value;
-    		else 
+    			s3 += value;
+    		} else {
     			stat[4] += value;
+    			s4 += value;
+    		}
+    		stat[5] = Math.max(stat[5], s0);
+    		stat[10] = Math.min(stat[10], s0);
+    		
+    		s0 = Math.abs(s0) + 1e-50;
+    		s1 /= s0;
+    		s2 /= s0;
+    		s3 /= s0;
+    		s4 /= s0;
+    		stat[6] = Math.max(stat[6], s1);
+    		stat[11] = Math.min(stat[11], s1);
+    		stat[7] = Math.max(stat[7], s2);
+    		stat[12] = Math.min(stat[12], s2);
+    		stat[8] = Math.max(stat[8], s3);
+    		stat[13] = Math.min(stat[13], s3);
+    		stat[9] = Math.max(stat[9], s4);
+    		stat[14] = Math.min(stat[14], s4);
     	}    	
     }
     
     public void dumpScoreStatistics(double[] stat)
     {
-    	Utils.Assert(stat != null && stat.length == 5);
+    	Utils.Assert(stat != null && stat.length == 15);
     	System.out.printf("Scores:\t%f\t%f\t%f\t%f\t%f%n%n",
     			stat[0], stat[1], stat[2], stat[3], stat[4]);
+    	System.out.printf("max:\t%f\t%f\t%f\t%f\t%f%n%n",
+    			stat[5], stat[6], stat[7], stat[8], stat[9]);
+    	System.out.printf("min:\t%f\t%f\t%f\t%f\t%f%n%n",
+    			stat[10], stat[11], stat[12], stat[13], stat[14]);
     }
 }

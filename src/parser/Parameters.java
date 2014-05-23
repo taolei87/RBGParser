@@ -225,10 +225,14 @@ public class Parameters implements Serializable {
     		dtl = lfd.getLabeledFeatureDifference(gold, pred);
     	}
     	
-        double loss = - dt.dotProduct(params)*gamma - dtl.dotProduct(params)*gammaLabel + Fi;
+        //double loss = - dt.dotProduct(params)*gamma - dtl.dotProduct(params)*gammaLabel + Fi;
         //double l2norm = dt.Squaredl2NormUnsafe() * gamma * gamma + dtl.Squaredl2NormUnsafe() * gammaLabel * gammaLabel;
-        double l2norm = dt.Squaredl2NormUnsafe(isHighOrder, false) * gamma * gamma 
-        			  + dt.Squaredl2NormUnsafe(isHighOrder,  true) * gamma * gamma / lambda
+    	
+    	double loss = - dt.dotProduct(params, isHighOrder, false) * gamma * (2-lambda)
+    				  - dt.dotProduct(params, isHighOrder,  true) * gamma * lambda
+    				 - dtl.dotProduct(params)*gammaLabel + Fi;
+        double l2norm = dt.Squaredl2NormUnsafe(isHighOrder, false) * gamma * gamma * (2-lambda) * (2-lambda)
+        			  + dt.Squaredl2NormUnsafe(isHighOrder,  true) * gamma * gamma * lambda * lambda
         			  + dtl.Squaredl2NormUnsafe() * gammaLabel * gammaLabel;
     	
         int updId = (updCnt + offset) % 3;
@@ -258,7 +262,6 @@ public class Parameters implements Serializable {
         	}   
         }
         
-        double invLambda = 1.0/lambda;
         double alpha = loss/l2norm;
     	alpha = Math.min(C, alpha);
     	if (alpha > 0) {
@@ -270,11 +273,11 @@ public class Parameters implements Serializable {
 		    		int x = dt.x(i);
 		    		double z = dt.value(i);
 		    		if (isHighOrder[x]) {
-		    			params[x] += coeff * z * invLambda;
-		    			total[x] += coeff2 * z * invLambda;
+		    			params[x] += coeff * z * lambda;
+		    			total[x] += coeff2 * z * lambda;
 		    		} else {
-		    			params[x] += coeff * z;
-		    			total[x] += coeff2 * z;
+		    			params[x] += coeff * z * (2-lambda);
+		    			total[x] += coeff2 * z * (2-lambda);
 		    		}
 	    		}
 	    		coeff = alpha * gammaLabel;

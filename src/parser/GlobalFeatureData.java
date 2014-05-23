@@ -55,7 +55,7 @@ public class GlobalFeatureData {
 		FeatureDataItem item = ppcc1[pos];
 		if (item == null) {
 			FeatureVector fv = lfd.pipe.createPPFeatureVector(lfd.inst, gp, h, m);
-			double score = lfd.parameters.dotProduct(fv) * lfd.gamma;
+			double score = lfd.parameters.dotProduct(fv) * lfd.gamma * lfd.lambda;
 			item = new FeatureDataItem(fv, score);
 			ppcc1[pos] = item;
 		}
@@ -69,7 +69,7 @@ public class GlobalFeatureData {
 		FeatureDataItem item = ppcc1[pos];
 		if (item == null) {
 			FeatureVector fv = lfd.pipe.createCC1FeatureVector(lfd.inst, left, arg, right);
-			double score = lfd.parameters.dotProduct(fv) * lfd.gamma;
+			double score = lfd.parameters.dotProduct(fv) * lfd.gamma * lfd.lambda;
 			item = new FeatureDataItem(fv, score);
 			ppcc1[pos] = item;
 		}
@@ -83,7 +83,7 @@ public class GlobalFeatureData {
 		FeatureDataItem item = cc2[pos];
 		if (item == null) {
 			FeatureVector fv = lfd.pipe.createCC2FeatureVector(lfd.inst, arg, head, child);
-			double score = lfd.parameters.dotProduct(fv) * lfd.gamma;
+			double score = lfd.parameters.dotProduct(fv) * lfd.gamma * lfd.lambda;
 			item = new FeatureDataItem(fv, score);
 			cc2[pos] = item;
 		}
@@ -97,7 +97,7 @@ public class GlobalFeatureData {
 		FeatureDataItem item = ppcc1[pos];
 		if (item == null) {
 			FeatureVector fv = lfd.pipe.createPNXFeatureVector(lfd.inst, head, arg, pair);
-			double score = lfd.parameters.dotProduct(fv) * lfd.gamma;
+			double score = lfd.parameters.dotProduct(fv) * lfd.gamma * lfd.lambda;
 			item = new FeatureDataItem(fv, score);
 			ppcc1[pos] = item;
 		}
@@ -111,7 +111,7 @@ public class GlobalFeatureData {
 		FeatureDataItem item = span[pos];
 		if (item == null) {
 			FeatureVector fv = lfd.pipe.createSpanFeatureVector(lfd.inst, h, end, punc, bin);
-			double score = lfd.parameters.dotProduct(fv) * lfd.gamma;
+			double score = lfd.parameters.dotProduct(fv) * lfd.gamma * lfd.lambda;
 			item = new FeatureDataItem(fv, score);
 			span[pos] = item;
 		}
@@ -128,7 +128,7 @@ public class GlobalFeatureData {
 		FeatureDataItem item = nb[pos];
 		if (item == null) {
 			FeatureVector fv = lfd.pipe.createNeighborFeatureVector(lfd.inst, par, h, left, right);
-			double score = lfd.parameters.dotProduct(fv) * lfd.gamma;
+			double score = lfd.parameters.dotProduct(fv) * lfd.gamma * lfd.lambda;
 			item = new FeatureDataItem(fv, score);
 			nb[pos] = item;
 		}
@@ -142,7 +142,7 @@ public class GlobalFeatureData {
 		FeatureDataItem item = cn[pos];
 		if (item == null) {
 			FeatureVector fv = lfd.pipe.createChildNumFeatureVector(lfd.inst, h, leftNum, rightNum);
-			double score = lfd.parameters.dotProduct(fv) * lfd.gamma;
+			double score = lfd.parameters.dotProduct(fv) * lfd.gamma * lfd.lambda;
 			item = new FeatureDataItem(fv, score);
 			cn[pos] = item;
 		}
@@ -159,7 +159,7 @@ public class GlobalFeatureData {
 		FeatureDataItem item = nonproj[pos];
 		if (item == null) {
 			FeatureVector fv = lfd.pipe.createNonprojFeatureVector(lfd.inst, num, h, m);
-			double score = lfd.parameters.dotProduct(fv) * lfd.gamma;
+			double score = lfd.parameters.dotProduct(fv) * lfd.gamma * lfd.lambda;
 			item = new FeatureDataItem(fv, score);
 			nonproj[pos] = item;
 		}
@@ -489,7 +489,7 @@ public class GlobalFeatureData {
 			}
 		}
 		
-		score += lfd.parameters.dotProduct(tmpFv) * lfd.gamma;
+		score += lfd.parameters.dotProduct(tmpFv) * lfd.gamma * lfd.lambda;
 		return score;
 	}
 

@@ -57,6 +57,7 @@ public class DependencyParser implements Serializable {
 			prunerOptions.learnLabel = false;
 			prunerOptions.gamma = 1.0;
 			prunerOptions.gammaLabel = 1.0;
+			prunerOptions.lambda = 1.0;
 			
 			//pruner = new DependencyParser();
 			pruner = new BasicArcPruner();
@@ -368,7 +369,7 @@ public class DependencyParser implements Serializable {
     			new OutputStreamWriter(new FileOutputStream(options.outFile), "UTF8"));
     	}
     	
-    	double[] scoreStat = new double[5];
+    	double[] scoreStat = new double[15];
     	DependencyDecoder decoder = DependencyDecoder.createDependencyDecoder(options);   	
     	int nUCorrect = 0, nLCorrect = 0;
     	int nDeps = 0, nWhole = 0, nSents = 0;
