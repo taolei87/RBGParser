@@ -3228,6 +3228,10 @@ public class DependencyPipe implements Serializable {
     	for (int i = 0, N = fv.size(); i < N; ++i) {
     		int id = fv.x(i);
     		double value = fv.value(i) * params.params[id];
+            if (isHighOrderFid(id))
+                value *= params.lambda;
+            else
+                value *= (2-params.lambda);
     		
     		long code = arcAlphabet.lookupCode(id);
     		int temp = (int) extractArcTemplateCode(code);
