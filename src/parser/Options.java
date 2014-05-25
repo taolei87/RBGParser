@@ -229,7 +229,7 @@ public class Options implements Cloneable, Serializable {
     
     PossibleLang findLang(String file) {
     	for (PossibleLang lang : PossibleLang.values())
-    		if (file.indexOf(langString[lang.ordinal()]) != -1) {
+    		if (lang != PossibleLang.Unknown && file.indexOf(langString[lang.ordinal()]) != -1) {
     			return lang;
     		}
     	System.out.println("Warning: unknow language");
