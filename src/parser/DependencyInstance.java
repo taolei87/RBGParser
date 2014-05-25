@@ -165,7 +165,7 @@ public class DependencyInstance implements Serializable {
 					specialPos[i] = SpecialPos.OTHER;
 			}
 			else {
-				System.out.println("Can't find coarse map: " + postags[i]);
+				//System.out.println("Can't find coarse map: " + postags[i]);
 				coarseMap.put(postags[i], "X");
 			}
 		}

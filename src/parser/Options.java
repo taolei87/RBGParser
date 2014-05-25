@@ -80,7 +80,7 @@ public class Options implements Cloneable, Serializable {
 	
 	final static String langString[] = {"arabic", "bulgarian", "chinese", "czech", "danish", "dutch",
 			"english08", "german", "japanese", "portuguese", "slovene", "spanish",
-			"swedish", "turkish"};
+			"swedish", "turkish" };
 	
 	
 	public Options() {
@@ -234,7 +234,7 @@ public class Options implements Cloneable, Serializable {
     
     PossibleLang findLang(String file) {
     	for (PossibleLang lang : PossibleLang.values())
-    		if (file.indexOf(langString[lang.ordinal()]) != -1) {
+    		if (lang != PossibleLang.Unknown && file.indexOf(langString[lang.ordinal()]) != -1) {
     			return lang;
     		}
     	System.out.println("Warning: unknow language");

@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -79,7 +80,7 @@ public class DependencyPipe implements Serializable {
 		
 		numArcFeats = 0;
 		numWordFeats = 0;
-		
+	    
 		loadLanguageInfo();
 	}
 	
@@ -91,17 +92,21 @@ public class DependencyPipe implements Serializable {
 	 */
 	public void loadLanguageInfo() throws IOException {
 		// load coarse map
-		BufferedReader br = new BufferedReader(new FileReader(options.unimapFile));
-		coarseMap = new HashMap<String, String>();
-		String str = null;
-		while ((str = br.readLine()) != null) {
-			String[] data = str.split("\\s+");
-			coarseMap.put(data[0], data[1]);
-		}
-		br.close();
-		
-		coarseMap.put("<root-POS>", "ROOT");
-		
+        coarseMap = new HashMap<String, String>();
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(options.unimapFile));
+            String str = null;
+            while ((str = br.readLine()) != null) {
+                String[] data = str.split("\\s+");
+                coarseMap.put(data[0], data[1]);
+            }
+            br.close();
+            
+            coarseMap.put("<root-POS>", "ROOT");
+        } catch (FileNotFoundException e) {
+            
+        }
+
 		// decide ccDepType
 		PossibleLang lang = options.lang;
 		if (lang == PossibleLang.Arabic || lang == PossibleLang.Slovene
