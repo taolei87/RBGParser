@@ -258,6 +258,10 @@ public class LocalFeatureData {
 		return staticTypes;
 	}
 	
+	public boolean hasPrune() {
+		return isPruned != null;
+	}
+	
 	public boolean isPruned(int h, int m) 
 	{
 		return isPruned[m*len+h];

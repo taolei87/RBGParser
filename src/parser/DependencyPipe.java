@@ -728,9 +728,9 @@ public class DependencyPipe implements Serializable {
     				addCore1OBigramFeatures(fv, inst.formids[h], inst.featids[h][i], 
     						inst.formids[c], inst.featids[c][j], attDist);
     				
-    				if (inst.lemmas != null)
-    					addCore1OBigramFeatures(fv, inst.lemmaids[h], inst.featids[h][i], 
-    							inst.lemmaids[c], inst.featids[c][j], attDist);
+    				//if (inst.lemmas != null)
+    				//	addCore1OBigramFeatures(fv, inst.lemmaids[h], inst.featids[h][i], 
+    				//			inst.lemmaids[c], inst.featids[c][j], attDist);
     			}
     	}
     			

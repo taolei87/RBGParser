@@ -12,6 +12,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import parser.Options.LearningMode;
+import parser.decoding.BruteForceDecoder;
 import parser.decoding.DependencyDecoder;
 import parser.io.DependencyReader;
 import parser.pruning.BasicArcPruner;
@@ -29,12 +30,16 @@ public class DependencyParser implements Serializable {
 	protected DependencyPipe pipe;
 	protected Parameters parameters;
 	
-	DependencyParser pruner;
+	public DependencyParser pruner;
 	
 	double pruningGoldHits = 0;
 	double pruningTotGold = 1e-30;
 	double pruningTotUparcs = 0;
 	double pruningTotArcs = 1e-30;
+	
+	public DependencyPipe getPipe() {
+		return pipe;
+	}
 	
 	public static void main(String[] args) 
 		throws IOException, ClassNotFoundException, CloneNotSupportedException
@@ -102,7 +107,10 @@ public class DependencyParser implements Serializable {
             	parser.pipe.loadWordVectors(options.wordVectorFile);
 			
 			System.out.printf(" Evaluating: %s%n", options.testFile);
-			parser.evaluateSet(true, false);
+			//parser.evaluateSet(true, false);
+			
+			BruteForceDecoder decoder = new BruteForceDecoder(options, parser);
+	    	decoder.evaluateSet();
 		}
 		
 	}
@@ -368,6 +376,8 @@ public class DependencyParser implements Serializable {
     	}
     	
     	DependencyDecoder decoder = DependencyDecoder.createDependencyDecoder(options);   	
+    	//DependencyDecoder decoder = DependencyDecoder.createTestDependencyDecoder(options);
+    	
     	int nUCorrect = 0, nLCorrect = 0;
     	int nDeps = 0, nWhole = 0, nSents = 0;
     	
@@ -375,43 +385,47 @@ public class DependencyParser implements Serializable {
     	
     	DependencyInstance inst = pipe.createInstance(reader);    	
     	while (inst != null) {
-    		LocalFeatureData lfd = new LocalFeatureData(inst, this, true);
-    		GlobalFeatureData gfd = new GlobalFeatureData(lfd); 
     		
-    		++nSents;
-            
-            int nToks = 0;
-            if (evalWithPunc)
-    		    nToks = (inst.length - 1);
-            else {
-                for (int i = 1; i < inst.length; ++i) {
-                	if (inst.forms[i].matches("[-!\"#%&'()*,./:;?@\\[\\]_{}、]+")) continue;
-                    ++nToks;
+    		if (inst.length <= 11) {
+    			// 10 words
+        		LocalFeatureData lfd = new LocalFeatureData(inst, this, true);
+        		GlobalFeatureData gfd = new GlobalFeatureData(lfd); 
+        		
+        		++nSents;
+                
+                int nToks = 0;
+                if (evalWithPunc)
+        		    nToks = (inst.length - 1);
+                else {
+                    for (int i = 1; i < inst.length; ++i) {
+                    	if (inst.forms[i].matches("[-!\"#%&'()*,./:;?@\\[\\]_{}、]+")) continue;
+                        ++nToks;
+                    }
                 }
-            }
-            nDeps += nToks;
-    		    		
-            DependencyInstance predInst = decoder.decode(inst, lfd, gfd, false);
+                nDeps += nToks;
+        		    		
+                DependencyInstance predInst = decoder.decode(inst, lfd, gfd, false);
 
-    		int ua = evaluateUnlabelCorrect(inst, predInst, evalWithPunc), la = 0;
-    		if (options.learnLabel)
-    			la = evaluateLabelCorrect(inst, predInst, evalWithPunc);
-    		nUCorrect += ua;
-    		nLCorrect += la;
-    		if ((options.learnLabel && la == nToks) ||
-    				(!options.learnLabel && ua == nToks)) 
-    			++nWhole;
-    		
-    		if (out != null) {
-    			int[] deps = predInst.heads, labs = predInst.deplbids;
-    			String line1 = "", line2 = "", line3 = "", line4 = "";
-    			for (int i = 1; i < inst.length; ++i) {
-    				line1 += inst.forms[i] + "\t";
-    				line2 += inst.postags[i] + "\t";
-    				line3 += (options.learnLabel ? pipe.types[labs[i]] : labs[i]) + "\t";
-    				line4 += deps[i] + "\t";
-    			}
-    			out.write(line1.trim() + "\n" + line2.trim() + "\n" + line3.trim() + "\n" + line4.trim() + "\n\n");
+        		int ua = evaluateUnlabelCorrect(inst, predInst, evalWithPunc), la = 0;
+        		if (options.learnLabel)
+        			la = evaluateLabelCorrect(inst, predInst, evalWithPunc);
+        		nUCorrect += ua;
+        		nLCorrect += la;
+        		if ((options.learnLabel && la == nToks) ||
+        				(!options.learnLabel && ua == nToks)) 
+        			++nWhole;
+        		
+        		if (out != null) {
+        			int[] deps = predInst.heads, labs = predInst.deplbids;
+        			String line1 = "", line2 = "", line3 = "", line4 = "";
+        			for (int i = 1; i < inst.length; ++i) {
+        				line1 += inst.forms[i] + "\t";
+        				line2 += inst.postags[i] + "\t";
+        				line3 += (options.learnLabel ? pipe.types[labs[i]] : labs[i]) + "\t";
+        				line4 += deps[i] + "\t";
+        			}
+        			out.write(line1.trim() + "\n" + line2.trim() + "\n" + line3.trim() + "\n" + line4.trim() + "\n\n");
+        		}
     		}
     		
     		inst = pipe.createInstance(reader);

@@ -47,6 +47,8 @@ public class Options implements Cloneable, Serializable {
 	public double gamma = 1, gammaLabel = 1;
 	public int R = 50;
 	
+	public int bruteForceThread = 20;
+	
 	// feature set
 	public boolean useCS = true;		// use consecutive siblings
 	public boolean useGP = true;		// use grandparent
@@ -157,6 +159,9 @@ public class Options implements Cloneable, Serializable {
             else if (arg.startsWith("converge:")) {
             	numHcConverge = Integer.parseInt(arg.split(":")[1]);
             }
+            else if (arg.startsWith("bfthread:")) {
+            	bruteForceThread = Integer.parseInt(arg.split(":")[1]);
+            }
             else if (arg.startsWith("model:")) {
             	String str = arg.split(":")[1];
             	if (str.equals("basic"))
@@ -215,6 +220,7 @@ public class Options implements Cloneable, Serializable {
         System.out.println("projective: " + projective);
         System.out.println("pruning: " + pruning);
         System.out.println("converge iter: " + numHcConverge);
+        System.out.println("brute force thread: " + bruteForceThread);
         
         System.out.println();
         System.out.println("use consecutive siblings: " + useCS);

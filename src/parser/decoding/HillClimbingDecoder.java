@@ -1,5 +1,6 @@
 package parser.decoding;
 
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
@@ -26,6 +27,9 @@ public class HillClimbingDecoder extends DependencyDecoder {
 	double bestScore;	
 	int unchangedRuns, totRuns;
 	volatile boolean stopped;
+	
+	ArrayList<Double> scoreList;
+	double avgScore;
     
     ExecutorService executorService;
 	ExecutorCompletionService<Object> decodingService;
@@ -63,6 +67,9 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		totRuns = 0;
 		unchangedRuns = 0;
 		stopped = false;
+		
+		scoreList = new ArrayList<Double>();
+		
 		if (options.learnLabel)
 			staticTypes = lfd.getStaticTypes();
 		
@@ -77,6 +84,11 @@ public class HillClimbingDecoder extends DependencyDecoder {
 				System.out.println("Hill climbing thread interupted!!!!");
 			}
 		}
+
+		double sum = 0.0;
+		for (int i = 0; i < scoreList.size(); ++i)
+			sum += scoreList.get(i);
+		avgScore = sum / scoreList.size();
 		
 		return pred;		
 	}
@@ -159,6 +171,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 				double score = calcScore(now);
 				synchronized (pred) {
 					++totRuns;
+					scoreList.add(score);
 					if (score > bestScore) {
 						bestScore = score;
 						unchangedRuns = 0;
