@@ -2,6 +2,7 @@ package parser;
 
 import parser.Options.LearningMode;
 import parser.decoding.DependencyDecoder;
+import parser.decoding.ChuLiuEdmondDecoder;
 import utils.FeatureVector;
 import utils.Utils;
 
@@ -64,7 +65,10 @@ public class LocalFeatureData {
 		pruner = parser.pruner;
 		prunerDecoder = pruner == null ? null : 
 			DependencyDecoder.createDependencyDecoder(pruner.options);
-			
+		if (prunerDecoder != null) {
+			((ChuLiuEdmondDecoder)prunerDecoder).calcLocalOpt = false;
+		}		
+
 		Utils.Assert(pruner == null || pruner.options.learningMode == LearningMode.Basic);
 		Utils.Assert((pruner == null) ==  (options.pruning == false));
 		

@@ -10,7 +10,8 @@ import utils.Utils;
 public class ChuLiuEdmondDecoder extends DependencyDecoder {
 	
 	final int labelLossType;
-
+	
+	public boolean calcLocalOpt = true;
 	TDoubleArrayList lstNumOpt;
 
 	public ChuLiuEdmondDecoder(Options options)
@@ -30,11 +31,13 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
 		for (int i = 1; i < 10; i += 2)
 			System.out.printf("\t%.0f", lstNumOpt.get((int) (N*0.1*i)));
 		System.out.println();
+		lstNumOpt.clear();
 	}
 	
 	@Override
 	public DependencyInstance decode(DependencyInstance inst,
-			LocalFeatureData lfd, GlobalFeatureData gfd, boolean addLoss) 
+			LocalFeatureData lfd, GlobalFeatureData gfd, 
+			boolean addLoss)
 	{
 		int N = inst.length;
         int M = N << 1;
@@ -96,10 +99,12 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
             predInst.heads[i] = j;
             predInst.deplbids[i] = t;
         }
-        
-        for (int i = 0; i < M; ++i) ok[i] = true;
-        double numLocalOpt = chuLiuEdmond2(N, scores, ok, vis, stack, oldI, oldO, final_par);
-        lstNumOpt.add(numLocalOpt);
+	
+	if (calcLocalOpt) {        
+		for (int i = 0; i < M; ++i) ok[i] = true;
+		double numLocalOpt = chuLiuEdmond2(N, scores, ok, vis, stack, oldI, oldO, final_par);
+		lstNumOpt.add(numLocalOpt);
+	}
         //System.out.println(appoxNumLocalOpt + " " + numLocalOpt);
         
         return predInst;
