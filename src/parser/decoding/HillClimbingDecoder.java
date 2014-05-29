@@ -170,15 +170,19 @@ public class HillClimbingDecoder extends DependencyDecoder {
 				
 				double score = calcScore(now);
 				synchronized (pred) {
-					++totRuns;
-					scoreList.add(score);
-					if (score > bestScore) {
-						bestScore = score;
-						unchangedRuns = 0;
-						pred.heads = heads;
-						pred.deplbids = deplbids;
-					} else {
-						++unchangedRuns;
+					if (!stopped) {
+						++totRuns;
+						scoreList.add(score);
+						
+						if (!stopped && score > bestScore) {
+							bestScore = score;
+							unchangedRuns = 0;
+							pred.heads = heads;
+							pred.deplbids = deplbids;
+						} else {
+							++unchangedRuns;
+						}
+						
 						if (unchangedRuns >= converge)
 							stopped = true;
 					}

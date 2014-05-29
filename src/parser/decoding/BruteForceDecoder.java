@@ -100,9 +100,11 @@ public class BruteForceDecoder extends DependencyDecoder {
     	reader.startReading(options.testFile);
     	
     	instList.clear();
-    	long maxSpace = 50000l;
+    	ArrayList<Long> estList = new ArrayList<Long>();
+    	
+    	//long maxSpace = 1000000000000l;
     	int lenLowerBound = 1;
-    	int lenUpperBound = 10;
+    	int lenUpperBound = 40;
     	
     	// read instance
     	System.out.print("Reading sentences...");
@@ -111,15 +113,31 @@ public class BruteForceDecoder extends DependencyDecoder {
     		if (inst.length - 1 >= lenLowerBound && inst.length - 1 <= lenUpperBound) {
         		LocalFeatureData lfd = new LocalFeatureData(inst, dp, true);
     			long est = estimateStat(inst, lfd);
-    			if (maxSpace > 0 && est < maxSpace) {
-    				instList.add(inst);
-    			}
+    			//if (maxSpace < 0 || est < maxSpace) {
+    			instList.add(inst);
+    			//}
+    			estList.add(est);
     		}
     		inst = pipe.createInstance(reader);
     	}
     	reader.close();
     	System.out.println("Done.");
     	System.out.println("Sent: " + instList.size());
+    	
+    	// sort
+    	for (int i = 0; i < instList.size(); ++i)
+    		for (int j = i + 1; j < instList.size(); ++j) {
+    			if ((estList.get(i) < 0 && estList.get(j) > 0)
+    					|| estList.get(i) > estList.get(j)) {
+    				long est = estList.get(i);
+    				estList.set(i, estList.get(j));
+    				estList.set(j, est);
+    				
+    				DependencyInstance tmp = instList.get(i);
+    				instList.set(i, instList.get(j));
+    				instList.set(j, tmp);
+    			}
+    		}
     	
     	// run greedy method
     	HillClimbingDecoder hcDecoder = new HillClimbingDecoder(options);
