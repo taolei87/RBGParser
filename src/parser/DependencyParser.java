@@ -402,6 +402,8 @@ public class DependencyParser implements Serializable {
     				(!options.learnLabel && ua == nToks)) 
     			++nWhole;
     		
+    		System.out.printf("%d\t%d\t%d%n", inst.length-1, ua, nToks);
+    		
     		if (out != null) {
     			int[] deps = predInst.heads, labs = predInst.deplbids;
     			String line1 = "", line2 = "", line3 = "", line4 = "";
