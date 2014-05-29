@@ -3,17 +3,17 @@ import os, sys;
 
 def main():
     lst = []
-    print sys.argv[1]
-    with open(sys.argv[1]) as fin:
-        for line in fin:
-            parts = line.split();
-            if len(parts) != 3: continue;
-            t = [ int(x) for x in parts if x.isdigit() ];
-            if len(t) != 3: continue;
-            tt = t[1];
-            t[1] = t[2];
-            t[2] = tt;
-            lst.append(t);
+    for f in sys.argv[1:]:
+        with open(f) as fin:
+            for line in fin:
+                parts = line.split();
+                if len(parts) != 3: continue;
+                t = [ int(x) for x in parts if x.isdigit() ];
+                if len(t) != 3: continue;
+                tt = t[1];
+                t[1] = t[2];
+                t[2] = tt;
+                lst.append(t);
     print len(lst);
     lst = sorted(lst);
     n = 5;
