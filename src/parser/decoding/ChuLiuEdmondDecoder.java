@@ -4,6 +4,7 @@ import parser.DependencyInstance;
 import parser.GlobalFeatureData;
 import parser.LocalFeatureData;
 import parser.Options;
+import utils.Utils;
 
 public class ChuLiuEdmondDecoder extends DependencyDecoder {
 	
@@ -33,25 +34,32 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
         double[][] scores = new double[M][M];
         int[][] oldI = new int[M][M];
         int[][] oldO = new int[M][M];
-        for (int i = 0; i < N; ++i)
+        for (int i = 0; i < N; ++i) {
             for (int j = 1; j < N; ++j) 
                 if (i != j) {
                     oldI[i][j] = i;
                     oldO[i][j] = j;
-                    double va = lfd.getArcScore(i,j);
-                    if (options.learnLabel) {
-                        int t = staticTypes[i][j];
-                        va += lfd.getLabeledArcScore(i,j,t);
-                        if (addLoss) {
-                        	if (labelLossType == 0) {
-                        		if (labs[j] != t) va += 0.5;
-                        		if (deps[j] != i) va += 0.5;
-                        	} else if (labs[j] != t || deps[j] != i) va += 1.0;
-                        }                                            
-                    } 
-                    else if (addLoss && deps[j] != i) va += 1.0;                    
-                    scores[i][j] = va;
+                    if (lfd.hasPrune() && lfd.isPruned(i, j)) {
+                    	scores[i][j] = Double.NEGATIVE_INFINITY;
+                    }
+                    else {
+                        double va = lfd.getArcScore(i,j);
+                        if (options.learnLabel) {
+                            int t = staticTypes[i][j];
+                            va += lfd.getLabeledArcScore(i,j,t);
+                            if (addLoss) {
+                            	if (labelLossType == 0) {
+                            		if (labs[j] != t) va += 0.5;
+                            		if (deps[j] != i) va += 0.5;
+                            	} else if (labs[j] != t || deps[j] != i) va += 1.0;
+                            }                                            
+                        } 
+                        else if (addLoss && deps[j] != i) va += 1.0;                    
+                        scores[i][j] = va;
+                    }
                 }
+            scores[i][i] = Double.NEGATIVE_INFINITY;
+        }
 
         boolean[] ok = new boolean[M];
         boolean[] vis = new boolean[M];
@@ -67,6 +75,7 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
 		DependencyInstance predInst = new DependencyInstance(inst);
 		predInst.heads = new int[N];
 		predInst.deplbids = new int[N];
+		predInst.heads[0] = -1;
 		
         for (int i = 1; i < N; ++i) {
             int j = final_par[i];
@@ -93,6 +102,7 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
                     par[i] = j;
                     max = scores[j][i]; 
                 }
+            Utils.Assert(max != Double.NEGATIVE_INFINITY);
         }
 
         // find the longest circle

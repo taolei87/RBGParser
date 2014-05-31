@@ -3,17 +3,20 @@ package parser;
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import parser.Options.LearningMode;
 import parser.decoding.BruteForceDecoder;
 import parser.decoding.DependencyDecoder;
+import parser.decoding.HillClimbingDecoder;
 import parser.io.DependencyReader;
 import parser.pruning.BasicArcPruner;
 import parser.sampling.RandomWalkSampler;
@@ -107,10 +110,10 @@ public class DependencyParser implements Serializable {
             	parser.pipe.loadWordVectors(options.wordVectorFile);
 			
 			System.out.printf(" Evaluating: %s%n", options.testFile);
-			//parser.evaluateSet(true, false);
+			parser.evaluateSet(false, false);
 			
-			BruteForceDecoder decoder = new BruteForceDecoder(options, parser);
-	    	decoder.evaluateSet();
+			//BruteForceDecoder decoder = new BruteForceDecoder(options, parser);
+	    	//decoder.evaluateSet();
 		}
 		
 	}
@@ -375,76 +378,104 @@ public class DependencyParser implements Serializable {
     			new OutputStreamWriter(new FileOutputStream(options.outFile), "UTF8"));
     	}
     	
+    	//BufferedWriter debug = new BufferedWriter(new FileWriter("debug." + Options.langString[options.lang.ordinal()]));
+    	
     	DependencyDecoder decoder = DependencyDecoder.createDependencyDecoder(options);   	
     	//DependencyDecoder decoder = DependencyDecoder.createTestDependencyDecoder(options);
     	
     	int nUCorrect = 0, nLCorrect = 0;
     	int nDeps = 0, nWhole = 0, nSents = 0;
+    	int token = 0;
+    	
+    	//double scoreSum = 0.0;
     	
 		long start = System.currentTimeMillis();
     	
     	DependencyInstance inst = pipe.createInstance(reader);    	
     	while (inst != null) {
     		
-    		if (inst.length <= 11) {
-    			// 10 words
-        		LocalFeatureData lfd = new LocalFeatureData(inst, this, true);
-        		GlobalFeatureData gfd = new GlobalFeatureData(lfd); 
-        		
-        		++nSents;
-                
-                int nToks = 0;
-                if (evalWithPunc)
-        		    nToks = (inst.length - 1);
-                else {
-                    for (int i = 1; i < inst.length; ++i) {
-                    	if (inst.forms[i].matches("[-!\"#%&'()*,./:;?@\\[\\]_{}、]+")) continue;
-                        ++nToks;
-                    }
-                }
-                nDeps += nToks;
-        		    		
-                DependencyInstance predInst = decoder.decode(inst, lfd, gfd, false);
+    		LocalFeatureData lfd = new LocalFeatureData(inst, this, true);
+    		GlobalFeatureData gfd = new GlobalFeatureData(lfd); 
 
-        		int ua = evaluateUnlabelCorrect(inst, predInst, evalWithPunc), la = 0;
-        		if (options.learnLabel)
-        			la = evaluateLabelCorrect(inst, predInst, evalWithPunc);
-        		nUCorrect += ua;
-        		nLCorrect += la;
-        		if ((options.learnLabel && la == nToks) ||
-        				(!options.learnLabel && ua == nToks)) 
-        			++nWhole;
-        		
-        		if (out != null) {
-        			int[] deps = predInst.heads, labs = predInst.deplbids;
-        			String line1 = "", line2 = "", line3 = "", line4 = "";
-        			for (int i = 1; i < inst.length; ++i) {
-        				line1 += inst.forms[i] + "\t";
-        				line2 += inst.postags[i] + "\t";
-        				line3 += (options.learnLabel ? pipe.types[labs[i]] : labs[i]) + "\t";
-        				line4 += deps[i] + "\t";
-        			}
-        			out.write(line1.trim() + "\n" + line2.trim() + "\n" + line3.trim() + "\n" + line4.trim() + "\n\n");
-        		}
-    		}
+    		++nSents;
     		
+    		if (nSents % 100 == 0)
+    			System.out.print(" " + nSents);
+
+    		int nToks = 0;
+    		if (evalWithPunc)
+    			nToks = (inst.length - 1);
+    		else {
+    			for (int i = 1; i < inst.length; ++i) {
+    				if (inst.forms[i].matches("[-!\"#%&'()*,./:;?@\\[\\]_{}、]+")) continue;
+    				++nToks;
+    			}
+    		}
+    		nDeps += nToks;
+    		token += (inst.length - 1);
+
+    		DependencyInstance predInst = decoder.decode(inst, lfd, gfd, false);
+    		//scoreSum += lfd.getScore(predInst) + gfd.getScore(predInst);
+    		
+    		// output best score curve of this sentence
+    		/*
+    		ArrayList<Double> scoreList = ((HillClimbingDecoder)decoder).scoreList;
+    		if (scoreList.size() > 0) {
+	    		debug.write("" + (nSents - 1) + " " + (predInst.length - 1) + "\n");
+	    		for (int i = 0; i < scoreList.size(); ++i) {
+	    			debug.write(String.format("%.4f", scoreList.get(i)) + " ");
+	    		}
+	    		debug.newLine();
+	    		debug.flush();
+    		}*/
+
+    		int ua = evaluateUnlabelCorrect(inst, predInst, evalWithPunc), la = 0;
+    		if (options.learnLabel)
+    			la = evaluateLabelCorrect(inst, predInst, evalWithPunc);
+    		nUCorrect += ua;
+    		nLCorrect += la;
+    		if ((options.learnLabel && la == nToks) ||
+    				(!options.learnLabel && ua == nToks)) 
+    			++nWhole;
+
+    		if (out != null) {
+    			int[] deps = predInst.heads, labs = predInst.deplbids;
+    			String line1 = "", line2 = "", line3 = "", line4 = "";
+    			for (int i = 1; i < inst.length; ++i) {
+    				line1 += inst.forms[i] + "\t";
+    				line2 += inst.postags[i] + "\t";
+    				line3 += (options.learnLabel ? pipe.types[labs[i]] : labs[i]) + "\t";
+    				line4 += deps[i] + "\t";
+    			}
+    			out.write(line1.trim() + "\n" + line2.trim() + "\n" + line3.trim() + "\n" + line4.trim() + "\n\n");
+    		}
+
     		inst = pipe.createInstance(reader);
     	}
     	
+    	long end = System.currentTimeMillis();
+    	
     	reader.close();
     	if (out != null) out.close();
+    	//debug.close();
     	
+    	System.out.println();
     	System.out.printf("  Tokens: %d%n", nDeps);
     	System.out.printf("  Sentences: %d%n", nSents);
-    	System.out.printf("  UAS=%.6f\tLAS=%.6f\tCAS=%.6f\t[%ds]%n",
+    	System.out.printf("  UAS=%.6f\tLAS=%.6f\tCAS=%.6f\t[%.6fs]%n",
     			(nUCorrect+0.0)/nDeps,
     			(nLCorrect+0.0)/nDeps,
     			(nWhole + 0.0)/nSents,
-    			(System.currentTimeMillis() - start)/1000);
+    			(double)(end - start)/1000);
     	if (options.pruning && options.learningMode != LearningMode.Basic && pruner != null)
     		pruner.printPruningStats();
         
-        decoder.shutdown();
+		System.out.println("sec/tok = " + ((double)(end - start) / 1000 / token));
+		//System.out.println("score sum: " + scoreSum);
+
+		decoder.shutdown();
+		
+		((HillClimbingDecoder)decoder).outputSampleUAS();
 
     	return (nUCorrect+0.0)/nDeps;
     }

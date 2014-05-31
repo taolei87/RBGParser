@@ -1,5 +1,7 @@
 package parser.decoding;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -200,6 +202,19 @@ public class BruteForceDecoder extends DependencyDecoder {
     	hcDecoder.shutdown();
     	maxScore = new double[predScore.size()];
     	
+    	BufferedWriter bw = new BufferedWriter(new FileWriter("score.txt"));
+    	for (int i = 0; i < predScore.size(); ++i) {
+    		bw.write("id: " + i);
+    		bw.write(" len: " + (instList.get(i).length - 1));
+    		bw.write(" est: " + estList.get(i));
+    		bw.write(" pred: " + String.format("%.4f", predScore.get(i)));
+    		bw.write(" avg: " + String.format("%.4f", avgScore.get(i)));
+    		bw.newLine();
+    	}
+    	bw.close();
+    	
+    	System.exit(0);
+    	
     	// brute force search
     	{
         	nUCorrect = 0;
@@ -377,7 +392,8 @@ public class BruteForceDecoder extends DependencyDecoder {
             				(!options.learnLabel && ua == nToks)) 
             			++nWhole;
 
-            		System.out.print("len: " + (inst.length - 1));
+            		System.out.print("id: " + currProcessID);
+            		System.out.print(" len: " + (inst.length - 1));
     				System.out.print(" est: " + est);
     				System.out.print(" cnt: " + cnt[id]);
     				System.out.printf(" score: %.4f", best[id]);
