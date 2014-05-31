@@ -35,7 +35,10 @@ public class HillClimbingDecoder extends DependencyDecoder {
 	
 	ChuLiuEdmondDecoder tmpDecoder;
     
-    ExecutorService executorService;
+	int totToken = 0;
+	double totCorrect = 0.0;
+
+	ExecutorService executorService;
 	ExecutorCompletionService<Object> decodingService;
 	HillClimbingTask[] tasks;
 	
@@ -55,14 +58,15 @@ public class HillClimbingDecoder extends DependencyDecoder {
 	}
 	
 	public void outputSampleUAS() {
-		int totToken = 0;
-		double totCorrect = 0.0;
+		/*
+		totToken = 0;
+		totCorrect = 0.0;
 		
 		for (int i = 0; i < tasks.length; ++i) {
 			totToken += tasks[i].totToken;
 			totCorrect += tasks[i].totCorrect;
 		}
-		
+		*/
 		System.out.println("Sample UAS: " + (totCorrect / totToken));
 	}
    
@@ -167,6 +171,15 @@ public class HillClimbingDecoder extends DependencyDecoder {
    
 		pred = tmpDecoder.decode(inst, lfd, gfd, addLoss);
 		
+		if (!addLoss) {
+			int ua = DependencyParser.evaluateUnlabelCorrect(inst, pred, false);
+			totCorrect += ua;
+			for (int i = 1; i < inst.length; ++i) {
+				if (inst.forms[i].matches("[-!\"#%&'()*,./:;?@\\[\\]_{}、]+")) continue;
+				++totToken;
+			}
+		}
+
 		// hill climb
 		int[] heads = pred.heads;
 		int[] deplbids = pred.deplbids;
@@ -225,7 +238,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 	@Override
 	public DependencyInstance decode(DependencyInstance inst,
 			LocalFeatureData lfd, GlobalFeatureData gfd, boolean addLoss) {
-		
+		/*
 		this.inst = inst;
 		this.lfd = lfd;
 		this.gfd = gfd;
@@ -252,7 +265,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 			} catch (InterruptedException e) {
 				System.out.println("Hill climbing thread interupted!!!!");
 			}
-		}
+		}*/
 
 		//double sum = 0.0;
 		//for (int i = 0; i < scoreList.size(); ++i)
@@ -282,9 +295,9 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		//	System.out.println(inst.length + " " + bestScore + " " + bestAt300);
 		//}
 		
-		return pred;	
+		//return pred;	
 		
-		//return decodeByMap(inst, lfd, gfd, addLoss);
+		return decodeByMap(inst, lfd, gfd, addLoss);
 	}
 	
 	public class HillClimbingTask implements Runnable {
