@@ -16,19 +16,24 @@ def main():
                 lst.append(t);
     print len(lst);
     lst = sorted(lst);
-    n = 5;
-    m = len(lst)/n;
-    st = 0;
-    ed = 0;
-    lst2 = [];
-    for i in range(n):
-        ed = st + m;
-        if (n-i)*(m+1) == len(lst)-st:
-            ed = ed + 1;
-        print st, ed;
-        lst2.append(lst[st:ed]);
-        st = ed;
+    #n = 3;
+    #m = len(lst)/n;
+    #st = 0;
+    #ed = 0;
+    lst2 = [ [], [] ];
+    for i in range(len(lst)):
+	if lst[i][0] <= 15:
+		lst2[0].append(lst[i]);
+	else:
+		lst2[1].append(lst[i]);
+        #ed = st + m;
+        #if (n-i)*(m+1) == len(lst)-st:
+        #    ed = ed + 1;
+        #print st, ed;
+        #lst2.append(lst[st:ed]);
+        #st = ed;
 
+    print len(lst2[0]), len(lst2[1]);
     for seg in lst2:
         nlen = sum(x[0] for x in seg) + 0.0;
         ua = sum(x[2] for x in seg) + 0.0;
