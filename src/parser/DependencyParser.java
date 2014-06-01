@@ -378,7 +378,7 @@ public class DependencyParser implements Serializable {
     			new OutputStreamWriter(new FileOutputStream(options.outFile), "UTF8"));
     	}
     	
-    	//BufferedWriter debug = new BufferedWriter(new FileWriter("debug." + Options.langString[options.lang.ordinal()]));
+    	BufferedWriter debug = new BufferedWriter(new FileWriter("debug." + Options.langString[options.lang.ordinal()]));
     	
     	DependencyDecoder decoder = DependencyDecoder.createDependencyDecoder(options);   	
     	//DependencyDecoder decoder = DependencyDecoder.createTestDependencyDecoder(options);
@@ -418,16 +418,16 @@ public class DependencyParser implements Serializable {
     		//scoreSum += lfd.getScore(predInst) + gfd.getScore(predInst);
     		
     		// output best score curve of this sentence
-    		/*
+    		
     		ArrayList<Double> scoreList = ((HillClimbingDecoder)decoder).scoreList;
     		if (scoreList.size() > 0) {
 	    		debug.write("" + (nSents - 1) + " " + (predInst.length - 1) + "\n");
 	    		for (int i = 0; i < scoreList.size(); ++i) {
-	    			debug.write(String.format("%.4f", scoreList.get(i)) + " ");
+	    			debug.write(String.format("%.5f", scoreList.get(i)) + " ");
 	    		}
 	    		debug.newLine();
 	    		debug.flush();
-    		}*/
+    		}
 
     		int ua = evaluateUnlabelCorrect(inst, predInst, evalWithPunc), la = 0;
     		if (options.learnLabel)
@@ -457,7 +457,7 @@ public class DependencyParser implements Serializable {
     	
     	reader.close();
     	if (out != null) out.close();
-    	//debug.close();
+    	debug.close();
     	
     	System.out.println();
     	System.out.printf("  Tokens: %d%n", nDeps);

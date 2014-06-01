@@ -67,7 +67,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 			totCorrect += tasks[i].totCorrect;
 		}
 		*/
-		System.out.println("Sample UAS: " + (totCorrect / totToken));
+		//System.out.println("Sample UAS: " + (totCorrect / totToken));
 	}
    
    @Override
@@ -238,7 +238,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 	@Override
 	public DependencyInstance decode(DependencyInstance inst,
 			LocalFeatureData lfd, GlobalFeatureData gfd, boolean addLoss) {
-		/*
+		
 		this.inst = inst;
 		this.lfd = lfd;
 		this.gfd = gfd;
@@ -265,14 +265,14 @@ public class HillClimbingDecoder extends DependencyDecoder {
 			} catch (InterruptedException e) {
 				System.out.println("Hill climbing thread interupted!!!!");
 			}
-		}*/
+		}
 
 		//double sum = 0.0;
 		//for (int i = 0; i < scoreList.size(); ++i)
 		//	sum += scoreList.get(i);
 		//avgScore = sum / scoreList.size();
 		
-		/*
+		
 		boolean good = true;
 		if (bestScore < 0)
 			good = false;
@@ -280,13 +280,13 @@ public class HillClimbingDecoder extends DependencyDecoder {
 			if (scoreList.get(i) < 0)
 				good = false;
 		if (good) {
-			for (int i = 0; i < scoreList.size(); ++i)
-				scoreList.set(i, scoreList.get(i) / bestScore);
+			//for (int i = 0; i < scoreList.size(); ++i)
+			//	scoreList.set(i, scoreList.get(i) / bestScore);
 		}
 		else {
 			scoreList.clear();
 		}
-		*/
+		
 		
 		//for (int i = 0; i < scoreList.size(); ++i)
 		//	scoreList.set(i, scoreList.get(i) - bestScore);
@@ -295,9 +295,9 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		//	System.out.println(inst.length + " " + bestScore + " " + bestAt300);
 		//}
 		
-		//return pred;	
+		return pred;	
 		
-		return decodeByMap(inst, lfd, gfd, addLoss);
+		//return decodeByMap(inst, lfd, gfd, addLoss);
 	}
 	
 	public class HillClimbingTask implements Runnable {
@@ -389,17 +389,17 @@ public class HillClimbingDecoder extends DependencyDecoder {
 				synchronized (pred) {
 					if (!stopped) {
 						++totRuns;
-						//scoreList.add(score);
+						scoreList.add(score);
 						
 						if (!stopped && score > bestScore) {
 							bestScore = score;
-							unchangedRuns = 0;
+							//unchangedRuns = 0;
 							pred.heads = heads;
 							pred.deplbids = deplbids;
 						} else {
-							++unchangedRuns;
+							//++unchangedRuns;
 						}
-						//++unchangedRuns;
+						++unchangedRuns;
 						//scoreList.add(bestScore);
 						
 						//if (unchangedRuns == 299)
