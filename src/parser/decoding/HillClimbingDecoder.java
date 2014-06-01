@@ -109,8 +109,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		@Override
 		public void run() {
 		    
-            DependencyDecoder firstOrdDecoder = 
-                new ChuLiuEdmondDecoder(options);
+            DependencyDecoder firstOrdDecoder = new ChuLiuEdmondDecoder(options);
 
 			n = inst.length;
 			converge = options.numHcConverge;
