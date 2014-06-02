@@ -40,7 +40,7 @@ public class Options implements Cloneable, Serializable {
 	public int labelLossType = 0;
 	
 	public int numHcThreads = 10;		// hill climbing: number of threads
-	public int numHcConverge = 100;		// hill climbing: number of restarts to converge 
+	public int numHcConverge = 300;		// hill climbing: number of restarts to converge 
 	
 	public boolean average = true;
 	public double C = 0.01;
@@ -48,14 +48,14 @@ public class Options implements Cloneable, Serializable {
 	public int R = 50;
 	
 	// feature set
-	public boolean useCS = true;		// use consecutive siblings
-	public boolean useGP = true;		// use grandparent
-	public boolean useHB = true;		// use head bigram
-	public boolean useGS = true;		// use grand sibling
-	public boolean useTS = true;		// use tri-sibling
-	public boolean useGGP = true;		// use great-grandparent
-	public boolean usePSC = true;		// use parent-sibling-child
-	public boolean useHO = true;		// use global feature
+	public boolean useCS = false;		// use consecutive siblings
+	public boolean useGP = false;		// use grandparent
+	public boolean useHB = false;		// use head bigram
+	public boolean useGS = false;		// use grand sibling
+	public boolean useTS = false;		// use tri-sibling
+	public boolean useGGP = false;		// use great-grandparent
+	public boolean usePSC = false;		// use parent-sibling-child
+	public boolean useHO = false;		// use global feature
 	
 	// CoNLL language specific info
 	// used only in Full learning mode
@@ -76,9 +76,9 @@ public class Options implements Cloneable, Serializable {
 		Turkish,
 		Unknown,
 	}
-	PossibleLang lang;
+	public PossibleLang lang;
 	
-	final static String langString[] = {"arabic", "bulgarian", "chinese", "czech", "danish", "dutch",
+	public final static String langString[] = {"arabic", "bulgarian", "chinese", "czech", "danish", "dutch",
 			"english08", "german", "japanese", "portuguese", "slovene", "spanish",
 			"swedish", "turkish"};
 	

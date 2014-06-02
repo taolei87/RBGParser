@@ -1,6 +1,11 @@
 package parser.decoding;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.util.HashMap;
+
 import gnu.trove.list.array.TDoubleArrayList;
+import gnu.trove.list.array.TIntArrayList;
 import parser.DependencyInstance;
 import parser.GlobalFeatureData;
 import parser.LocalFeatureData;
@@ -10,15 +15,18 @@ import utils.Utils;
 public class ChuLiuEdmondDecoder extends DependencyDecoder {
 	
 	final int labelLossType;
-	
-	public boolean calcLocalOpt = true;
+
 	TDoubleArrayList lstNumOpt;
+    TIntArrayList isOptimal;
+    TIntArrayList sentLength;
 
 	public ChuLiuEdmondDecoder(Options options)
 	{
 		this.options = options;
 		this.labelLossType = options.labelLossType;
 		lstNumOpt = new TDoubleArrayList();
+		isOptimal = new TIntArrayList();
+		sentLength = new TIntArrayList();
 	}
 	
 	private static boolean print = false;
@@ -31,13 +39,74 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
 		for (int i = 1; i < 10; i += 2)
 			System.out.printf("\t%.0f", lstNumOpt.get((int) (N*0.1*i)));
 		System.out.println();
-		lstNumOpt.clear();
 	}
 	
-	@Override
+    public void printLocalOptStats2()
+    {
+            Utils.Assert(lstNumOpt.size() == isOptimal.size());
+            Utils.Assert(sentLength.size() == isOptimal.size());
+            for (int i = 0; i < lstNumOpt.size(); ++i) {
+                    if (!(lstNumOpt.get(i) >= 0)) {
+                            System.out.println(lstNumOpt.get(i));
+                    }
+            }
+            // sort
+            for (int i = 0; i < lstNumOpt.size(); ++i) {
+            	for (int j = i + 1; j < lstNumOpt.size(); ++j) {
+            		if (lstNumOpt.get(i) > lstNumOpt.get(j)) {
+            			double tmp = lstNumOpt.get(i);
+            			lstNumOpt.set(i, lstNumOpt.get(j));
+            			lstNumOpt.set(j, tmp);
+            			int tmpi = isOptimal.get(i);
+            			isOptimal.set(i, isOptimal.get(j));
+            			isOptimal.set(j, tmpi);
+            			tmpi = sentLength.get(i);
+            			sentLength.set(i, sentLength.get(j));
+            			sentLength.set(j, tmpi);
+            		}
+            	}
+            }
+
+            /*
+            int N = 10;
+            for (int i = 0; i < N; i++) {
+            	int tot = 0;
+            	double isOpt = 0.0;
+            	double numOpt = 0.0;
+            	double len = 0.0;
+
+            	int st = lstNumOpt.size() / N * i;
+            	int en = lstNumOpt.size() / N * (i + 1);
+            	if (i == N - 1)
+            		en = lstNumOpt.size();
+
+            	for (int j = st; j < en; j++) {
+            		if (lstNumOpt.get(j) < 0)
+            			continue;
+            		tot++;
+            		isOpt += isOptimal.get(j);
+            		numOpt += lstNumOpt.get(j);
+            		len += sentLength.get(j);
+            	}
+            	System.out.printf("\t%.3f/%.3f/%.3f", isOpt/tot, numOpt/tot, len / tot);
+            }
+            System.out.println();
+            */
+            
+            try {
+            	BufferedWriter bw = new BufferedWriter(new FileWriter("debug." + Options.langString[options.lang.ordinal()]));
+            	for (int i = 0; i < lstNumOpt.size(); ++i) {
+            		bw.write("" + sentLength.get(i) + "\t" + lstNumOpt.get(i) + "\t" + isOptimal.get(i) + "\n");
+            	}
+            	bw.close();
+            } catch (Exception e) {
+            	e.printStackTrace();
+            }
+    }
+
+    @Override
 	public DependencyInstance decode(DependencyInstance inst,
-			LocalFeatureData lfd, GlobalFeatureData gfd, 
-			boolean addLoss)
+			LocalFeatureData lfd, GlobalFeatureData gfd, boolean addLoss) 
 	{
 		int N = inst.length;
         int M = N << 1;
@@ -99,12 +168,12 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
             predInst.heads[i] = j;
             predInst.deplbids[i] = t;
         }
-	
-	if (calcLocalOpt) {        
-		for (int i = 0; i < M; ++i) ok[i] = true;
-		double numLocalOpt = chuLiuEdmond2(N, scores, ok, vis, stack, oldI, oldO, final_par);
-		lstNumOpt.add(numLocalOpt);
-	}
+        
+        for (int i = 0; i < M; ++i) ok[i] = true;
+        double numLocalOpt = chuLiuEdmond2(N, scores, ok, vis, stack, oldI, oldO, final_par);
+        //double numLocalOpt = 1.0;
+        lstNumOpt.add(numLocalOpt);
+        sentLength.add(inst.length - 1);
         //System.out.println(appoxNumLocalOpt + " " + numLocalOpt);
         
         return predInst;
@@ -438,4 +507,58 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
         //return numLocalOpt * maxLen;
         return tot;
     }
+	
+	public DependencyInstance majorityVote(DependencyInstance inst, HashMap<Integer, Integer> arcCount) 
+	{
+		int N = inst.length;
+        int M = N << 1;
+        
+        double[][] scores = new double[M][M];
+        int[][] oldI = new int[M][M];
+        int[][] oldO = new int[M][M];
+        for (int i = 0; i < N; ++i)
+            for (int j = 1; j < N; ++j) 
+                if (i != j) {
+                    oldI[i][j] = i;
+                    oldO[i][j] = j;
+                    
+                    int code = i * inst.length + j;
+                    if (!arcCount.containsKey(code)) {
+                    	scores[i][j] = Double.NEGATIVE_INFINITY;
+                    	//scores[i][j] = 0;
+                        continue;
+                    }
+                    else {
+	                    double va = arcCount.get(code);
+	                    scores[i][j] = va;
+                    }
+                }
+
+        boolean[] ok = new boolean[M];
+        boolean[] vis = new boolean[M];
+        boolean[] stack = new boolean[M];
+        for (int i = 0; i < M; ++i) ok[i] = true;
+
+        int[] final_par = new int[M];
+        for (int i = 0; i < M; ++i) final_par[i] = -1;
+        
+        chuLiuEdmond(N, scores, ok, vis, stack, oldI, oldO, final_par);
+        
+        if (print) System.out.println();
+        
+		DependencyInstance predInst = new DependencyInstance(inst);
+		predInst.heads = new int[N];
+		predInst.deplbids = new int[N];
+	    
+        predInst.heads[0] = -1;
+        for (int i = 1; i < N; ++i) {
+            int j = final_par[i];
+            int t = 0;
+            predInst.heads[i] = j;
+            predInst.deplbids[i] = t;
+        }
+        
+        return predInst;
+	}
+	
 }

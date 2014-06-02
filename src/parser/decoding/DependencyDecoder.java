@@ -1,10 +1,13 @@
 package parser.decoding;
 
+import java.io.BufferedWriter;
+
 import parser.DependencyInstance;
 import parser.GlobalFeatureData;
 import parser.LocalFeatureData;
 import parser.Options;
 import parser.Options.LearningMode;
+import utils.Utils;
 
 public abstract class DependencyDecoder {
 	
@@ -32,9 +35,22 @@ public abstract class DependencyDecoder {
     public void shutdown()
     {
     }
+    
+    public DependencyInstance decodeGold(DependencyInstance inst, LocalFeatureData lfd,
+			GlobalFeatureData gfd,
+			boolean addLoss) {
+    	Utils.Assert(false);
+    	return null;
+    }
 
 	public abstract DependencyInstance decode(DependencyInstance inst,
 						LocalFeatureData lfd,
 						GlobalFeatureData gfd,
 						boolean addLoss);
+
+	public void outputArcCount(BufferedWriter bw) {
+	}
+
+	public void resetCount() {
+	}
 }

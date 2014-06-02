@@ -463,6 +463,8 @@ public class DependencyParser implements Serializable {
     	 
     	if (options.pruning && pruner != null)
     		pruner.printPruningStats();
+    	
+    	decoder.outputArcCount(null);
         
         decoder.shutdown();
 
