@@ -215,6 +215,7 @@ public class Options implements Cloneable, Serializable {
         System.out.println("projective: " + projective);
         System.out.println("pruning: " + pruning);
         System.out.println("converge iter: " + numHcConverge);
+        System.out.println("thread: " + numHcThreads);
         
         System.out.println();
         System.out.println("use consecutive siblings: " + useCS);
