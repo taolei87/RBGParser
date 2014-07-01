@@ -26,9 +26,9 @@ public class LocalFeatureData {
 	boolean[] isPruned;				// whether a (h->m) arc is pruned								
 	
 	FeatureVector[] wordFvs;		// word feature vectors
-	double[][] wpU, wpV;			// word projections U\phi and V\phi
+	public double[][] wpU, wpV;			// word projections U\phi and V\phi
 	
-	FeatureVector[] arcFvs;			// 1st order arc feature vectors
+	public FeatureVector[] arcFvs;			// 1st order arc feature vectors
 	double[] arcScores;				// 1st order arc scores (including tensor)
     double[] arcNtScores;
 

@@ -54,8 +54,8 @@ public class DependencyParser implements Serializable {
 			prunerOptions.pruning = false;
 			prunerOptions.test = false;
 			prunerOptions.learnLabel = false;
-			prunerOptions.gamma = 1.0;
-			prunerOptions.gammaLabel = 1.0;
+			//prunerOptions.gamma = 1.0;
+			//prunerOptions.gammaLabel = 1.0;
 			
 			//pruner = new DependencyParser();
 			pruner = new BasicArcPruner();
@@ -72,6 +72,8 @@ public class DependencyParser implements Serializable {
 			
 			pruner.train(lstTrain);
 		}
+		
+		System.exit(0);
 		
 		if (options.train) {
 			DependencyParser parser = new DependencyParser();

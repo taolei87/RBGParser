@@ -314,6 +314,109 @@ public class Parameters implements Serializable {
         return loss;
 	}
 	
+	public double updateLocal(DependencyInstance gold, DependencyInstance pred, int m,
+			LocalFeatureData lfd, int updCnt, int sent, int offset)
+	{
+    	int[] actDeps = gold.heads;
+    	int[] actLabs = gold.deplbids;
+    	int[] predDeps = pred.heads;
+    	int[] predLabs = pred.deplbids;
+    	
+    	double Fi = getHammingDis(actDeps, actLabs, predDeps, predLabs);
+    	
+    	Utils.Assert(Fi == 1.0);
+    	
+    	FeatureVector dt = lfd.getArcFeatureVector(actDeps[m], m);
+    	dt.addEntries(lfd.getArcFeatureVector(predDeps[m], m), -1.0);
+    	
+        double loss = - dt.dotProduct(params)*gamma + Fi;
+        double l2norm = dt.Squaredl2NormUnsafe() * gamma * gamma;
+    	
+        int updId = (updCnt + offset) % 3;
+        if ( updId == 1 ) {
+        	// update U
+        	for (int k = 0; k < rank; ++k) {        		
+        		FeatureVector dUk = getdU(k, lfd, actDeps, predDeps);
+            	l2norm += dUk.Squaredl2NormUnsafe() * (1-gamma) * (1-gamma);            	
+            	loss -= dUk.dotProduct(U[k]) * (1-gamma);
+            	dU[k] = dUk;
+        	}
+        } else if ( updId == 2 ) {
+        	// update V
+        	for (int k = 0; k < rank; ++k) {
+        		FeatureVector dVk = getdV(k, lfd, actDeps, predDeps);
+            	l2norm += dVk.Squaredl2NormUnsafe() * (1-gamma) * (1-gamma);
+            	loss -= dVk.dotProduct(V[k]) * (1-gamma);
+            	dV[k] = dVk;
+        	}        	
+        } else {
+        	// update W
+        	for (int k = 0; k < rank; ++k) {
+        		FeatureVector dWk = getdW(k, lfd, actDeps, predDeps);
+            	l2norm += dWk.Squaredl2NormUnsafe() * (1-gamma) * (1-gamma);
+            	loss -= dWk.dotProduct(W[k]) * (1-gamma);
+            	dW[k] = dWk;
+        	}   
+        }
+        
+        double alpha = loss/l2norm;
+    	alpha = Math.min(C, alpha);
+    	if (alpha > 0) {
+    		
+    		{
+    			// update theta
+	    		double coeff = alpha * gamma, coeff2 = coeff * updCnt;
+	    		for (int i = 0, K = dt.size(); i < K; ++i) {
+		    		int x = dt.x(i);
+		    		double z = dt.value(i);
+		    		params[x] += coeff * z;
+		    		total[x] += coeff2 * z;
+	    		}
+    		}
+    		
+    		if ( updId == 1 ) {
+    			// update U
+    			double coeff = alpha * (1-gamma), coeff2 = coeff * updCnt;
+            	for (int k = 0; k < rank; ++k) {
+            		FeatureVector dUk = dU[k];
+            		for (int i = 0, K = dUk.size(); i < K; ++i) {
+            			int x = dUk.x(i);
+            			double z = dUk.value(i);
+            			U[k][x] += coeff * z;
+            			totalU[k][x] += coeff2 * z;
+            		}
+            	}
+            	
+    		} else if ( updId == 2 ) {
+    			// update V
+    			double coeff = alpha * (1-gamma), coeff2 = coeff * updCnt;
+            	for (int k = 0; k < rank; ++k) {
+            		FeatureVector dVk = dV[k];
+            		for (int i = 0, K = dVk.size(); i < K; ++i) {
+            			int x = dVk.x(i);
+            			double z = dVk.value(i);
+            			V[k][x] += coeff * z;
+            			totalV[k][x] += coeff2 * z;
+            		}
+            	}            	
+    		} else {
+    			// update W
+    			double coeff = alpha * (1-gamma), coeff2 = coeff * updCnt;
+            	for (int k = 0; k < rank; ++k) {
+            		FeatureVector dWk = dW[k];
+            		for (int i = 0, K = dWk.size(); i < K; ++i) {
+            			int x = dWk.x(i);
+            			double z = dWk.value(i);
+            			W[k][x] += coeff * z;
+            			totalW[k][x] += coeff2 * z;
+            		}
+            	}  
+    		}
+    	}
+    	
+        return loss;
+	}
+	
 	public void updateTheta(FeatureVector gold, FeatureVector pred, double loss,
 			int updCnt) 
 	{

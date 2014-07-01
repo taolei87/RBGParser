@@ -59,7 +59,7 @@ public class RandomWalkSampler {
     			for (int candH = 0; candH < len; candH++) {
     				if (candH == curr || lfd.isPruned(candH, curr))
     					continue;
-    				
+    				/*
     				int candLab = options.learnLabel ? staticTypes[candH][curr] : 0;
     				
     				double s = lfd.getArcScore(candH, curr);
@@ -75,7 +75,9 @@ public class RandomWalkSampler {
 								s += 1.0;
     					} else if (candH != inst.heads[curr])
     						s += 1.0;
-    				}
+    				}*/
+    				double s = 0.0;
+    				
                     score[size] = s;
                     depList[size] = candH;
                     ++size;

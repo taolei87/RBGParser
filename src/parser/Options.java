@@ -48,14 +48,14 @@ public class Options implements Cloneable, Serializable {
 	public int R = 50;
 	
 	// feature set
-	public boolean useCS = true;		// use consecutive siblings
-	public boolean useGP = true;		// use grandparent
-	public boolean useHB = true;		// use head bigram
-	public boolean useGS = true;		// use grand sibling
-	public boolean useTS = true;		// use tri-sibling
-	public boolean useGGP = true;		// use great-grandparent
-	public boolean usePSC = true;		// use parent-sibling-child
-	public boolean useHO = true;		// use global feature
+	public boolean useCS = false;		// use consecutive siblings
+	public boolean useGP = false;		// use grandparent
+	public boolean useHB = false;		// use head bigram
+	public boolean useGS = false;		// use grand sibling
+	public boolean useTS = false;		// use tri-sibling
+	public boolean useGGP = false;		// use great-grandparent
+	public boolean usePSC = false;		// use parent-sibling-child
+	public boolean useHO = false;		// use global feature
 	
 	// CoNLL language specific info
 	// used only in Full learning mode
