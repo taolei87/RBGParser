@@ -39,10 +39,11 @@ Take a look at *run.sh* as an example of running the parser. You could also run 
 java -classpath "bin:lib/trove.jar" -Xmx20000m parser.DependencyParser \
   model-file:example.model \
   train train-file:example.train \
-  test test-file:example.test
+  test test-file:example.test \
+  output-file:example.out
 ```
 
-This will train a parser from the training data *example.train*, save the dependency model to the file *example.model* and evaluate this parser on the test data *example.test*.
+This will train a parser from the training data *example.train*, save the dependency model to the file *example.model*, evaluate this parser on the test data *example.test* and output dependency predictions to the file *example.out*.
 
 
 ###### 3.2 More Options
@@ -63,6 +64,7 @@ java -classpath "bin:lib/trove.jar" -Xmx20000m parser.DependencyParser \
   model-file:example.model \
   train train-file:example.train \
   test test-file:example.test \
+  output-file:example.out \
   model:standard  C:1.0  iters:5  pruning:false R:20 gamma:0.3 thread:4
 ```
 This will run a standard model with regularization *C=1.0*, number of training iteration *iters=5*, rank of the tensor *R=20*, number of threads in parallel *thread=4*, weight of the tensor component *gamma=0.3*, and no dependency arc pruning *pruning=false*. You may take a look at RBGParser/src/parser/Options.java to see a full list of possible options.
