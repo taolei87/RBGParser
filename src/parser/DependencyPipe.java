@@ -2,6 +2,9 @@ package parser;
 
 
 
+import gnu.trove.map.hash.TIntIntHashMap;
+import gnu.trove.map.hash.TLongObjectHashMap;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -12,6 +15,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+
+import javax.swing.text.html.HTMLDocument.HTMLReader.TagAction;
 
 import parser.DependencyInstance.SpecialPos;
 import parser.FeatureTemplate.Arc;
@@ -58,7 +63,7 @@ public class DependencyPipe implements Serializable {
 	public int numArcFeats;					// number of arc structure features
 	public int numWordFeats;				// number of word features
 	
-    public int[] types;						// array that maps label index to label hash code in tagDictionary
+    public String[] types;					// array that maps label index to label hash code in tagDictionary
     public Alphabet typeAlphabet;
 	private Alphabet wordAlphabet;			// the alphabet of word features (e.g. \phi_h, \phi_m)
 	private Alphabet arcAlphabet;			// the alphabet of 1st order arc features (e.g. \phi_{h->m})
@@ -390,12 +395,21 @@ public class DependencyPipe implements Serializable {
 		typeAlphabet.stopGrowth();
 		wordAlphabet.stopGrowth();
 		arcAlphabet.stopGrowth();
+		
+		TLongObjectHashMap<String> reverse = new TLongObjectHashMap<String>();
+		for (Object key : tagDictionary.toArray()) {
+			String tag = (String) key;
+			reverse.put(tagDictionary.lookupIndex(key), tag);
+		}
 
-		types = new int[typeAlphabet.size()];
+		types = new String[typeAlphabet.size()];
 		long[] keys = typeAlphabet.toArray();
 		for(int i = 0; i < keys.length; i++) {
-		    int indx = typeAlphabet.lookupIndex(keys[i]);
-		    types[indx] = (int)keys[i];
+		    int id = typeAlphabet.lookupIndex(keys[i]);
+		    String label = reverse.get(keys[i]);
+		    Utils.Assert(label.startsWith("label="));
+		    types[id] = label.substring(6);
+		    //System.out.println(id + "\t" + types[id]);
 		}
 	
     }

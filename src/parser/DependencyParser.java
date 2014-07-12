@@ -14,6 +14,7 @@ import java.util.zip.GZIPOutputStream;
 import parser.Options.LearningMode;
 import parser.decoding.DependencyDecoder;
 import parser.io.DependencyReader;
+import parser.io.DependencyWriter;
 import parser.pruning.BasicArcPruner;
 import parser.sampling.RandomWalkSampler;
 
@@ -361,10 +362,11 @@ public class DependencyParser implements Serializable {
     	DependencyReader reader = DependencyReader.createDependencyReader(options);
     	reader.startReading(options.testFile);
     	
-    	BufferedWriter out = null;
+
+    	DependencyWriter writer = null;
     	if (output && options.outFile != null) {
-    		out = new BufferedWriter(
-    			new OutputStreamWriter(new FileOutputStream(options.outFile), "UTF8"));
+    		writer = DependencyWriter.createDependencyWriter(options, pipe);
+    		writer.startWriting(options.outFile);
     	}
     	
     	DependencyDecoder decoder = DependencyDecoder.createDependencyDecoder(options);   	
@@ -402,23 +404,17 @@ public class DependencyParser implements Serializable {
     				(!options.learnLabel && ua == nToks)) 
     			++nWhole;
     		
-    		if (out != null) {
-    			int[] deps = predInst.heads, labs = predInst.deplbids;
-    			String line1 = "", line2 = "", line3 = "", line4 = "";
-    			for (int i = 1; i < inst.length; ++i) {
-    				line1 += inst.forms[i] + "\t";
-    				line2 += inst.postags[i] + "\t";
-    				line3 += (options.learnLabel ? pipe.types[labs[i]] : labs[i]) + "\t";
-    				line4 += deps[i] + "\t";
-    			}
-    			out.write(line1.trim() + "\n" + line2.trim() + "\n" + line3.trim() + "\n" + line4.trim() + "\n\n");
+    		if (writer != null) {
+    			inst.heads = predInst.heads;
+    			inst.deplbids = predInst.deplbids;
+    			writer.writeInstance(inst);
     		}
     		
     		inst = pipe.createInstance(reader);
     	}
     	
     	reader.close();
-    	if (out != null) out.close();
+    	if (writer != null) writer.close();
     	
     	System.out.printf("  Tokens: %d%n", nDeps);
     	System.out.printf("  Sentences: %d%n", nSents);
