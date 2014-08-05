@@ -47,6 +47,12 @@ public class Options implements Cloneable, Serializable {
 	public double gamma = 0.3, gammaLabel = 1;
 	public int R = 50;
 	
+	// optimality 
+	public boolean checkOptimality = true;
+	public double optBeta = 0.999;
+	public int optMaxIter = 5000;
+	
+	
 	// feature set
 	public boolean useCS = true;		// use consecutive siblings
 	public boolean useGP = true;		// use grandparent

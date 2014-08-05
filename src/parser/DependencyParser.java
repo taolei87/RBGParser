@@ -11,6 +11,8 @@ import java.io.Serializable;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import optimality.Optimality;
+
 import parser.Options.LearningMode;
 import parser.decoding.DependencyDecoder;
 import parser.io.DependencyReader;
@@ -408,6 +410,17 @@ public class DependencyParser implements Serializable {
     			inst.heads = predInst.heads;
     			inst.deplbids = predInst.deplbids;
     			writer.writeInstance(inst);
+    		}
+    		
+    		if (options.checkOptimality) {
+    			Optimality opt = new Optimality(options);
+    			boolean isOpt = opt.optimalityCheck(predInst, null, lfd);
+    			if (isOpt) {
+    				System.out.println("good!");
+    			}
+    			else {
+    				System.out.println("bad");
+    			}
     		}
     		
     		inst = pipe.createInstance(reader);
