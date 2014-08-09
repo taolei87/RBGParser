@@ -102,7 +102,7 @@ public class GpSibAutomaton {
 				
 				double score = optScore[m] + baseScore
 						+ (options.useCS ? lfd.getSibScore(m, s) : 0.0)
-						+ (options.useGP && gp >= 0 ? lfd.getGPSibScore(gp, h, m, s) : 0.0);
+						+ (options.useGS && gp >= 0 ? lfd.getGPSibScore(gp, h, m, s) : 0.0);
 				
 				if (score > optScore[s]) {
 					optScore[s] = score;
@@ -220,7 +220,7 @@ public class GpSibAutomaton {
 				int s = arcLis.get(p+1);
 				
 				score += (options.useCS ? lfd.getSibScore(m, s) : 0.0)
-						+ (options.useGP && gp >= 0 ? lfd.getGPSibScore(gp, h, m, s) : 0.0);
+						+ (options.useGS && gp >= 0 ? lfd.getGPSibScore(gp, h, m, s) : 0.0);
 			}
 		}
 		return score;
