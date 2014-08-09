@@ -59,11 +59,11 @@ public class GpSibAutomaton {
 		return h * length + m;
 	}
 	
-	private int getHeadIndex(int id) {
+	public int getHeadIndex(int id) {
 		return id / length;
 	}
 	
-	private int getModIndex(int id) {
+	public int getModIndex(int id) {
 		return id % length;
 	}
 	

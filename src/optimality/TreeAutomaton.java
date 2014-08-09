@@ -103,4 +103,23 @@ public class TreeAutomaton {
 
         return score;
 	}
+
+	public void updateLambda(double rate, GpSibAutomaton gpSibAuto, boolean[] z) {
+		for (int i = 0; i < y.length; ++i) {
+			if (z[i] && !y[i]) {
+				// encourage i, increase lSib/lHead, +rate
+				gpSibAuto.lSib[i] += rate;
+				gpSibAuto.lHead[i] += rate;
+				gpSibAuto.updated[gpSibAuto.getHeadIndex(i)] = true;
+				gpSibAuto.updated[gpSibAuto.getModIndex(i)] = true;
+			}
+			else if (!z[i] && y[i]) {
+				// discourage i, decrease lSib/lHead, -rate
+				gpSibAuto.lSib[i] -= rate;
+				gpSibAuto.lHead[i] -= rate;
+				gpSibAuto.updated[gpSibAuto.getHeadIndex(i)] = true;
+				gpSibAuto.updated[gpSibAuto.getModIndex(i)] = true;
+			}
+		}
+	}
 }

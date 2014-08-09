@@ -90,7 +90,7 @@ public class Optimality {
 				// update lambda
 				double rate = delta / (1 + eta);
 				if (Math.abs((treeScore - treeInstScore) - maxDiff) < 1e-6) {
-					gpSibAuto.updateLambda(-rate, y);
+					treeAuto.updateLambda(rate, gpSibAuto, y);
 				}
 				if (mode.gpSibAutomaton && Math.abs((gpSibScore - gpSibInstScore) - maxDiff) < 1e-6) {
 					gpSibAuto.updateLambda(rate, y);
