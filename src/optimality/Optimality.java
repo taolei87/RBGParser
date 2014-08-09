@@ -46,8 +46,8 @@ public class Optimality {
 	public boolean optimalityCheck(DependencyInstance inst, DependencyInstance gold, LocalFeatureData lfd) {
 		// check if the solution is optimum
 		
-		GpSibAutomaton gpSibAuto = mode.gpSibAutomaton ? new GpSibAutomaton(inst.length, lfd, gold, gold == null, options) : null;
-		TreeAutomaton treeAuto = new TreeAutomaton(inst.length, lfd, gpSibAuto, gold, gold == null, options);
+		GpSibAutomaton gpSibAuto = mode.gpSibAutomaton ? new GpSibAutomaton(inst.length, lfd, gold, gold != null, options) : null;
+		TreeAutomaton treeAuto = new TreeAutomaton(inst.length, lfd, gpSibAuto, gold, gold != null, options);
 		
 		boolean[] y = new boolean[treeAuto.y.length];
 		for (int m = 1; m < inst.length; ++m)
@@ -104,8 +104,8 @@ public class Optimality {
 	public int dualDecodingCheck(DependencyInstance inst, DependencyInstance gold, LocalFeatureData lfd) {
 		// check if the solution is optimum
 		
-		GpSibAutomaton gpSibAuto = mode.gpSibAutomaton ? new GpSibAutomaton(inst.length, lfd, gold, gold == null, options) : null;
-		TreeAutomaton treeAuto = new TreeAutomaton(inst.length, lfd, gpSibAuto, gold, gold == null, options);
+		GpSibAutomaton gpSibAuto = mode.gpSibAutomaton ? new GpSibAutomaton(inst.length, lfd, gold, gold != null, options) : null;
+		TreeAutomaton treeAuto = new TreeAutomaton(inst.length, lfd, gpSibAuto, gold, gold != null, options);
 		
 		// compute the score of the solution
 		double solScore = treeAuto.computeScore(inst);

@@ -414,6 +414,7 @@ public class DependencyParser implements Serializable {
     		
     		if (options.checkOptimality) {
     			Optimality opt = new Optimality(options);
+    			/*
     			boolean isOpt = opt.optimalityCheck(predInst, null, lfd);
     			if (isOpt) {
     				System.out.println("good!");
@@ -421,6 +422,9 @@ public class DependencyParser implements Serializable {
     			else {
     				System.out.println("bad");
     			}
+    			*/
+    			int isOpt = opt.dualDecodingCheck(predInst, null, lfd);
+    			System.out.println("ret : " + isOpt); 
     		}
     		
     		inst = pipe.createInstance(reader);
