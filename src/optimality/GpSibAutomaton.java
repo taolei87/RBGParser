@@ -53,6 +53,7 @@ public class GpSibAutomaton {
 			updated[i] = true;
 		oldZSib = new boolean[length][length];
 		oldZHead = new int[length];
+		oldScore = new double[length];
 	}
 	
 	private int getIndex(int h, int m) {
