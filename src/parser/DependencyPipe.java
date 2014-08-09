@@ -102,10 +102,10 @@ public class DependencyPipe implements Serializable {
             }
             br.close();
             
-            coarseMap.put("<root-POS>", "ROOT");
         } catch (FileNotFoundException e) {
             System.out.println("Warning: couldn't find coarse POS map for this language");
         }
+        coarseMap.put("<root-POS>", "ROOT");
 
 		// decide ccDepType
 		PossibleLang lang = options.lang;

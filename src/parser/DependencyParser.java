@@ -331,8 +331,13 @@ public class DependencyParser implements Serializable {
     	int nCorrect = 0;    	
     	for (int i = 1, N = inst.length; i < N; ++i) {
 
-            if (!evalWithPunc)
-            	if (inst.forms[i].matches("[-!\"#%&'()*,./:;?@\\[\\]_{}、]+")) continue;
+            if (!evalWithPunc) {
+            	if (inst.forms[i].matches("[-!\"#%&'()*,./:;?@\\[\\]_{}、~…]+")) continue;
+            	if (inst.forms[i].equals("t")
+            			|| inst.forms[i].equals("l")
+            			|| inst.forms[i].equals("x"))
+            		continue;
+            }
 
     		if (inst.heads[i] == pred.heads[i]) ++nCorrect;
     	}    		

@@ -31,8 +31,8 @@ public class Options implements Cloneable, Serializable {
 	public int maxNumIters = 10;
 	public boolean initTensorWithPretrain = true;
 	
-	//public LearningMode learningMode = LearningMode.Basic;
-	public LearningMode learningMode = LearningMode.Standard;
+	public LearningMode learningMode = LearningMode.Basic;
+	//public LearningMode learningMode = LearningMode.Standard;
 	public boolean projective = false;
 	public boolean learnLabel = false;
 	public boolean pruning = true;
@@ -74,13 +74,14 @@ public class Options implements Cloneable, Serializable {
 		Spanish,
 		Swedish,
 		Turkish,
+		Russian,
 		Unknown,
 	}
 	PossibleLang lang;
 	
 	final static String langString[] = {"arabic", "bulgarian", "chinese", "czech", "danish", "dutch",
 			"english08", "german", "japanese", "portuguese", "slovene", "spanish",
-			"swedish", "turkish"};
+			"swedish", "turkish", "russian"};
 	
 	
 	public Options() {
