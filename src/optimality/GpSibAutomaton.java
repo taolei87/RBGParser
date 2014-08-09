@@ -86,7 +86,7 @@ public class GpSibAutomaton {
 		// dp equation depends on the sibling feature definition
 		
 		for (int s = 1; s < length; ++s) {
-			if (s == h || s == gp)
+			if (s == h || s == gp || lfd.isPruned(h, s))
 				continue;
 			
 			// init, s is the only child
@@ -98,7 +98,7 @@ public class GpSibAutomaton {
 
 			// dp
 			for (int m = 1; m < s; ++m) {
-				if (m == h || m == gp || m == s)
+				if (m == h || m == gp || m == s || lfd.isPruned(h, m))
 					continue;
 				
 				double score = optScore[m] + baseScore
@@ -160,7 +160,7 @@ public class GpSibAutomaton {
 				
 				// enumerate grandparent
 				for (int gp = 0; gp < length; ++gp) {
-					if (gp == h)
+					if (gp == h || lfd.isPruned(gp, h))
 						continue;
 					
 					boolean[] tmpOpt = new boolean[length];

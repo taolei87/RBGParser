@@ -54,11 +54,17 @@ public class TreeAutomaton {
                 if (i != j) {
                     oldI[i][j] = i;
                     oldO[i][j] = j;
-                    double va = lfd.getArcScore(i,j);
-                    if (addLoss && gold.heads[j] != i) va += 1.0;                    
-                    scores[i][j] = (1 - beta) * va;
-                    if (gpSibAuto != null) {
-                    	scores[i][j] += gpSibAuto.lSib[getIndex(i, j)] + gpSibAuto.lHead[getIndex(i, j)];
+                    
+                    if (lfd.isPruned(i, j)) {
+                    	scores[i][j] = Double.NEGATIVE_INFINITY;
+                    }
+                    else {
+	                    double va = lfd.getArcScore(i,j);
+	                    if (addLoss && gold.heads[j] != i) va += 1.0;                    
+	                    scores[i][j] = (1 - beta) * va;
+	                    if (gpSibAuto != null) {
+	                    	scores[i][j] += gpSibAuto.lSib[getIndex(i, j)] + gpSibAuto.lHead[getIndex(i, j)];
+	                    }
                     }
                 }
 
