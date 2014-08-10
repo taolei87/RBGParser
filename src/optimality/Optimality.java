@@ -168,8 +168,10 @@ public class Optimality {
 		if (mode.gpSibAutomaton)
 			decodeScore += gpSibAuto.computeScore(newInst);
 		
+		double decodeScore2 = lfd.getScore(newInst);
+		double solScore2 = lfd.getScore(inst);		
 		
-		System.out.println(decodeScore + " " + solScore);
+		System.out.println(decodeScore + " " + decodeScore2 + " " + solScore + " " + solScore2);
 		for (int m = 1; m < inst.heads.length; ++m)
 			System.out.print(inst.heads[m] + "/" + m + " ");
 		System.out.println();
