@@ -125,10 +125,12 @@ public class Optimality {
 		
 		for (int iter = 0; iter < maxIter; ++iter) {
 			double treeScore = treeAuto.maximize();
-			for (int m = 1; m < inst.length; ++m) {
-				for (int h = 0; h < inst.length; ++h) {
-					if (treeAuto.y[treeAuto.getIndex(h, m)])
+			for (int m = 1; m < newInst.length; ++m) {
+				for (int h = 0; h < newInst.length; ++h) {
+					if (treeAuto.y[treeAuto.getIndex(h, m)]) {
+						Utils.Assert(lfd.isPruned(h, m));
 						newInst.heads[m] = h;
+					}
 				}
 			}
 			
