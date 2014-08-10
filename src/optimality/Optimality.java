@@ -128,7 +128,7 @@ public class Optimality {
 			for (int m = 1; m < newInst.length; ++m) {
 				for (int h = 0; h < newInst.length; ++h) {
 					if (treeAuto.y[treeAuto.getIndex(h, m)]) {
-						Utils.Assert(lfd.isPruned(h, m));
+						Utils.Assert(!lfd.isPruned(h, m));
 						newInst.heads[m] = h;
 					}
 				}

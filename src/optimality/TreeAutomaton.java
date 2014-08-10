@@ -95,6 +95,7 @@ public class TreeAutomaton {
         		}
         		System.exit(0);
         	}
+        	Utils.Assert(!lfd.isPruned(final_par[i], i));
         	
         	y[getIndex(final_par[i], i)] = true;
         	score += scores[final_par[i]][i];
