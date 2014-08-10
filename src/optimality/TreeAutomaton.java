@@ -87,7 +87,15 @@ public class TreeAutomaton {
         double score = 0.0;
         
         for (int i = 1; i < N; ++i) {
-        	Utils.Assert(lfd.isPruned(final_par[i], i));
+        	if (lfd.isPruned(final_par[i], i)) {
+        		System.out.println(final_par[i] + " " + i);
+        		System.out.println();
+        		for (int j = 1; j < N; ++j) {
+        			System.out.println(final_par[j] + " " + j);
+        		}
+        		System.exit(0);
+        	}
+        	
         	y[getIndex(final_par[i], i)] = true;
         	score += scores[final_par[i]][i];
         }
