@@ -210,7 +210,7 @@ public class GpSibAutomaton {
 			
 			for (int p = st; p < ed; ++p) {
 				int m = arcLis.get(p);
-				score += lSib[getIndex(h, m)] + ((options.useGP && gp >= 0) ? lfd.getGPCScore(gp, h, m) : 0.0);
+				score += - lSib[getIndex(h, m)] + ((options.useGP && gp >= 0) ? lfd.getGPCScore(gp, h, m) : 0.0);
 			}
 			
 			for (int p = st; p+1 < ed; ++p) {
