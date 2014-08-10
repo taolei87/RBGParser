@@ -305,11 +305,6 @@ public class LocalFeatureData {
 	public double getGPCScore(int gp, int h, int m) {
 		int id = arc2id[h*len+gp];
 		
-		if (!(id >= 0 && arc2id[m*len+h] >= 0)) {
-			System.out.println(id + " " + arc2id[m*len+h]);
-			System.out.println(gp + " " + h + " " + m);
-		}
-		
 		Utils.Assert(id >= 0 && arc2id[m*len+h] >= 0);
 		
 		int pos = id*len+m;

@@ -133,6 +133,7 @@ public class Optimality {
 					}
 				}
 			}
+			newInst.heads[0] = -1;
 			
 			double gpSibScore = mode.gpSibAutomaton ? gpSibAuto.maximize() : 0.0;
 			double gpSibInstScore = mode.gpSibAutomaton ? gpSibAuto.computeScore(newInst) : 0.0;
