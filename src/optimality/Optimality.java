@@ -149,6 +149,7 @@ public class Optimality {
 		boolean cert = false;
 		
 		for (int iter = 0; iter < maxIter; ++iter) {
+			System.out.println(iter);
 			double treeScore = treeAuto.maximize();
 			for (int m = 1; m < newInst.length; ++m) {
 				for (int h = 0; h < newInst.length; ++h) {
