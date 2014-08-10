@@ -169,7 +169,7 @@ public class Optimality {
 			decodeScore = treeScore + gpSibScore;
 			
 			if (iter == 0) {
-				delta = 5 * diff;
+				delta = diff;
 				oldScore = decodeScore;
 			}
 			
@@ -185,7 +185,7 @@ public class Optimality {
 			}
 			else {
 				// update lambda
-				double rate = delta / (1 + eta);
+				double rate = Math.max(0.3, delta / (1 + eta));
 				System.out.println("rate: " + rate);
 				gpSibAuto.updateLambda(rate, treeAuto.y);
 			}
