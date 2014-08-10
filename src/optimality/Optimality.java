@@ -55,16 +55,21 @@ public class Optimality {
 
 		int eta = 0;
 		double delta = Double.NEGATIVE_INFINITY;
-		double oldMaxDiff = Double.NEGATIVE_INFINITY;
+		double oldScore = Double.NEGATIVE_INFINITY;
 		
-		double treeInstScore = treeAuto.computeScore(inst);
-		double gpSibInstScore = mode.gpSibAutomaton ? gpSibAuto.computeScore(inst) : 0.0;
-
+		double decodeScore = 0.0;
+		double solScore = 0.0;
+		boolean ret = false;
+		
 		for (int iter = 0; iter < maxIter; ++iter) {
 			double treeScore = treeAuto.maximize();
-			
 			double gpSibScore = mode.gpSibAutomaton ? gpSibAuto.maximize() : 0.0;
+			decodeScore = treeScore + gpSibScore;
 			
+			double treeInstScore = treeAuto.computeScore(inst);
+			double gpSibInstScore = mode.gpSibAutomaton ? gpSibAuto.computeScore(inst) : 0.0;
+			solScore = treeInstScore + gpSibInstScore;
+
 			double maxDiff = treeScore - treeInstScore;
 			Utils.Assert(maxDiff > -1e-6);
 			
@@ -76,15 +81,17 @@ public class Optimality {
 			
 			if (iter == 0) {
 				delta = maxDiff;
-				oldMaxDiff = maxDiff;
+				oldScore = decodeScore;
 			}
-			else if (maxDiff > oldMaxDiff) {
+			else if (decodeScore > oldScore) {
 				eta++;
 			}
-			oldMaxDiff = maxDiff;
+			oldScore = decodeScore;
 			
 			if (Math.abs(maxDiff) < 1e-6) {
-				return true;		// find certificate
+				System.out.println("good");
+				ret = true;		// find certificate
+				break;
 			}
 			else {
 				// update lambda
@@ -98,7 +105,13 @@ public class Optimality {
 			}
 		}
 		
-		return false;
+		System.out.println(decodeScore + " " + solScore);
+		if (ret)
+			System.out.println("good");
+		else
+			System.out.println("bad");
+		
+		return ret;
 	}
 	
 	public int dualDecodingCheck(DependencyInstance inst, DependencyInstance gold, LocalFeatureData lfd) {
@@ -168,6 +181,7 @@ public class Optimality {
 		if (mode.gpSibAutomaton)
 			decodeScore += gpSibAuto.computeScore(newInst);
 		
+		/*
 		double decodeScore2 = lfd.getScore(newInst);
 		double solScore2 = lfd.getScore(inst);		
 		
@@ -178,6 +192,7 @@ public class Optimality {
 		for (int m = 1; m < newInst.heads.length; ++m)
 			System.out.print(newInst.heads[m] + "/" + m + " ");
 		System.out.println();
+		*/
 		
 		int ret = 0;
 
@@ -199,7 +214,7 @@ public class Optimality {
 				ret = 3;		// optimal
 		}
 		
-		System.out.println("ret : " + ret); 
+		//System.out.println("ret : " + ret); 
 		return ret;
 	}
 }
