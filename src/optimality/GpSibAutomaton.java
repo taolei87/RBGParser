@@ -240,11 +240,11 @@ public class GpSibAutomaton {
 		for (int i = 0; i < lHead.length; ++i) {
 			if (zHead[i] && !y[i]) {
 				lHead[i] += rate;
-				//updated[getModIndex(i)] = true;
+				updated[getModIndex(i)] = true;
 			}
 			else if (!zHead[i] && y[i]) {
 				lHead[i] -= rate;
-				//updated[getModIndex(i)] = true;
+				updated[getModIndex(i)] = true;
 			}
 		}
 	}
