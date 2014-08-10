@@ -44,7 +44,7 @@ public class Options implements Cloneable, Serializable {
 	
 	public boolean average = true;
 	public double C = 0.01;
-	public double gamma = 0.3, gammaLabel = 1;
+	public double gamma = 1.0, gammaLabel = 1;
 	public int R = 50;
 	
 	// optimality 

@@ -377,7 +377,9 @@ public class DependencyParser implements Serializable {
     	
 		long start = System.currentTimeMillis();
     	
-    	DependencyInstance inst = pipe.createInstance(reader);    	
+    	DependencyInstance inst = pipe.createInstance(reader);    
+    	
+    	int[] optRes = new int[4];
     	while (inst != null) {
     		LocalFeatureData lfd = new LocalFeatureData(inst, this, true);
     		GlobalFeatureData gfd = new GlobalFeatureData(lfd); 
@@ -415,8 +417,9 @@ public class DependencyParser implements Serializable {
     		if (options.checkOptimality) {
     			Optimality opt = new Optimality(options);
     			
-    			int isOpt = opt.optimalityCheck(predInst, null, lfd);
-    			//int isOpt = opt.dualDecodingCheck(predInst, null, lfd);
+    			//int isOpt = opt.optimalityCheck(predInst, null, lfd);
+    			int isOpt = opt.dualDecodingCheck(predInst, null, lfd);
+    			optRes[isOpt]++;
     		}
     		
     		inst = pipe.createInstance(reader);
@@ -432,6 +435,9 @@ public class DependencyParser implements Serializable {
     			(nLCorrect+0.0)/nDeps,
     			(nWhole + 0.0)/nSents,
     			(System.currentTimeMillis() - start)/1000);
+    	for (int i = 0; i < optRes.length; ++i)
+    		System.out.print(i + ":" + optRes[i] + " ");
+    	System.out.println();
     	if (options.pruning && options.learningMode != LearningMode.Basic && pruner != null)
     		pruner.printPruningStats();
         
