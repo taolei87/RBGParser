@@ -226,6 +226,7 @@ public class Optimality {
 				ret = 1;		// optimal
 		}
 		else {
+			System.out.println("iter: " + maxIter);
 			if (decodeScore > solScore + 1e-6)
 				ret = 2;		// not optimal
 			else
