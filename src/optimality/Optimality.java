@@ -152,7 +152,7 @@ public class Optimality {
 				cert = true;
 				break;
 			}
-			else if (iter + 1 < maxIter) {
+			else {
 				// update lambda
 				double rate = delta / (1 + eta);
 				gpSibAuto.updateLambda(rate, treeAuto.y);
@@ -164,31 +164,40 @@ public class Optimality {
 		if (mode.gpSibAutomaton)
 			solScore += gpSibAuto.computeScore(inst);
 		
+		decodeScore = treeAuto.computeScore(newInst);
+		if (mode.gpSibAutomaton)
+			decodeScore += gpSibAuto.computeScore(newInst);
+		
+		
+		System.out.println(decodeScore + " " + solScore);
+		for (int m = 1; m < inst.heads.length; ++m)
+			System.out.print(inst.heads[m] + "/" + m + " ");
+		System.out.println();
+		for (int m = 1; m < newInst.heads.length; ++m)
+			System.out.print(newInst.heads[m] + "/" + m + " ");
+		System.out.println();
+		
+		int ret = 0;
+
 		if (cert) {
 			if (decodeScore < solScore - 1e-6) {
 				System.out.println("dual decode bug!!!: " + decodeScore + " " + solScore);
 				System.exit(0);
 			}
 			
-			System.out.println(decodeScore + " " + solScore);
-			for (int m = 1; m < inst.heads.length; ++m)
-				System.out.print(inst.heads[m] + "/" + m + " ");
-			System.out.println();
-			for (int m = 1; m < newInst.heads.length; ++m)
-				System.out.print(newInst.heads[m] + "/" + m + " ");
-			System.out.println();
-			
 			if (decodeScore > solScore + 1e-6)
-				return 0;		// not optimal
+				ret = 0;		// not optimal
 			else
-				return 1;		// optimal
+				ret = 1;		// optimal
 		}
 		else {
 			if (decodeScore > solScore + 1e-6)
-				return 2;		// not optimal
+				ret = 2;		// not optimal
 			else
-				return 3;		// optimal
+				ret = 3;		// optimal
 		}
 		
+		System.out.println("ret : " + ret); 
+		return ret;
 	}
 }

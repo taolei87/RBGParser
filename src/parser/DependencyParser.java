@@ -424,7 +424,6 @@ public class DependencyParser implements Serializable {
     			}
     			*/
     			int isOpt = opt.dualDecodingCheck(predInst, null, lfd);
-    			System.out.println("ret : " + isOpt); 
     		}
     		
     		inst = pipe.createInstance(reader);

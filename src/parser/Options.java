@@ -50,7 +50,7 @@ public class Options implements Cloneable, Serializable {
 	// optimality 
 	public boolean checkOptimality = true;
 	public double optBeta = 0.999;
-	public int optMaxIter = 5000;
+	public int optMaxIter = 3000;
 	
 	
 	// feature set
