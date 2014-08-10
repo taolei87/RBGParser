@@ -186,7 +186,6 @@ public class Optimality {
 			else {
 				// update lambda
 				double rate = Math.max(0.3, delta / (1 + eta));
-				System.out.println("rate: " + rate);
 				gpSibAuto.updateLambda(rate, treeAuto.y);
 			}
 		}
