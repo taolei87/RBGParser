@@ -180,6 +180,7 @@ public class Optimality {
 			
 			if (Math.abs(diff) < 1e-6) {
 				cert = true;
+				System.out.println("iter: " + iter);
 				break;
 			}
 			else {

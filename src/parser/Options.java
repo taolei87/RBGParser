@@ -163,6 +163,12 @@ public class Options implements Cloneable, Serializable {
             else if (arg.startsWith("converge:")) {
             	numHcConverge = Integer.parseInt(arg.split(":")[1]);
             }
+            else if (arg.startsWith("optbeta:")) {
+            	optBeta = Double.parseDouble(arg.split(":")[1]);
+            }
+            else if (arg.startsWith("optiter:")) {
+            	optMaxIter = Integer.parseInt(arg.split(":")[1]);
+            }
             else if (arg.startsWith("model:")) {
             	String str = arg.split(":")[1];
             	if (str.equals("basic"))

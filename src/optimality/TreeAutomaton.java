@@ -128,14 +128,14 @@ public class TreeAutomaton {
 				gpSibAuto.lSib[i] += rate;
 				gpSibAuto.lHead[i] += rate;
 				gpSibAuto.updated[gpSibAuto.getHeadIndex(i)] = true;
-				gpSibAuto.updated[gpSibAuto.getModIndex(i)] = true;
+				//gpSibAuto.updated[gpSibAuto.getModIndex(i)] = true;
 			}
 			else if (!z[i] && y[i]) {
 				// discourage i, decrease lSib/lHead, -rate
 				gpSibAuto.lSib[i] -= rate;
 				gpSibAuto.lHead[i] -= rate;
 				gpSibAuto.updated[gpSibAuto.getHeadIndex(i)] = true;
-				gpSibAuto.updated[gpSibAuto.getModIndex(i)] = true;
+				//gpSibAuto.updated[gpSibAuto.getModIndex(i)] = true;
 			}
 		}
 	}
