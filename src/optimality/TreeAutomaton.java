@@ -4,6 +4,7 @@ import parser.DependencyInstance;
 import parser.LocalFeatureData;
 import parser.Options;
 import parser.decoding.ChuLiuEdmondDecoder;
+import utils.Utils;
 
 public class TreeAutomaton {
 	// first-order decoding
@@ -86,6 +87,7 @@ public class TreeAutomaton {
         double score = 0.0;
         
         for (int i = 1; i < N; ++i) {
+        	Utils.Assert(lfd.isPruned(final_par[i], i));
         	y[getIndex(final_par[i], i)] = true;
         	score += scores[final_par[i]][i];
         }
