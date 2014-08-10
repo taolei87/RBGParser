@@ -43,12 +43,16 @@ public class Optimality {
 		}
 	}
 	
-	public boolean optimalityCheck(DependencyInstance inst, DependencyInstance gold, LocalFeatureData lfd) {
+	public int optimalityCheck(DependencyInstance inst, DependencyInstance gold, LocalFeatureData lfd) {
 		// check if the solution is optimum
 		
 		GpSibAutomaton gpSibAuto = mode.gpSibAutomaton ? new GpSibAutomaton(inst.length, lfd, gold, gold != null, options) : null;
 		TreeAutomaton treeAuto = new TreeAutomaton(inst.length, lfd, gpSibAuto, gold, gold != null, options);
 		
+		// dual decomposition decoding
+		DependencyInstance newInst = new DependencyInstance(inst);
+		newInst.heads = new int[inst.length];
+
 		boolean[] y = new boolean[treeAuto.y.length];
 		for (int m = 1; m < inst.length; ++m)
 			y[treeAuto.getIndex(inst.heads[m], m)] = true;
@@ -60,11 +64,28 @@ public class Optimality {
 		double decodeScore = 0.0;
 		double solScore = 0.0;
 		boolean ret = false;
+		boolean cert = false;
 		
 		for (int iter = 0; iter < maxIter; ++iter) {
 			double treeScore = treeAuto.maximize();
 			double gpSibScore = mode.gpSibAutomaton ? gpSibAuto.maximize() : 0.0;
 			decodeScore = treeScore + gpSibScore;
+			
+			for (int m = 1; m < newInst.length; ++m) {
+				for (int h = 0; h < newInst.length; ++h) {
+					if (treeAuto.y[treeAuto.getIndex(h, m)]) {
+						Utils.Assert(!lfd.isPruned(h, m));
+						newInst.heads[m] = h;
+					}
+				}
+			}
+			newInst.heads[0] = -1;
+			if (Math.abs(gpSibScore - gpSibAuto.computeScore(newInst)) < 1e-6) {
+				cert = true;
+			}
+			else {
+				cert = false;
+			}
 			
 			double treeInstScore = treeAuto.computeScore(inst);
 			double gpSibInstScore = mode.gpSibAutomaton ? gpSibAuto.computeScore(inst) : 0.0;
@@ -89,7 +110,6 @@ public class Optimality {
 			oldScore = decodeScore;
 			
 			if (Math.abs(maxDiff) < 1e-6) {
-				System.out.println("good");
 				ret = true;		// find certificate
 				break;
 			}
@@ -106,12 +126,9 @@ public class Optimality {
 		}
 		
 		System.out.println(decodeScore + " " + solScore);
-		if (ret)
-			System.out.println("good");
-		else
-			System.out.println("bad");
+		System.out.println("cert: " + cert + " ret: " + ret);
 		
-		return ret;
+		return 0;
 	}
 	
 	public int dualDecodingCheck(DependencyInstance inst, DependencyInstance gold, LocalFeatureData lfd) {
