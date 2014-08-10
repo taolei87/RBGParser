@@ -92,7 +92,7 @@ public class GpSibAutomaton {
 			// init, s is the only child
 			double loss = (addLoss && gold.heads[s] != h) ? 1.0 : 0.0;
 			optScore[s] = beta * (lfd.getArcScore(h, s) + loss) - lSib[getIndex(h, s)]
-					+ (options.useGP && gp >= 0 ? lfd.getGPCScore(gp, h, s) : 0.0);
+					+ ((options.useGP && gp >= 0) ? lfd.getGPCScore(gp, h, s) : 0.0);
 			lastSib[s] = 0;
 			double baseScore = optScore[s];
 
@@ -102,7 +102,7 @@ public class GpSibAutomaton {
 					continue;
 				
 				double score = optScore[m] + baseScore
-						+ (options.useCS ? lfd.getSibScore(m, s) : 0.0)
+						+ (options.useCS ? lfd.getSibScore(m, s) + lfd.getTripsScore(h, m, s) : 0.0)
 						+ (options.useGS && gp >= 0 ? lfd.getGPSibScore(gp, h, m, s) : 0.0);
 				
 				if (score > optScore[s]) {
@@ -212,7 +212,7 @@ public class GpSibAutomaton {
 				int m = arcLis.get(p);
 				double loss = (addLoss && gold.heads[m] != h) ? 1.0 : 0.0;
 				score += beta * (lfd.getArcScore(h, m) + loss) - lSib[getIndex(h, m)]
-						+ (options.useGP && gp >= 0 ? lfd.getGPCScore(gp, h, m) : 0.0);
+						+ ((options.useGP && gp >= 0) ? lfd.getGPCScore(gp, h, m) : 0.0);
 			}
 			
 			for (int p = st; p+1 < ed; ++p) {
@@ -220,7 +220,7 @@ public class GpSibAutomaton {
 				int m = arcLis.get(p);
 				int s = arcLis.get(p+1);
 				
-				score += (options.useCS ? lfd.getSibScore(m, s) : 0.0)
+				score += (options.useCS ? lfd.getSibScore(m, s) + lfd.getTripsScore(h, m, s) : 0.0)
 						+ (options.useGS && gp >= 0 ? lfd.getGPSibScore(gp, h, m, s) : 0.0);
 			}
 		}
