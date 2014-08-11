@@ -169,7 +169,7 @@ public class Optimality {
 			decodeScore = treeScore + gpSibScore;
 			
 			if (iter == 0) {
-				delta = diff / 2;
+				delta = Math.min(1.0, diff);
 				oldScore = decodeScore;
 			}
 			
