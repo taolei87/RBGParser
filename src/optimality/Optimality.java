@@ -61,6 +61,7 @@ public class Optimality {
 		double delta = Double.NEGATIVE_INFINITY;
 		double oldScore = Double.NEGATIVE_INFINITY;
 		
+		double maxScore = 0.0;
 		double decodeScore = 0.0;
 		double solScore = 0.0;
 		boolean ret = false;
@@ -69,7 +70,7 @@ public class Optimality {
 		for (int iter = 0; iter < maxIter; ++iter) {
 			double treeScore = treeAuto.maximize();
 			double gpSibScore = mode.gpSibAutomaton ? gpSibAuto.maximize() : 0.0;
-			decodeScore = treeScore + gpSibScore;
+			maxScore = treeScore + gpSibScore;
 			
 			for (int m = 1; m < newInst.length; ++m) {
 				for (int h = 0; h < newInst.length; ++h) {
@@ -80,7 +81,10 @@ public class Optimality {
 				}
 			}
 			newInst.heads[0] = -1;
-			if (Math.abs(gpSibScore - gpSibAuto.computeScore(newInst)) < 1e-6) {
+			double gpSibDecodeScore = gpSibAuto.computeScore(newInst);
+			decodeScore = treeScore + gpSibDecodeScore;
+
+			if (Math.abs(gpSibScore - gpSibDecodeScore) < 1e-6) {
 				cert = true;
 			}
 			else {
@@ -102,12 +106,12 @@ public class Optimality {
 			
 			if (iter == 0) {
 				delta = Math.min(0.5, maxDiff);
-				oldScore = decodeScore;
+				oldScore = maxScore;
 			}
-			else if (decodeScore > oldScore) {
+			else if (maxScore > oldScore) {
 				eta++;
 			}
-			oldScore = decodeScore;
+			oldScore = maxScore;
 			
 			if (Math.abs(maxDiff) < 1e-6) {
 				ret = true;		// find certificate
