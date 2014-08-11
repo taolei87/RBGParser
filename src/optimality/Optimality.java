@@ -169,7 +169,7 @@ public class Optimality {
 			decodeScore = treeScore + gpSibScore;
 			
 			if (iter == 0) {
-				delta = Math.min(1.0, diff);
+				delta = Math.min(0.5, diff);
 				oldScore = decodeScore;
 			}
 			
@@ -228,9 +228,11 @@ public class Optimality {
 		else {
 			System.out.println("iter: " + maxIter);
 			if (decodeScore > solScore + 1e-6)
-				ret = 2;		// not optimal
+				ret = 2;		// dd is optimal
+			else if (decodeScore < solScore - 1e-6)
+				ret = 3;		// we are better
 			else
-				ret = 3;		// optimal
+				ret = 4;		// same
 		}
 		
 		//System.out.println("ret : " + ret); 

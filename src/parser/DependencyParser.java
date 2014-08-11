@@ -379,7 +379,7 @@ public class DependencyParser implements Serializable {
     	
     	DependencyInstance inst = pipe.createInstance(reader);    
     	
-    	int[] optRes = new int[4];
+    	int[] optRes = new int[5];
     	while (inst != null) {
     		LocalFeatureData lfd = new LocalFeatureData(inst, this, true);
     		GlobalFeatureData gfd = new GlobalFeatureData(lfd); 
