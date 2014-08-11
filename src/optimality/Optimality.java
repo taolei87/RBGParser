@@ -64,7 +64,7 @@ public class Optimality {
 		double maxScore = 0.0;
 		double decodeScore = 0.0;
 		double solScore = 0.0;
-		boolean ret = false;
+		int ret = 0;
 		boolean cert = false;
 		
 		for (int iter = 0; iter < maxIter; ++iter) {
@@ -114,7 +114,8 @@ public class Optimality {
 			oldScore = maxScore;
 			
 			if (Math.abs(maxDiff) < 1e-6) {
-				ret = true;		// find certificate
+				//ret = true;		// find certificate
+				System.out.println("iter: " + iter);
 				break;
 			}
 			else {
@@ -129,10 +130,25 @@ public class Optimality {
 			}
 		}
 		
-		System.out.println(decodeScore + " " + solScore);
-		System.out.println("cert: " + cert + " ret: " + ret);
+		//System.out.println(decodeScore + " " + solScore);
+		//System.out.println("cert: " + cert + " ret: " + ret);
+		if (cert) {
+			if (decodeScore > solScore + 1e-6)
+				ret = 0;		// not optimal
+			else
+				ret = 1;		// optimal
+		}
+		else {
+			System.out.println("iter: " + maxIter);
+			if (decodeScore > solScore + 1e-6)
+				ret = 2;		// dd is optimal
+			else if (decodeScore < solScore - 1e-6)
+				ret = 3;		// we are better
+			else
+				ret = 4;		// same
+		}
 		
-		return 0;
+		return ret;
 	}
 	
 	public int dualDecodingCheck(DependencyInstance inst, DependencyInstance gold, LocalFeatureData lfd) {
