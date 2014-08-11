@@ -101,7 +101,7 @@ public class Optimality {
 			}
 			
 			if (iter == 0) {
-				delta = maxDiff;
+				delta = Math.min(0.5, maxDiff);
 				oldScore = decodeScore;
 			}
 			else if (decodeScore > oldScore) {

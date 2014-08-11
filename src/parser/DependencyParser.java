@@ -417,8 +417,8 @@ public class DependencyParser implements Serializable {
     		if (options.checkOptimality) {
     			Optimality opt = new Optimality(options);
     			
-    			//int isOpt = opt.optimalityCheck(predInst, null, lfd);
-    			int isOpt = opt.dualDecodingCheck(predInst, null, lfd);
+    			int isOpt = opt.optimalityCheck(predInst, null, lfd);
+    			//int isOpt = opt.dualDecodingCheck(predInst, null, lfd);
     			optRes[isOpt]++;
     		}
     		
