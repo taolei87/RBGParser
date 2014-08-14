@@ -23,8 +23,10 @@ public abstract class DependencyDecoder {
 				return new ChuLiuEdmondDecoder(options);
 			else
 				return new CYKDecoder(options);			
-		} else
-			return new HillClimbingDecoder(options);
+		} else {
+			return new DualDecompositionDecoder(options);
+			//return new HillClimbingDecoder(options);
+		}
 		
 		//return null;
 	}

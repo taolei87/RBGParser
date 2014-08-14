@@ -2,6 +2,7 @@ package optimality;
 
 
 import parser.DependencyInstance;
+import parser.GlobalFeatureData;
 import parser.LocalFeatureData;
 import parser.Options;
 import utils.Utils;
@@ -258,4 +259,67 @@ public class Optimality {
 		//System.out.println("ret : " + ret); 
 		return ret;
 	}
+	
+	public DependencyInstance decode(DependencyInstance gold,
+			LocalFeatureData lfd, GlobalFeatureData gfd, boolean addLoss) {
+		// check if the solution is optimum
+		
+		GpSibAutomaton gpSibAuto = mode.gpSibAutomaton ? new GpSibAutomaton(gold.length, lfd, gold, addLoss, options) : null;
+		TreeAutomaton treeAuto = new TreeAutomaton(gold.length, lfd, gpSibAuto, gold, addLoss, options);
+		
+		// dual decomposition decoding
+		DependencyInstance newInst = new DependencyInstance(gold);
+		newInst.heads = new int[gold.length];
+		
+		int eta = 0;
+		double delta = Double.NEGATIVE_INFINITY;
+		
+		double oldScore = Double.NEGATIVE_INFINITY;
+		double decodeScore = Double.NEGATIVE_INFINITY;
+		
+		maxIter = addLoss ? options.optMaxIter : 5000;
+		
+		for (int iter = 0; iter < maxIter; ++iter) {
+			double treeScore = treeAuto.maximize();
+			for (int m = 1; m < newInst.length; ++m) {
+				for (int h = 0; h < newInst.length; ++h) {
+					if (treeAuto.y[treeAuto.getIndex(h, m)]) {
+						Utils.Assert(!lfd.isPruned(h, m));
+						newInst.heads[m] = h;
+					}
+				}
+			}
+			newInst.heads[0] = -1;
+			
+			double gpSibScore = mode.gpSibAutomaton ? gpSibAuto.maximize() : 0.0;
+			double gpSibInstScore = mode.gpSibAutomaton ? gpSibAuto.computeScore(newInst) : 0.0;
+			
+			double diff = gpSibScore - gpSibInstScore;
+			Utils.Assert(diff > -1e-6);
+			
+			decodeScore = treeScore + gpSibScore;
+			
+			if (iter == 0) {
+				delta = Math.min(0.5, diff);
+				oldScore = decodeScore;
+			}
+			
+			if (decodeScore > oldScore) {
+				eta++;
+			}
+			oldScore = decodeScore;
+			
+			if (Math.abs(diff) < 1e-6) {
+				break;
+			}
+			else {
+				// update lambda
+				double rate = delta / (1 + eta);
+				gpSibAuto.updateLambda(rate, treeAuto.y);
+			}
+		}
+		
+		return newInst;
+	}
+	
 }
