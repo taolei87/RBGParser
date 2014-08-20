@@ -24,8 +24,8 @@ public abstract class DependencyDecoder {
 			else
 				return new CYKDecoder(options);			
 		} else {
-			return new DualDecompositionDecoder(options);
-			//return new HillClimbingDecoder(options);
+			//return new DualDecompositionDecoder(options);
+			return new HillClimbingDecoder(options);
 		}
 		
 		//return null;

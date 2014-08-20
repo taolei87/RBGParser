@@ -279,7 +279,8 @@ public class Optimality {
 		
 		maxIter = addLoss ? options.optMaxIter : 5000;
 		
-		for (int iter = 0; iter < maxIter; ++iter) {
+		int iter = 0;
+		for (; iter < maxIter; ++iter) {
 			double treeScore = treeAuto.maximize();
 			for (int m = 1; m < newInst.length; ++m) {
 				for (int h = 0; h < newInst.length; ++h) {
@@ -318,6 +319,7 @@ public class Optimality {
 				gpSibAuto.updateLambda(rate, treeAuto.y);
 			}
 		}
+		//System.out.println(iter);
 		
 		return newInst;
 	}

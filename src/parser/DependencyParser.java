@@ -231,7 +231,8 @@ public class DependencyParser implements Serializable {
     			.createDependencyDecoder(options);
     	
     	int N = lstTrain.length;
-    	int printPeriod = 10000 < N ? N/10 : 1000;
+    	//int printPeriod = 10000 < N ? N/10 : 1000;
+    	int printPeriod = 50;
     	
     	for (int iIter = 0; iIter < options.maxNumIters; ++iIter) {
     	    
@@ -417,8 +418,8 @@ public class DependencyParser implements Serializable {
     		if (options.checkOptimality) {
     			Optimality opt = new Optimality(options);
     			
-    			int isOpt = opt.optimalityCheck(predInst, null, lfd);
-    			//int isOpt = opt.dualDecodingCheck(predInst, null, lfd);
+    			//int isOpt = opt.optimalityCheck(predInst, null, lfd);
+    			int isOpt = opt.dualDecodingCheck(predInst, null, lfd);
     			optRes[isOpt]++;
     		}
     		
