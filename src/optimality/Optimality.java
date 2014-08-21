@@ -162,6 +162,10 @@ public class Optimality {
 		DependencyInstance newInst = new DependencyInstance(inst);
 		newInst.heads = new int[inst.length];
 		
+		DependencyInstance bestInst = new DependencyInstance(inst);
+		bestInst.heads = new int[inst.length];
+		double bestScore = Double.NEGATIVE_INFINITY;
+
 		int eta = 0;
 		double delta = Double.NEGATIVE_INFINITY;
 		
@@ -187,6 +191,14 @@ public class Optimality {
 			double diff = gpSibScore - gpSibInstScore;
 			Utils.Assert(diff > -1e-6);
 			
+			double predInstScore = treeScore + gpSibInstScore;
+			if (predInstScore > bestScore + 1e-6) {
+				// update best prediction
+				for (int i = 0; i < bestInst.length; ++i)
+					bestInst.heads[i] = newInst.heads[i];
+				bestScore = predInstScore;
+			}
+			
 			decodeScore = treeScore + gpSibScore;
 			
 			if (iter == 0) {
@@ -201,6 +213,7 @@ public class Optimality {
 			
 			if (Math.abs(diff) < 1e-6) {
 				cert = true;
+				Utils.Assert(Math.abs(decodeScore - bestScore) < 1e-6);
 				System.out.println("iter: " + iter);
 				break;
 			}
@@ -216,10 +229,14 @@ public class Optimality {
 		if (mode.gpSibAutomaton)
 			solScore += gpSibAuto.computeScore(inst);
 		
-		decodeScore = treeAuto.computeScore(newInst);
-		if (mode.gpSibAutomaton)
-			decodeScore += gpSibAuto.computeScore(newInst);
+		//decodeScore = treeAuto.computeScore(newInst);
+		//if (mode.gpSibAutomaton)
+		//	decodeScore += gpSibAuto.computeScore(newInst);
 		
+		decodeScore = treeAuto.computeScore(bestInst);
+		if (mode.gpSibAutomaton)
+			decodeScore += gpSibAuto.computeScore(bestInst);
+
 		/*
 		double decodeScore2 = lfd.getScore(newInst);
 		double solScore2 = lfd.getScore(inst);		
