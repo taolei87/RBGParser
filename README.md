@@ -8,6 +8,7 @@ This project is developed at Natural Language Processing group in MIT. The proje
 
 [2] Yuan Zhang, Tao Lei, Regina Barzilay, Tommi Jaakkola and Amir Globerson. Steps to Excellence: Simple Inference with Refined Scoring of Dependency Trees.  ACL 2014. [PDF](http://people.csail.mit.edu/yuanzh/papers/acl2014.pdf)
 
+[3] Yuan Zhang*, Tao Lei*, Regina Barzilay and Tommi Jaakkola. Greed is Good if Randomized: New Inference for Dependency Parsing. EMNLP 2014. [PDF](http://people.csail.mit.edu/taolei/papers/emnlp2014.pdf) (*: Equal contribution)
 
 This project is implemented by Tao Lei (taolei [at] csail.mit.edu) and Yuan Zhang (yuanzh [at] csail.mit.edu).
 
