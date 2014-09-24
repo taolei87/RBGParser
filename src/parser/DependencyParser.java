@@ -375,6 +375,7 @@ public class DependencyParser implements Serializable {
     	DependencyDecoder decoder = DependencyDecoder.createDependencyDecoder(options);   	
     	int nUCorrect = 0, nLCorrect = 0;
     	int nDeps = 0, nWhole = 0, nSents = 0;
+    	int token = 0;
     	
 		long start = System.currentTimeMillis();
     	
@@ -397,6 +398,7 @@ public class DependencyParser implements Serializable {
                 }
             }
             nDeps += nToks;
+            token += inst.length - 1;
     		    		
             DependencyInstance predInst = decoder.decode(inst, lfd, gfd, false);
 
@@ -426,6 +428,8 @@ public class DependencyParser implements Serializable {
     		inst = pipe.createInstance(reader);
     	}
     	
+    	long end = System.currentTimeMillis();
+    	
     	reader.close();
     	if (writer != null) writer.close();
     	
@@ -435,14 +439,16 @@ public class DependencyParser implements Serializable {
     			(nUCorrect+0.0)/nDeps,
     			(nLCorrect+0.0)/nDeps,
     			(nWhole + 0.0)/nSents,
-    			(System.currentTimeMillis() - start)/1000);
+    			(end - start)/1000);
     	for (int i = 0; i < optRes.length; ++i)
     		System.out.print(i + ":" + optRes[i] + " ");
     	System.out.println();
     	if (options.pruning && options.learningMode != LearningMode.Basic && pruner != null)
     		pruner.printPruningStats();
         
-        decoder.shutdown();
+    	System.out.println("Seconds per token: " + ((double)(end - start))/1000/token);
+    	
+    	decoder.shutdown();
 
     	return (nUCorrect+0.0)/nDeps;
     }
