@@ -98,6 +98,7 @@ public class DependencyParser implements Serializable {
 			parser.options = options;
 			
 			parser.loadModel();
+			parser.options.processArguments(args);
 			
 			if (!options.train && options.wordVectorFile != null)
             	parser.pipe.loadWordVectors(options.wordVectorFile);
@@ -112,6 +113,7 @@ public class DependencyParser implements Serializable {
     {
     	ObjectOutputStream out = new ObjectOutputStream(
     			new GZIPOutputStream(new FileOutputStream(options.modelFile)));
+    	out.writeObject(options);
     	out.writeObject(pipe);
     	out.writeObject(parameters);
     	if (options.pruning && options.learningMode != LearningMode.Basic) 
@@ -122,16 +124,18 @@ public class DependencyParser implements Serializable {
     public void loadModel() throws IOException, ClassNotFoundException 
     {
         ObjectInputStream in = new ObjectInputStream(
-                new GZIPInputStream(new FileInputStream(options.modelFile)));    
+                new GZIPInputStream(new FileInputStream(options.modelFile)));
+        Options _options = (Options) in.readObject();
         pipe = (DependencyPipe) in.readObject();
         parameters = (Parameters) in.readObject();
-        if (options.pruning && options.learningMode != LearningMode.Basic)
+        if (_options.pruning && _options.learningMode != LearningMode.Basic)
         	//pruner = (DependencyParser) in.readObject();
         	pruner = (BasicArcPruner) in.readObject();
-        pipe.options = options;
-        parameters.options = options;        
+        pipe.options = _options;
+        parameters.options = _options;        
         in.close();
         pipe.closeAlphabets();
+        options = _options;
     }
     
 	public void printPruningStats()
@@ -282,7 +286,7 @@ public class DependencyParser implements Serializable {
     			pruner.printPruningStats();
     		
     		// evaluate on a development set
-    		if (evalAndSave && options.test && ((iIter+1) % 1 == 0 || iIter+1 == options.maxNumIters)) {		
+    		if (evalAndSave && options.test && ((iIter+1) % 5 == 0 || iIter+1 == options.maxNumIters)) {		
     			System.out.println();
 	  			System.out.println("_____________________________________________");
 	  			System.out.println();
@@ -333,7 +337,7 @@ public class DependencyParser implements Serializable {
     	for (int i = 1, N = inst.length; i < N; ++i) {
 
             if (!evalWithPunc)
-            	if (inst.forms[i].matches("[-!\"#%&'()*,./:;?@\\[\\]_{}、]+")) continue;
+            	if (inst.forms[i].matches("[-!\"%&'()*,./:;?@\\[\\]_{}、]+")) continue;
 
     		if (inst.heads[i] == pred.heads[i]) ++nCorrect;
     	}    		
@@ -347,7 +351,7 @@ public class DependencyParser implements Serializable {
     	for (int i = 1, N = inst.length; i < N; ++i) {
 
             if (!evalWithPunc)
-            	if (inst.forms[i].matches("[-!\"#%&'()*,./:;?@\\[\\]_{}、]+")) continue;
+            	if (inst.forms[i].matches("[-!\"%&'()*,./:;?@\\[\\]_{}、]+")) continue;
 
     		if (inst.heads[i] == pred.heads[i] && inst.deplbids[i] == pred.deplbids[i]) ++nCorrect;
     	}    		
@@ -387,7 +391,7 @@ public class DependencyParser implements Serializable {
     		    nToks = (inst.length - 1);
             else {
                 for (int i = 1; i < inst.length; ++i) {
-                	if (inst.forms[i].matches("[-!\"#%&'()*,./:;?@\\[\\]_{}、]+")) continue;
+                	if (inst.forms[i].matches("[-!\"%&'()*,./:;?@\\[\\]_{}、]+")) continue;
                     ++nToks;
                 }
             }
