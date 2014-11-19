@@ -222,7 +222,7 @@ public class Parameters implements Serializable {
         double l2norm = dt.Squaredl2NormUnsafe() * gamma * gamma + dtl.Squaredl2NormUnsafe() * gammaLabel * gammaLabel;
     	
         int updId = (updCnt + offset) % 3;
-        if ( updId == 1 ) {
+        //if ( updId == 1 ) {
         	// update U
         	for (int k = 0; k < rank; ++k) {        		
         		FeatureVector dUk = getdU(k, lfd, actDeps, predDeps);
@@ -230,23 +230,23 @@ public class Parameters implements Serializable {
             	loss -= dUk.dotProduct(U[k]) * (1-gamma);
             	dU[k] = dUk;
         	}
-        } else if ( updId == 2 ) {
+        //} else if ( updId == 2 ) {
         	// update V
         	for (int k = 0; k < rank; ++k) {
         		FeatureVector dVk = getdV(k, lfd, actDeps, predDeps);
             	l2norm += dVk.Squaredl2NormUnsafe() * (1-gamma) * (1-gamma);
-            	loss -= dVk.dotProduct(V[k]) * (1-gamma);
+            	//loss -= dVk.dotProduct(V[k]) * (1-gamma);
             	dV[k] = dVk;
         	}        	
-        } else {
+        //} else {
         	// update W
         	for (int k = 0; k < rank; ++k) {
         		FeatureVector dWk = getdW(k, lfd, actDeps, predDeps);
             	l2norm += dWk.Squaredl2NormUnsafe() * (1-gamma) * (1-gamma);
-            	loss -= dWk.dotProduct(W[k]) * (1-gamma);
+            	//loss -= dWk.dotProduct(W[k]) * (1-gamma);
             	dW[k] = dWk;
         	}   
-        }
+        //}
         
         double alpha = loss/l2norm;
     	alpha = Math.min(C, alpha);
@@ -271,7 +271,8 @@ public class Parameters implements Serializable {
 	    		}
     		}
     		
-    		if ( updId == 1 ) {
+    		//if ( updId == 1 ) 
+    		{
     			// update U
     			double coeff = alpha * (1-gamma), coeff2 = coeff * updCnt;
             	for (int k = 0; k < rank; ++k) {
@@ -283,8 +284,9 @@ public class Parameters implements Serializable {
             			totalU[k][x] += coeff2 * z;
             		}
             	}
-            	
-    		} else if ( updId == 2 ) {
+    		}	
+    		//else if ( updId == 2 ) 
+    		{
     			// update V
     			double coeff = alpha * (1-gamma), coeff2 = coeff * updCnt;
             	for (int k = 0; k < rank; ++k) {
@@ -296,7 +298,9 @@ public class Parameters implements Serializable {
             			totalV[k][x] += coeff2 * z;
             		}
             	}            	
-    		} else {
+    		} 
+            //else 
+    		{
     			// update W
     			double coeff = alpha * (1-gamma), coeff2 = coeff * updCnt;
             	for (int k = 0; k < rank; ++k) {
