@@ -42,8 +42,7 @@ public class DependencyParser implements Serializable {
 	{
 		
 		Options options = new Options();
-		options.processArguments(args);
-		options.printOptions();
+		options.processArguments(args);		
 		
 		DependencyParser pruner = null;
 		if (options.train && options.pruning && options.learningMode != LearningMode.Basic) {
@@ -77,6 +76,7 @@ public class DependencyParser implements Serializable {
 		if (options.train) {
 			DependencyParser parser = new DependencyParser();
 			parser.options = options;
+			options.printOptions();
 			
 			DependencyPipe pipe = new DependencyPipe(options);
 			parser.pipe = pipe;
@@ -95,12 +95,11 @@ public class DependencyParser implements Serializable {
 		
 		if (options.test) {
 			DependencyParser parser = new DependencyParser();
-			parser.options = options;
+			parser.options = options;			
 			
 			parser.loadModel();
-			
-			if (!options.train && options.wordVectorFile != null)
-            	parser.pipe.loadWordVectors(options.wordVectorFile);
+			parser.options.processArguments(args);
+			if (!options.train) parser.options.printOptions(); 
 			
 			System.out.printf(" Evaluating: %s%n", options.testFile);
 			parser.evaluateSet(true, false);
@@ -114,6 +113,7 @@ public class DependencyParser implements Serializable {
     			new GZIPOutputStream(new FileOutputStream(options.modelFile)));
     	out.writeObject(pipe);
     	out.writeObject(parameters);
+    	out.writeObject(options);
     	if (options.pruning && options.learningMode != LearningMode.Basic) 
     		out.writeObject(pruner);
     	out.close();
@@ -125,6 +125,7 @@ public class DependencyParser implements Serializable {
                 new GZIPInputStream(new FileInputStream(options.modelFile)));    
         pipe = (DependencyPipe) in.readObject();
         parameters = (Parameters) in.readObject();
+        options = (Options) in.readObject();
         if (options.pruning && options.learningMode != LearningMode.Basic)
         	//pruner = (DependencyParser) in.readObject();
         	pruner = (BasicArcPruner) in.readObject();

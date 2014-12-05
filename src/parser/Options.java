@@ -39,8 +39,13 @@ public class Options implements Cloneable, Serializable {
 	public double pruningCoeff = 0.1;
 	public int labelLossType = 0;
 	
-	public int numHcThreads = 10;		// hill climbing: number of threads
-	public int numHcConverge = 300;		// hill climbing: number of restarts to converge 
+	public int numHcThreads = 8;		// hill climbing: number of threads
+	
+	// Number of hill climbing restarts to converge
+	// Training requires more restarts because of cost-augmented decoding
+	// Testing is easier therefore needs less restarts
+	public int numTrainConverge = 300;	
+	public int numTestConverge = 50;	
 	
 	public boolean average = true;
 	public double C = 0.01;
@@ -155,7 +160,14 @@ public class Options implements Cloneable, Serializable {
             	numHcThreads = Integer.parseInt(arg.split(":")[1]);
             }
             else if (arg.startsWith("converge:")) {
-            	numHcConverge = Integer.parseInt(arg.split(":")[1]);
+            	numTrainConverge = Integer.parseInt(arg.split(":")[1]);
+            	numTestConverge = numTrainConverge;
+            }
+            else if (arg.startsWith("converge-train:")) {
+            	numTrainConverge = Integer.parseInt(arg.split(":")[1]);
+            }
+            else if (arg.startsWith("converge-test:")) {
+            	numTestConverge = Integer.parseInt(arg.split(":")[1]);
             }
             else if (arg.startsWith("model:")) {
             	String str = arg.split(":")[1];
@@ -214,7 +226,8 @@ public class Options implements Cloneable, Serializable {
         System.out.println("word-vector:" + wordVectorFile);
         System.out.println("projective: " + projective);
         System.out.println("pruning: " + pruning);
-        System.out.println("converge iter: " + numHcConverge);
+        System.out.println("hill-climbing converge (train): " + numTrainConverge);
+        System.out.println("hill-climbing converge (test): " + numTestConverge);
         System.out.println("thread: " + numHcThreads);
         
         System.out.println();

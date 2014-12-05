@@ -96,7 +96,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		public void run() {
 			
 			n = inst.length;
-			converge = options.numHcConverge;
+			converge = addLoss ? options.numTrainConverge : options.numTestConverge;
 			
 			if (dfslis == null || dfslis.length < n) {
 				dfslis = new int[n];				
