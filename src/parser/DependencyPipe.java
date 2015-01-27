@@ -490,8 +490,9 @@ public class DependencyPipe implements Serializable {
     		if (options.learnLabel) {
     			int type = deplbids[i]; 
     			boolean toRight = parent < i;
-    			createLabelFeatures(inst, parent, type, toRight, false);
-    			createLabelFeatures(inst, i, type, toRight, true);
+    			//createLabelFeatures(inst, parent, type, toRight, false);
+    			//createLabelFeatures(inst, i, type, toRight, true);
+    			createLabelFeatures(inst, heads[i], i, type);
     		}
     	}
     	
@@ -1215,58 +1216,257 @@ public class DependencyPipe implements Serializable {
      *  
      ************************************************************************/
     
-    public FeatureVector createLabelFeatures(DependencyInstance inst, int word,
-    		int type, boolean toRight, boolean isChild) 
+    public FeatureVector createLabelFeatures(DependencyInstance inst,
+    		int head, int mod, int type)
     {
-    	
     	FeatureVector fv = new FeatureVector(arcAlphabet.size());
     	if (!options.learnLabel) return fv;
-    	    	
-    	int att = 1;
-    	if (toRight) att |= 2;
-    	if (isChild) att |= 4;
     	
-    	int[] toks = inst.formids;
+    	int[] forms = inst.formids;
     	int[] pos = inst.postagids;
+    	int[] cpos = inst.cpostagids;
+    	int[][] feats = inst.featids;
     	
-    	int w = toks[word];
-    	
+    	int hw = forms[head], hp = pos[head], hcp = cpos[head];
+    	int mw = forms[mod], mp = pos[mod], mcp = cpos[mod];
+    			
     	long code = 0;
+  
+    	int dist = getBinnedDistance(head-mod);
     	
-    	code = createArcCodeP(CORE_LABEL_NTS1, type);
+		code = createArcCodeWP(HW_LABEL, hw, type);
 		addArcFeature(code, fv);
-		addArcFeature(code | att, fv);		
+		addArcFeature(code | dist, fv);	
+		
+		code = createArcCodePP(HP_LABEL, hp, type);
+		addArcFeature(code, fv);
+		addArcFeature(code | dist, fv);	
+		
+		code = createArcCodePP(HP_LABEL, hcp, type);
+		addArcFeature(code, fv);
+		addArcFeature(code | dist, fv);	
+		
+		if (feats[head] != null) {
+			for (int f : feats[head]) {
+				code = createArcCodePP(HP_LABEL, f, type);
+				addArcFeature(code, fv);
+				addArcFeature(code | dist, fv);	
+			}
+		}
+		
+		code = createArcCodeWP(MW_LABEL, mw, type);
+		addArcFeature(code, fv);
+		addArcFeature(code | dist, fv);	
+		
+		code = createArcCodePP(MP_LABEL, mp, type);
+		addArcFeature(code, fv);
+		addArcFeature(code | dist, fv);	
+		
+		code = createArcCodePP(MP_LABEL, mcp, type);
+		addArcFeature(code, fv);
+		addArcFeature(code | dist, fv);	
+		
+		if (feats[mod] != null) {
+			for (int f : feats[mod]) {
+				code = createArcCodePP(MP_LABEL, f, type);
+				addArcFeature(code, fv);
+				addArcFeature(code | dist, fv);	
+			}
+		}
+		
+		code = createArcCodeWPP(HW_MP_LABEL, hw, mp, type);
+		addArcFeature(code, fv);
+		addArcFeature(code | dist, fv);	
+		
+		code = createArcCodeWPP(HW_MP_LABEL, hw, mcp, type);
+		addArcFeature(code, fv);
+		addArcFeature(code | dist, fv);	
+		
+		code = createArcCodePPP(HP_MP_LABEL, hp, mp, type);
+		addArcFeature(code, fv);
+		addArcFeature(code | dist, fv);	
+		
+		code = createArcCodePPP(HP_MP_LABEL, hp, mcp, type);
+		addArcFeature(code, fv);
+		addArcFeature(code | dist, fv);	
+		
+		code = createArcCodePPP(HP_MP_LABEL, hcp, mp, type);
+		addArcFeature(code, fv);
+		addArcFeature(code | dist, fv);	
+		
+		code = createArcCodePPP(HP_MP_LABEL, hcp, mcp, type);
+		addArcFeature(code, fv);
+		addArcFeature(code | dist, fv);	
+		
+		code = createArcCodeWPP(MW_HP_LABEL, mw, hp, type);
+		addArcFeature(code, fv);
+		addArcFeature(code | dist, fv);	
+		
+		code = createArcCodeWPP(MW_HP_LABEL, mw, hcp, type);
+		addArcFeature(code, fv);
+		addArcFeature(code | dist, fv);	
+		
+		if (feats[head] != null) {
+			for (int f : feats[head]) {
+				code = createArcCodeWPP(MW_HP_LABEL, mw, f, type);
+				addArcFeature(code, fv);
+				addArcFeature(code | dist, fv);	
 				
-    	int wP = pos[word];
-    	int wPm1 = word > 0 ? pos[word-1] : TOKEN_START;
-    	int wPp1 = word < pos.length-1 ? pos[word+1] : TOKEN_END;
+				code = createArcCodePPP(HP_MP_LABEL, f, mp, type);
+				addArcFeature(code, fv);
+				addArcFeature(code | dist, fv);
+				
+				code = createArcCodePPP(HP_MP_LABEL, f, mcp, type);
+				addArcFeature(code, fv);
+				addArcFeature(code | dist, fv);	
+			}
+		}
+		
+		if (feats[mod] != null) {
+			for (int f : feats[mod]) {
+				code = createArcCodeWPP(HW_MP_LABEL, hw, f, type);
+				addArcFeature(code, fv);
+				addArcFeature(code | dist, fv);
+				
+				code = createArcCodePPP(HP_MP_LABEL, hp, f, type);
+				addArcFeature(code, fv);
+				addArcFeature(code | dist, fv);
+				
+				code = createArcCodePPP(HP_MP_LABEL, hcp, f, type);
+				addArcFeature(code, fv);
+				addArcFeature(code | dist, fv);	
+			}
+		}
+		
+		{
+			int pmw = mod > 0 ? forms[mod-1] : TOKEN_START;
+			int pmp = mod > 0 ? pos[mod-1] : TOKEN_START;
+			
+			code = createArcCodePPP(HP_pMP_LABEL, hp, pmp, type);
+			addArcFeature(code, fv);
+			addArcFeature(code | dist, fv);
+			
+			code = createArcCodePPP(HP_pMP_LABEL, hcp, pmp, type);
+			addArcFeature(code, fv);
+			addArcFeature(code | dist, fv);
+			
+			code = createArcCodeWPP(HP_pMW_LABEL, pmw, hp, type);
+			addArcFeature(code, fv);
+			addArcFeature(code | dist, fv);
+			
+			code = createArcCodeWPP(HP_pMW_LABEL, pmw, hcp, type);
+			addArcFeature(code, fv);
+			addArcFeature(code | dist, fv);
+			
+			code = createArcCodePPP(MP_pMP_LABEL, mp, pmp, type);
+			addArcFeature(code, fv);
+			addArcFeature(code | dist, fv);
+			
+			code = createArcCodePPP(MP_pMP_LABEL, mcp, pmp, type);
+			addArcFeature(code, fv);
+			addArcFeature(code | dist, fv);
+			
+			code = createArcCodeWPP(MP_pMW_LABEL, pmw, mp, type);
+			addArcFeature(code, fv);
+			addArcFeature(code | dist, fv);
+			
+			code = createArcCodeWPP(MP_pMW_LABEL, pmw, mcp, type);
+			addArcFeature(code, fv);
+			addArcFeature(code | dist, fv);
+		}
     	
-		code = createArcCodeWPP(CORE_LABEL_NTH, w, wP, type);
-		addArcFeature(code, fv);
-		addArcFeature(code | att, fv);	
+		{
+			int nmw = mod < inst.length-1 ? forms[mod+1] : TOKEN_END;
+			int nmp = mod < inst.length-1 ? pos[mod+1] : TOKEN_END;
+			
+			code = createArcCodePPP(HP_nMP_LABEL, hp, nmp, type);
+			addArcFeature(code, fv);
+			addArcFeature(code | dist, fv);
+			
+			code = createArcCodePPP(HP_nMP_LABEL, hcp, nmp, type);
+			addArcFeature(code, fv);
+			addArcFeature(code | dist, fv);
+			
+			code = createArcCodeWPP(HP_nMW_LABEL, nmw, hp, type);
+			addArcFeature(code, fv);
+			addArcFeature(code | dist, fv);
+			
+			code = createArcCodeWPP(HP_nMW_LABEL, nmw, hcp, type);
+			addArcFeature(code, fv);
+			addArcFeature(code | dist, fv);
+			
+			code = createArcCodePPP(MP_nMP_LABEL, mp, nmp, type);
+			addArcFeature(code, fv);
+			addArcFeature(code | dist, fv);
+			
+			code = createArcCodePPP(MP_nMP_LABEL, mcp, nmp, type);
+			addArcFeature(code, fv);
+			addArcFeature(code | dist, fv);
+			
+			code = createArcCodeWPP(MP_nMW_LABEL, nmw, mp, type);
+			addArcFeature(code, fv);
+			addArcFeature(code | dist, fv);
+			
+			code = createArcCodeWPP(MP_nMW_LABEL, nmw, mcp, type);
+			addArcFeature(code, fv);
+			addArcFeature(code | dist, fv);
+		}
 		
-		code = createArcCodePP(CORE_LABEL_NTI, wP, type);
-		addArcFeature(code, fv);
-		addArcFeature(code | att, fv);	
-		
-		code = createArcCodePPP(CORE_LABEL_NTIA, wPm1, wP, type);
-		addArcFeature(code, fv);
-		addArcFeature(code | att, fv);	
-		
-		code = createArcCodePPP(CORE_LABEL_NTIB, wP, wPp1, type);
-		addArcFeature(code, fv);
-		addArcFeature(code | att, fv);	
-		
-		code = createArcCodePPPP(CORE_LABEL_NTIC, wPm1, wP, wPp1, type);
-		addArcFeature(code, fv);
-		addArcFeature(code | att, fv);	
-		
-		code = createArcCodeWP(CORE_LABEL_NTJ, w, type);
-		addArcFeature(code, fv);
-		addArcFeature(code | att, fv);	
-    	
     	return fv;
     }
+    
+//    public FeatureVector createLabelFeatures(DependencyInstance inst, int word,
+//    		int type, boolean toRight, boolean isChild) 
+//    {
+//    	
+//    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
+//    	if (!options.learnLabel) return fv;
+//    	    	
+//    	int att = 1;
+//    	if (toRight) att |= 2;
+//    	if (isChild) att |= 4;
+//    	
+//    	int[] toks = inst.formids;
+//    	int[] pos = inst.postagids;
+//    	
+//    	int w = toks[word];
+//    	
+//    	long code = 0;
+//    	
+//    	code = createArcCodeP(CORE_LABEL_NTS1, type);
+//		addArcFeature(code, fv);
+//		addArcFeature(code | att, fv);		
+//				
+//    	int wP = pos[word];
+//    	int wPm1 = word > 0 ? pos[word-1] : TOKEN_START;
+//    	int wPp1 = word < pos.length-1 ? pos[word+1] : TOKEN_END;
+//    	
+//		code = createArcCodeWPP(CORE_LABEL_NTH, w, wP, type);
+//		addArcFeature(code, fv);
+//		addArcFeature(code | att, fv);	
+//		
+//		code = createArcCodePP(CORE_LABEL_NTI, wP, type);
+//		addArcFeature(code, fv);
+//		addArcFeature(code | att, fv);	
+//		
+//		code = createArcCodePPP(CORE_LABEL_NTIA, wPm1, wP, type);
+//		addArcFeature(code, fv);
+//		addArcFeature(code | att, fv);	
+//		
+//		code = createArcCodePPP(CORE_LABEL_NTIB, wP, wPp1, type);
+//		addArcFeature(code, fv);
+//		addArcFeature(code | att, fv);	
+//		
+//		code = createArcCodePPPP(CORE_LABEL_NTIC, wPm1, wP, wPp1, type);
+//		addArcFeature(code, fv);
+//		addArcFeature(code | att, fv);	
+//		
+//		code = createArcCodeWP(CORE_LABEL_NTJ, w, type);
+//		addArcFeature(code, fv);
+//		addArcFeature(code | att, fv);	
+//    	
+//    	return fv;
+//    }
     
     public FeatureVector createTripsFeatureVector(DependencyInstance inst, int par,
     		int ch1, int ch2) {

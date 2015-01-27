@@ -21,7 +21,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 	boolean addLoss;
 	final int labelLossType;
 	
-	int[][] staticTypes;
+	//int[][] staticTypes;
 	
 	double bestScore;	
 	int unchangedRuns, totRuns;
@@ -63,8 +63,8 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		totRuns = 0;
 		unchangedRuns = 0;
 		stopped = false;
-		if (options.learnLabel)
-			staticTypes = lfd.getStaticTypes();
+		//if (options.learnLabel)
+		//	staticTypes = lfd.getStaticTypes();
 		
 		for (int i = 0; i < tasks.length; ++i) {
 			decodingService.submit(tasks[i], null);			
@@ -77,6 +77,9 @@ public class HillClimbingDecoder extends DependencyDecoder {
 				System.out.println("Hill climbing thread interupted!!!!");
 			}
 		}
+		
+		//if (options.learnLabel)
+		//	lfd.predictLabels(pred.heads, pred.deplbids, addLoss);
 		
 		return pred;		
 	}
@@ -109,7 +112,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 			while (!stopped) {
 				
 				DependencyInstance now = sampler.randomWalkSampling(
-						inst, lfd, staticTypes, addLoss);
+						inst, lfd, addLoss);
 				
 				// hill climb
 				int[] heads = now.heads;
@@ -151,10 +154,10 @@ public class HillClimbingDecoder extends DependencyDecoder {
                     //}
 				}
 				
-				if (options.learnLabel) {
-					for (int m = 1; m < n; ++m)
-						deplbids[m] = staticTypes[heads[m]][m];
-				}
+				//if (options.learnLabel) {
+				//	for (int m = 1; m < n; ++m)
+				//		deplbids[m] = staticTypes[heads[m]][m];
+				//}
 				
 				double score = calcScore(now);
 				synchronized (pred) {
@@ -195,18 +198,19 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		{
 			double score = lfd.getPartialScore(heads, m)
 						 + gfd.getScore(heads);
-			if (options.learnLabel) {
-				int t = staticTypes[heads[m]][m];
-				score += lfd.getLabeledArcScore(heads[m], m, t);
-				if (addLoss) {
-					if (labelLossType == 0) {
-						if (heads[m] != inst.heads[m]) score += 0.5;
-						if (t != inst.deplbids[m]) score += 0.5;
-					} else if (heads[m] != inst.heads[m] || t != inst.deplbids[m])
-						score += 1.0;
-				}				
-			} 
-			else if (addLoss && heads[m] != inst.heads[m])
+//			if (options.learnLabel) {
+//				int t = staticTypes[heads[m]][m];
+//				score += lfd.getLabeledArcScore(heads[m], m, t);
+//				if (addLoss) {
+//					if (labelLossType == 0) {
+//						if (heads[m] != inst.heads[m]) score += 0.5;
+//						if (t != inst.deplbids[m]) score += 0.5;
+//					} else if (heads[m] != inst.heads[m] || t != inst.deplbids[m])
+//						score += 1.0;
+//				}				
+//			} 
+//			else 
+			  if (addLoss && heads[m] != inst.heads[m])
 				score += 1.0;
 			
 			return score;
@@ -218,17 +222,18 @@ public class HillClimbingDecoder extends DependencyDecoder {
 			int[] heads = now.heads;
 			int[] deplbids = now.deplbids;
 			for (int m = 1; m < n; ++m)
-				if (options.learnLabel) {
-					int t = deplbids[m];
-					score += lfd.getLabeledArcScore(heads[m], m, t);
-					if (addLoss) {
-						if (labelLossType == 0) {
-							if (heads[m] != inst.heads[m]) score += 0.5;
-							if (t != inst.deplbids[m]) score += 0.5;
-						} else if (heads[m] != inst.heads[m] || t != inst.deplbids[m])
-							score += 1.0;
-					}
-				} else if (addLoss && heads[m] != inst.heads[m])
+//				if (options.learnLabel) {
+//					int t = deplbids[m];
+//					score += lfd.getLabeledArcScore(heads[m], m, t);
+//					if (addLoss) {
+//						if (labelLossType == 0) {
+//							if (heads[m] != inst.heads[m]) score += 0.5;
+//							if (t != inst.deplbids[m]) score += 0.5;
+//						} else if (heads[m] != inst.heads[m] || t != inst.deplbids[m])
+//							score += 1.0;
+//					}
+//				} else 
+				  if (addLoss && heads[m] != inst.heads[m])
 					score += 1.0;			 
 			score += lfd.getScore(now);
 			score += gfd.getScore(now);	

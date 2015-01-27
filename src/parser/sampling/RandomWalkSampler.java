@@ -31,7 +31,7 @@ public class RandomWalkSampler {
 	
 	
     public DependencyInstance randomWalkSampling(DependencyInstance inst,
-    		LocalFeatureData lfd, int[][] staticTypes, boolean addLoss)
+    		LocalFeatureData lfd, boolean addLoss)
     {
         //int cnt = 0;
     	int len = inst.length;
@@ -60,20 +60,21 @@ public class RandomWalkSampler {
     				if (candH == curr || lfd.isPruned(candH, curr))
     					continue;
     				
-    				int candLab = options.learnLabel ? staticTypes[candH][curr] : 0;
+    				//int candLab = options.learnLabel ? staticTypes[candH][curr] : 0;
     				
     				double s = lfd.getArcScore(candH, curr);
                     //double s = lfd.getArcNoTensorScore(candH, curr);
-    				s += options.learnLabel ? lfd.getLabeledArcScore(candH, curr, candLab) : 0.0;
+    				//s += options.learnLabel ? lfd.getLabeledArcScore(candH, curr, candLab) : 0.0;
     				
     				if (addLoss) {
-    					if (options.learnLabel) {
-							if (labelLossType == 0) {
-								if (candH != inst.heads[curr]) s += 0.5;
-								if (candLab != inst.deplbids[curr]) s += 0.5;
-							} else if (candH != inst.heads[curr] || candLab != inst.deplbids[curr])
-								s += 1.0;
-    					} else if (candH != inst.heads[curr])
+//    					if (options.learnLabel) {
+//							if (labelLossType == 0) {
+//								if (candH != inst.heads[curr]) s += 0.5;
+//								if (candLab != inst.deplbids[curr]) s += 0.5;
+//							} else if (candH != inst.heads[curr] || candLab != inst.deplbids[curr])
+//								s += 1.0;
+//    					} else 
+    					  if (candH != inst.heads[curr])
     						s += 1.0;
     				}
                     score[size] = s;
@@ -83,8 +84,8 @@ public class RandomWalkSampler {
 
     			int sample = samplePoint(score, size, r);
     			predInst.heads[curr] = depList[sample];
-    			predInst.deplbids[curr] = 
-                    options.learnLabel ? staticTypes[predInst.heads[curr]][curr] : 0;
+    			//predInst.deplbids[curr] = 
+                //    options.learnLabel ? staticTypes[predInst.heads[curr]][curr] : 0;
     			curr = predInst.heads[curr];
     			
     			//if (predInst.heads[curr] != -1 && !inTree[curr]) {
@@ -143,11 +144,11 @@ public class RandomWalkSampler {
                     System.out.print("0.00\t");
                 else {
                     double s = lfd.getArcScore(u, v);
-                    int l = options.learnLabel ? staticTypes[u][v] : 0;
-                    s += options.learnLabel ? lfd.getLabeledArcScore(u, v, l) : 0.0;
+                    //int l = options.learnLabel ? staticTypes[u][v] : 0;
+                    //s += options.learnLabel ? lfd.getLabeledArcScore(u, v, l) : 0.0;
                     if (addLoss) {
-                        s += (inst.heads[v] != u ? 1.0 : 0.0)
-                           + (options.learnLabel && inst.deplbids[v] != l ? 1.0 : 0.0);
+                        s += (inst.heads[v] != u ? 1.0 : 0.0);
+                        //   + (options.learnLabel && inst.deplbids[v] != l ? 1.0 : 0.0);
                     }
                     System.out.printf("%.2f\t", s);
                 }

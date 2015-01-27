@@ -198,6 +198,39 @@ public class Parameters implements Serializable {
 		return sum;
 	}
 	
+	public double updateLabel(DependencyInstance gold, DependencyInstance pred,
+			LocalFeatureData lfd, GlobalFeatureData gfd,
+			int updCnt, int offset)
+	{
+		int N = gold.length;
+    	int[] actDeps = gold.heads;
+    	int[] actLabs = gold.deplbids;
+    	int[] predDeps = pred.heads;
+    	int[] predLabs = pred.deplbids;
+    	
+    	double Fi = getLabelDis(actDeps, actLabs, predDeps, predLabs);
+        	
+    	FeatureVector dtl = lfd.getLabeledFeatureDifference(gold, pred);
+    	double loss = - dtl.dotProduct(params) + Fi;
+        double l2norm = dtl.Squaredl2NormUnsafe();
+    	
+        double alpha = loss/l2norm;
+    	alpha = Math.min(C, alpha);
+    	if (alpha > 0) {
+    		double coeff = alpha;
+    		double coeff2 = coeff * updCnt;
+    		for (int i = 0, K = dtl.size(); i < K; ++i) {
+	    		int x = dtl.x(i);
+	    		double z = dtl.value(i);
+	    		params[x] += coeff * z;
+	    		total[x] += coeff2 * z;
+    		}
+    	}
+    	
+    	return loss;
+	}
+	
+	
 	public double update(DependencyInstance gold, DependencyInstance pred,
 			LocalFeatureData lfd, GlobalFeatureData gfd,
 			int updCnt, int offset)
@@ -212,14 +245,9 @@ public class Parameters implements Serializable {
     	
     	FeatureVector dt = lfd.getFeatureDifference(gold, pred);
     	dt.addEntries(gfd.getFeatureDifference(gold, pred));
-    	
-    	FeatureVector dtl = new FeatureVector(size);
-    	if (options.learnLabel) {
-    		dtl = lfd.getLabeledFeatureDifference(gold, pred);
-    	}
-    	
-        double loss = - dt.dotProduct(params)*gamma - dtl.dotProduct(params)*gammaLabel + Fi;
-        double l2norm = dt.Squaredl2NormUnsafe() * gamma * gamma + dtl.Squaredl2NormUnsafe() * gammaLabel * gammaLabel;
+    	    	
+        double loss = - dt.dotProduct(params)*gamma + Fi;
+        double l2norm = dt.Squaredl2NormUnsafe() * gamma * gamma;
     	
         int updId = (updCnt + offset) % 3;
         //if ( updId == 1 ) {
@@ -258,14 +286,6 @@ public class Parameters implements Serializable {
 	    		for (int i = 0, K = dt.size(); i < K; ++i) {
 		    		int x = dt.x(i);
 		    		double z = dt.value(i);
-		    		params[x] += coeff * z;
-		    		total[x] += coeff2 * z;
-	    		}
-	    		coeff = alpha * gammaLabel;
-	    		coeff2 = coeff * updCnt;
-	    		for (int i = 0, K = dtl.size(); i < K; ++i) {
-		    		int x = dtl.x(i);
-		    		double z = dtl.value(i);
 		    		params[x] += coeff * z;
 		    		total[x] += coeff2 * z;
 	    		}
@@ -408,17 +428,27 @@ public class Parameters implements Serializable {
 	{
 		double dis = 0;
 		for (int i = 1; i < actDeps.length; ++i)
-			if (options.learnLabel) {
-				if (labelLossType == 0) {
-					if (actDeps[i] != predDeps[i]) dis += 0.5;
-					if (actLabs[i] != predLabs[i]) dis += 0.5;
-				} else if (actDeps[i] != predDeps[i] || actLabs[i] != predLabs[i]) dis += 1;
-			} else {
+			//if (options.learnLabel) {
+			//	if (labelLossType == 0) {
+			//		if (actDeps[i] != predDeps[i]) dis += 1.0;
+			//		if (actLabs[i] != predLabs[i]) dis += 1.0;
+			//	} else if (actDeps[i] != predDeps[i] || actLabs[i] != predLabs[i]) dis += 1;
+			//} else {
 				if (actDeps[i] != predDeps[i]) dis += 1;
-			}
+			//}
 		return dis;
     }
 	
+	public double getLabelDis(int[] actDeps, int[] actLabs,
+			int[] predDeps, int[] predLabs) 
+	{
+		double dis = 0;
+		for (int i = 1; i < actLabs.length; ++i) {
+			assert(actDeps[i] == predDeps[i]);
+			if (actLabs[i] != predLabs[i]) dis += 1;
+		}
+		return dis;
+    }
     public int getBinnedDistance(int x) {
     	int y = x > 0 ? x : -x;
     	int dis = 0;

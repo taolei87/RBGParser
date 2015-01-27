@@ -27,8 +27,8 @@ public class CYKDecoder extends DependencyDecoder {
 		}
 		
 		int[][] staticTypes = null;
-		if (options.learnLabel)
-		    staticTypes = lfd.getStaticTypes();
+		//if (options.learnLabel)
+		//    staticTypes = lfd.getStaticTypes();
 		
 	    int[] deps = inst.heads;
         int[] labs = inst.deplbids;
@@ -41,28 +41,28 @@ public class CYKDecoder extends DependencyDecoder {
 				double arcST = lfd.getArcScore(s, t); // arcScores[s][t];
 				double arcTS = lfd.getArcScore(t, s); // arcScores[t][s];
 				int typeST = 0, typeTS = 0;
-				if (options.learnLabel) {
-					typeST = staticTypes[s][t];
-					typeTS = staticTypes[t][s];
-					arcST += lfd.getLabeledArcScore(s, t, typeST); //ntScores[s][typeST][1][0] + ntScores[t][typeST][1][1];
-					arcTS += lfd.getLabeledArcScore(t, s, typeTS); //ntScores[s][typeTS][0][1] + ntScores[t][typeTS][0][0];
-				}
+				//if (options.learnLabel) {
+				//	typeST = staticTypes[s][t];
+				//	typeTS = staticTypes[t][s];
+				//	arcST += lfd.getLabeledArcScore(s, t, typeST); //ntScores[s][typeST][1][0] + ntScores[t][typeST][1][1];
+				//	arcTS += lfd.getLabeledArcScore(t, s, typeTS); //ntScores[s][typeTS][0][1] + ntScores[t][typeTS][0][0];
+				//}
                 if (addLoss) {
                 	if (labelLossType == 0) {
 	                    arcST += deps[t] == s ? 0.0 : 1.0;
 	                    arcTS += deps[s] == t ? 0.0 : 1.0;
-	                    if (options.learnLabel) {
-	                        arcST += labs[t] == typeST ? 0.0 : 1.0;
-	                        arcTS += labs[s] == typeTS ? 0.0 : 1.0;
-	                    }
+	                    //if (options.learnLabel) {
+	                    //    arcST += labs[t] == typeST ? 0.0 : 1.0;
+	                    //    arcTS += labs[s] == typeTS ? 0.0 : 1.0;
+	                    //}
                 	} else {
-                		if (options.learnLabel) {
-                			arcST += (deps[t] == s && labs[t] == typeST) ? 0.0 : 1.0;
-                			arcTS += (deps[s] == t && labs[s] == typeTS) ? 0.0 : 1.0;
-                		} else {
+                		//if (options.learnLabel) {
+                		//	arcST += (deps[t] == s && labs[t] == typeST) ? 0.0 : 1.0;
+                		//	arcTS += (deps[s] == t && labs[s] == typeTS) ? 0.0 : 1.0;
+                		//} else {
     	                    arcST += deps[t] == s ? 0.0 : 1.0;
     	                    arcTS += deps[s] == t ? 0.0 : 1.0;
-                		}
+                		//}
                 	}
                 }
 				
@@ -104,6 +104,9 @@ public class CYKDecoder extends DependencyDecoder {
 		predInst.deplbids = new int[N];
 		pf.getBestParse(predInst);
 		
+		//if (options.learnLabel)
+		//	lfd.predictLabels(predInst.heads, predInst.deplbids, addLoss);
+			
 		return predInst;
 		
 	}

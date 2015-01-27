@@ -111,6 +111,9 @@ public class Options implements Cloneable, Serializable {
             else if (arg.startsWith("average:")) {
             	average = Boolean.parseBoolean(arg.split(":")[1]);
             }
+            else if (arg.startsWith("svd:")) {
+            	initTensorWithPretrain = Boolean.parseBoolean(arg.split(":")[1]);
+            }
     		else if (arg.startsWith("train-file:")) {
     			trainFile = arg.split(":")[1];
     		}

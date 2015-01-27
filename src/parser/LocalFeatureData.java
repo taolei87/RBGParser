@@ -32,8 +32,8 @@ public class LocalFeatureData {
 	double[] arcScores;				// 1st order arc scores (including tensor)
     double[] arcNtScores;
 
-	FeatureVector[][][][] lbFvs;	// labeled-arc feature vectors
-	double[][][][] lbScores;		// labeled-arc scores
+	//FeatureVector[][][][] lbFvs;	// labeled-arc feature vectors
+	//double[][][][] lbScores;		// labeled-arc scores
 	
 	//TODO: add high order feature vectors and score tables
 	
@@ -82,8 +82,8 @@ public class LocalFeatureData {
 		arcScores = new double[len*len];
 	    arcNtScores = new double[len*len];
 
-		lbFvs = new FeatureVector[len][ntypes][2][2];
-		lbScores = new double[len][ntypes][2][2];
+		//lbFvs = new FeatureVector[len][ntypes][2][2];
+		//lbScores = new double[len][ntypes][2][2];
 
 		// calculate 1st order feature vectors and scores
 		initFirstOrderTables();
@@ -117,17 +117,17 @@ public class LocalFeatureData {
 									+ parameters.dotProduct(wpU[i], wpV[j], i-j) * (1-gamma);
 				}
 		
-		if (options.learnLabel) {
-			for (int i = 0; i < len; ++i)
-				for (int t = 0; t < ntypes; ++t)
-					for (int j = 0; j < 2; ++j)
-						for (int k = 0; k < 2; ++k) {
-							lbFvs[i][t][j][k] = pipe.createLabelFeatures(
-									inst, i, t, j == 1, k == 1);
-							lbScores[i][t][j][k] = parameters.dotProduct(
-									lbFvs[i][t][j][k]) * gammaLabel;
-						}
-		}
+//		if (options.learnLabel) {
+//			for (int i = 0; i < len; ++i)
+//				for (int t = 0; t < ntypes; ++t)
+//					for (int j = 0; j < 2; ++j)
+//						for (int k = 0; k < 2; ++k) {
+//							lbFvs[i][t][j][k] = pipe.createLabelFeatures(
+//									inst, i, t, j == 1, k == 1);
+//							lbScores[i][t][j][k] = parameters.dotProduct(
+//									lbFvs[i][t][j][k]) * gammaLabel;
+//						}
+//		}
 	}
 	
 	public void initHighOrderFeatureTables() {
@@ -235,28 +235,28 @@ public class LocalFeatureData {
 			if (vis[y] && !isPruned(x, y)) traverse(y, vis);
 	}
 	
-	public int[][] getStaticTypes() {
-		
-		int N = len, T = ntypes;
-		int[][] staticTypes = new int[N][N];
-		for (int i = 0; i < N; ++i)
-			for (int j = 0; j < N; ++j) if (i != j) {
-				
-				int k = -1;
-				double maxv = Double.NEGATIVE_INFINITY;				
-				int toRight = i < j ? 1 : 0;	
-				
-				for (int t = 0; t < T; ++t) {
-					double va = lbScores[i][t][toRight][0] + lbScores[j][t][toRight][1];
-					if (va > maxv) {
-						k = t;
-						maxv = va;
-					}
-				}				
-				staticTypes[i][j] = k;
-			}
-		return staticTypes;
-	}
+//	public int[][] getStaticTypes() {
+//		
+//		int N = len, T = ntypes;
+//		int[][] staticTypes = new int[N][N];
+//		for (int i = 0; i < N; ++i)
+//			for (int j = 0; j < N; ++j) if (i != j) {
+//				
+//				int k = -1;
+//				double maxv = Double.NEGATIVE_INFINITY;				
+//				int toRight = i < j ? 1 : 0;	
+//				
+//				for (int t = 0; t < T; ++t) {
+//					double va = lbScores[i][t][toRight][0] + lbScores[j][t][toRight][1];
+//					if (va > maxv) {
+//						k = t;
+//						maxv = va;
+//					}
+//				}				
+//				staticTypes[i][j] = k;
+//			}
+//		return staticTypes;
+//	}
 	
 	public boolean isPruned(int h, int m) 
 	{
@@ -273,11 +273,11 @@ public class LocalFeatureData {
         return arcNtScores[h*len+m];
     }
 	
-	public double getLabeledArcScore(int h, int m, int t)
-	{
-		int toR = h < m ? 1 : 0;
-		return lbScores[h][t][toR][0] + lbScores[m][t][toR][1];
-	}
+	//public double getLabeledArcScore(int h, int m, int t)
+	//{
+	//	int toR = h < m ? 1 : 0;
+	//	return lbScores[h][t][toR][0] + lbScores[m][t][toR][1];
+	//}
 	
 	public double getTripsScore(int h, int m, int s) 
 	{
@@ -844,6 +844,36 @@ public class LocalFeatureData {
     	return dfv;
 	}
 	
+	private FeatureVector getLabelFeature(int head, int mod, int type)
+	{
+		return pipe.createLabelFeatures(inst, head, mod, type);
+	}
+	
+	private double getLabelScore(int head, int mod, int type)
+	{
+		return parameters.dotProduct(getLabelFeature(head, mod, type)) * gammaLabel;
+	}
+	
+	public void predictLabels(int[] heads, int[] deplbids, boolean addLoss)
+	{
+		assert(heads.length == len);
+		int T = ntypes;
+		for (int mod = 1; mod < len; ++mod) {
+			int head = heads[mod];
+			int type = 0;
+			double best = getLabelScore(head, mod, 0) +
+				(addLoss && inst.deplbids[mod] != 0 ? 1.0 : 0.0);
+			for (int t = 1; t < T; ++t) {
+				double va = getLabelScore(head, mod, t) +
+					(addLoss && inst.deplbids[mod] != t ? 1.0 : 0.0);
+				if (va > best) {
+					best = va;
+					type = t;
+				}
+			}
+			deplbids[mod] = type;
+		}
+	}
 	
 	public FeatureVector getLabeledFeatureDifference(DependencyInstance gold, 
 			DependencyInstance pred)
@@ -865,11 +895,14 @@ public class LocalFeatureData {
     		int head2 = predDeps[mod];
     		if (head != head2 || type != type2) {
     			int toR = head < mod ? 1 : 0;        		
-    			int toR2 = head2 < mod ? 1 : 0;        		
-    			dlfv.addEntries(lbFvs[head][type][toR][0]);
-    			dlfv.addEntries(lbFvs[mod][type][toR][1]);
-    			dlfv.addEntries(lbFvs[head2][type2][toR2][0], -1.0);
-    			dlfv.addEntries(lbFvs[mod][type2][toR2][1], -1.0);
+    			int toR2 = head2 < mod ? 1 : 0;   
+    			dlfv.addEntries(getLabelFeature(head, mod, type));
+    			dlfv.addEntries(getLabelFeature(head2, mod, type2), -1.0);
+    			
+    			//dlfv.addEntries(lbFvs[head][type][toR][0]);
+    			//dlfv.addEntries(lbFvs[mod][type][toR][1]);
+    			//dlfv.addEntries(lbFvs[head2][type2][toR2][0], -1.0);
+    			//dlfv.addEntries(lbFvs[mod][type2][toR2][1], -1.0);
     		}
     	}
 		

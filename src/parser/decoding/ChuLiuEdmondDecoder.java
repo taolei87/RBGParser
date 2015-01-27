@@ -26,9 +26,9 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
         
         int[] deps = inst.heads;
         int[] labs = inst.deplbids;
-        int[][] staticTypes = null;
-		if (options.learnLabel)
-		    staticTypes = lfd.getStaticTypes();
+        //int[][] staticTypes = null;
+		//if (options.learnLabel)
+		//    staticTypes = lfd.getStaticTypes();
         
         double[][] scores = new double[M][M];
         int[][] oldI = new int[M][M];
@@ -39,17 +39,18 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
                     oldI[i][j] = i;
                     oldO[i][j] = j;
                     double va = lfd.getArcScore(i,j);
-                    if (options.learnLabel) {
-                        int t = staticTypes[i][j];
-                        va += lfd.getLabeledArcScore(i,j,t);
-                        if (addLoss) {
-                        	if (labelLossType == 0) {
-                        		if (labs[j] != t) va += 0.5;
-                        		if (deps[j] != i) va += 0.5;
-                        	} else if (labs[j] != t || deps[j] != i) va += 1.0;
-                        }                                            
-                    } 
-                    else if (addLoss && deps[j] != i) va += 1.0;                    
+                    //if (options.learnLabel) {
+                    //    int t = staticTypes[i][j];
+                    //    va += lfd.getLabeledArcScore(i,j,t);
+                    //    if (addLoss) {
+                    //    	if (labelLossType == 0) {
+                    //    		if (labs[j] != t) va += 0.5;
+                    //    		if (deps[j] != i) va += 0.5;
+                    //    	} else if (labs[j] != t || deps[j] != i) va += 1.0;
+                    //    }                                            
+                    //} 
+                    //else 
+                     if (addLoss && deps[j] != i) va += 1.0;                    
                     scores[i][j] = va;
                 }
 
@@ -70,10 +71,12 @@ public class ChuLiuEdmondDecoder extends DependencyDecoder {
 		
         for (int i = 1; i < N; ++i) {
             int j = final_par[i];
-            int t = options.learnLabel ? staticTypes[j][i] : 0;
+            //int t = options.learnLabel ? staticTypes[j][i] : 0;
             predInst.heads[i] = j;
-            predInst.deplbids[i] = t;
+            //predInst.deplbids[i] = t;
         }
+        //if (options.learnLabel)
+        //	lfd.predictLabels(predInst.heads, predInst.deplbids, addLoss);
         
         return predInst;
 	}

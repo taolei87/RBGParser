@@ -78,7 +78,22 @@ public class FeatureTemplate {
 	    CORE_LABEL_NTIB,
 	    CORE_LABEL_NTIC,
 	    CORE_LABEL_NTJ,
-
+	    HW_LABEL,
+	    HP_LABEL,
+	    MW_LABEL,
+	    MP_LABEL,
+	    //HW_MW_LABEL,
+	    HW_MP_LABEL,
+	    HP_MP_LABEL,
+	    MW_HP_LABEL,
+	    HP_pMP_LABEL,
+	    HP_nMP_LABEL,
+	    HP_pMW_LABEL,
+	    HP_nMW_LABEL,
+	    MP_pMP_LABEL,
+	    MP_nMP_LABEL,
+	    MP_pMW_LABEL,
+	    MP_nMW_LABEL,
 	    
 		/*************************************************
 		 * 2o feature  

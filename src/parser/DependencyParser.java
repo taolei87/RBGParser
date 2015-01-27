@@ -262,16 +262,23 @@ public class DependencyParser implements Serializable {
     		    DependencyInstance predInst = decoder.decode(inst, lfd, gfd, true);
 
         		int ua = evaluateUnlabelCorrect(inst, predInst), la = 0;
-        		if (options.learnLabel)
-        			la = evaluateLabelCorrect(inst, predInst);        		
+    		
         		uas += ua;
-        		tot += n-1;
-        		
-        		if ((options.learnLabel && la != n-1) ||
-        				(!options.learnLabel && ua != n-1)) {
+        		tot += n-1;        		
+        		if (ua != n-1) {
         			loss += parameters.update(inst, predInst, lfd, gfd,
         					iIter * N + i + 1, offset);
                 }
+        		
+        		if (options.learnLabel) {
+        			predInst.heads = inst.heads;
+        			lfd.predictLabels(predInst.heads, predInst.deplbids, true);
+        			la = evaluateLabelCorrect(inst, predInst);
+        			if (la != n-1) {
+        				loss += parameters.updateLabel(inst, predInst, lfd, gfd,
+        						iIter * N + i + 1, offset);
+        			}
+        		}
 
     		}
     		System.out.printf("%n  Iter %d\tloss=%.4f\tuas=%.4f\t[%ds]%n", iIter+1,
@@ -394,7 +401,9 @@ public class DependencyParser implements Serializable {
             nDeps += nToks;
     		    		
             DependencyInstance predInst = decoder.decode(inst, lfd, gfd, false);
-
+            if (options.learnLabel)
+            	lfd.predictLabels(predInst.heads, predInst.deplbids, false);
+            
     		int ua = evaluateUnlabelCorrect(inst, predInst, evalWithPunc), la = 0;
     		if (options.learnLabel)
     			la = evaluateLabelCorrect(inst, predInst, evalWithPunc);
