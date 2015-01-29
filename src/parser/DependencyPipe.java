@@ -63,13 +63,12 @@ public class DependencyPipe implements Serializable {
 	
 	public int numArcFeats;					// number of arc structure features
 	public int numWordFeats;				// number of word features
-	public int numLabeledArcFeats;
+	public int numLabeledArcFeats = 115911564;
 	
     public String[] types;					// array that maps label index to label hash code in tagDictionary
     public Alphabet typeAlphabet;
 	private Alphabet wordAlphabet;			// the alphabet of word features (e.g. \phi_h, \phi_m)
 	private Alphabet arcAlphabet;			// the alphabet of 1st order arc features (e.g. \phi_{h->m})
-	private Alphabet labeledArcAlphabet;
 	
 	// language specific info
 	public int ccDepType;
@@ -84,12 +83,11 @@ public class DependencyPipe implements Serializable {
 		
 		wordAlphabet = new Alphabet();
 		arcAlphabet = new Alphabet();
-		labeledArcAlphabet = new Alphabet();
 		this.options = options;
 		
 		numArcFeats = 0;
 		numWordFeats = 0;
-		numLabeledArcFeats = 0;
+		//numLabeledArcFeats = 0;
 		
 		loadLanguageInfo();
 	}
@@ -404,11 +402,9 @@ public class DependencyPipe implements Serializable {
 	 */
     public void closeAlphabets() 
     {
-		
 		//typeAlphabet.stopGrowth();
 		wordAlphabet.stopGrowth();
 		arcAlphabet.stopGrowth();
-		labeledArcAlphabet.stopGrowth();
 		
 		TLongObjectHashMap<String> reverse = new TLongObjectHashMap<String>();
 		for (Object key : tagDictionary.toArray()) {
@@ -3360,19 +3356,13 @@ public class DependencyPipe implements Serializable {
     }
     
     public void addLabeledArcFeature(long code, FeatureVector mat) {
-    	int id = labeledArcAlphabet.lookupIndex(code, numLabeledArcFeats);
-    	if (id >= 0) {
-    		mat.addEntry(id, 1.0);
-    		if (id == numLabeledArcFeats) ++numLabeledArcFeats;
-    	}
+    	int id = Math.abs((int)(( code ^ (code&0xffffffff00000000L) >>> 32 ))*31) % 115911564;
+    	mat.addEntry(id, 1.0);
     }
     
     public void addLabeledArcFeature(long code, double value, FeatureVector mat) {
-    	int id = labeledArcAlphabet.lookupIndex(code, numLabeledArcFeats);
-    	if (id >= 0) {
-    		mat.addEntry(id, value);
-    		if (id == numLabeledArcFeats) ++numLabeledArcFeats;
-    	}
+    	int id = Math.abs((int)(( code ^ (code&0xffffffff00000000L) >>> 32 ))*31) % 115911564;
+    	mat.addEntry(id, value);
     }
     
     public void addWordFeature(long code, FeatureVector mat) {
