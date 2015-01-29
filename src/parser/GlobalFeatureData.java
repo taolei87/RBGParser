@@ -12,6 +12,8 @@ public class GlobalFeatureData {
 	final static int MAX_SPAN_LENGTH = 5;
 	final static int MAX_FEATURE_NUM = 7;
 
+	int flagBits;
+	
 	LocalFeatureData lfd;
 
 	FeatureDataItem[] cn;	// [len][leftNum][rightNum]
@@ -32,6 +34,8 @@ public class GlobalFeatureData {
 		
 		// init array
 		if (lfd.options.useHO) {
+			flagBits = lfd.pipe.flagBits;
+			
 			cn = new FeatureDataItem[lfd.len * (MAX_CHILD_NUM + 1) * (MAX_CHILD_NUM + 1)];
 
 			span = new FeatureDataItem[lfd.len * 2 * 2 * (MAX_SPAN_LENGTH + 1)];
@@ -325,7 +329,8 @@ public class GlobalFeatureData {
 			// child num
 			int leftNum = 0;
 			int rightNum = 0;
-			int maxDigit = 64 - Arc.numArcFeatBits - 4;
+			int maxDigit = 64 - Arc.numArcFeatBits - flagBits;
+			//int maxDigit = 64 - Arc.numArcFeatBits - 4;
 			int maxChildStrNum = (maxDigit / lfd.pipe.tagNumBits) - 1;
 			int childStrNum = 0;
 			code = pos[m];
@@ -346,7 +351,7 @@ public class GlobalFeatureData {
 					}
 				}
 			}
-			code = ((code << Arc.numArcFeatBits) | Arc.CN_STR.ordinal()) << 4;
+			code = ((code << Arc.numArcFeatBits) | Arc.CN_STR.ordinal()) << flagBits;
 			lfd.pipe.addArcFeature(code, fv);
 
 			fv.addEntries(getChildNumFeatureVector(m, leftNum, rightNum));

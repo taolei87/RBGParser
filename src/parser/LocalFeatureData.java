@@ -844,27 +844,28 @@ public class LocalFeatureData {
     	return dfv;
 	}
 	
-	private FeatureVector getLabelFeature(int head, int mod, int type)
+	private FeatureVector getLabelFeature(DependencyArcList arcLis, int head, int mod, int type)
 	{
-		return pipe.createLabelFeatures(inst, head, mod, type);
+		return pipe.createLabelFeatures(inst, arcLis, mod, type);
 	}
 	
-	private double getLabelScore(int head, int mod, int type)
+	private double getLabelScore(DependencyArcList arcLis, int head, int mod, int type)
 	{
-		return parameters.dotProduct(getLabelFeature(head, mod, type)) * gammaLabel;
+		return parameters.dotProduct(getLabelFeature(arcLis, head, mod, type)) * gammaLabel;
 	}
 	
 	public void predictLabels(int[] heads, int[] deplbids, boolean addLoss)
 	{
 		assert(heads.length == len);
+		DependencyArcList arcLis = new DependencyArcList(heads);
 		int T = ntypes;
 		for (int mod = 1; mod < len; ++mod) {
 			int head = heads[mod];
 			int type = 0;
-			double best = getLabelScore(head, mod, 0) +
+			double best = getLabelScore(arcLis, head, mod, 0) +
 				(addLoss && inst.deplbids[mod] != 0 ? 1.0 : 0.0);
 			for (int t = 1; t < T; ++t) {
-				double va = getLabelScore(head, mod, t) +
+				double va = getLabelScore(arcLis, head, mod, t) +
 					(addLoss && inst.deplbids[mod] != t ? 1.0 : 0.0);
 				if (va > best) {
 					best = va;
@@ -878,6 +879,8 @@ public class LocalFeatureData {
 	public FeatureVector getLabeledFeatureDifference(DependencyInstance gold, 
 			DependencyInstance pred)
 	{
+		assert(gold.heads == pred.heads);
+		
 		if (!options.learnLabel) return null;
 		
 		FeatureVector dlfv = new FeatureVector(size);
@@ -887,7 +890,8 @@ public class LocalFeatureData {
     	int[] actLabs = gold.deplbids;
     	int[] predDeps = pred.heads;
     	int[] predLabs = pred.deplbids;
-		
+    	DependencyArcList arcLis = new DependencyArcList(gold.heads);
+    	
     	for (int mod = 1; mod < N; ++mod) {
     		int type = actLabs[mod];
     		int type2 = predLabs[mod];
@@ -896,8 +900,8 @@ public class LocalFeatureData {
     		if (head != head2 || type != type2) {
     			int toR = head < mod ? 1 : 0;        		
     			int toR2 = head2 < mod ? 1 : 0;   
-    			dlfv.addEntries(getLabelFeature(head, mod, type));
-    			dlfv.addEntries(getLabelFeature(head2, mod, type2), -1.0);
+    			dlfv.addEntries(getLabelFeature(arcLis, head, mod, type));
+    			dlfv.addEntries(getLabelFeature(arcLis, head2, mod, type2), -1.0);
     			
     			//dlfv.addEntries(lbFvs[head][type][toR][0]);
     			//dlfv.addEntries(lbFvs[mod][type][toR][1]);
