@@ -226,9 +226,9 @@ public class DependencyPipe implements Serializable {
 		synFactory.TOKEN_START = dictionaries.lookupIndex(POS, "#TOKEN_START#");
 		synFactory.TOKEN_END = dictionaries.lookupIndex(POS, "#TOKEN_END#");
 		synFactory.TOKEN_MID = dictionaries.lookupIndex(POS, "#TOKEN_MID#");
-		dictionaries.lookupIndex(WORD, "#TOKEN_START#");
-		dictionaries.lookupIndex(WORD, "#TOKEN_END#");
-		dictionaries.lookupIndex(WORD, "#TOKEN_MID#");
+		Utils.Assert(synFactory.TOKEN_START == dictionaries.lookupIndex(WORD, "#TOKEN_START#"));
+        Utils.Assert(synFactory.TOKEN_END == dictionaries.lookupIndex(WORD, "#TOKEN_END#")); 
+        Utils.Assert(synFactory.TOKEN_MID == dictionaries.lookupIndex(WORD, "#TOKEN_MID#"));
 		synFactory.TOKEN_QUOTE = dictionaries.lookupIndex(WORD, "form=\"");
 		synFactory.TOKEN_RRB = dictionaries.lookupIndex(WORD, "form=)");
 		synFactory.TOKEN_LRB = dictionaries.lookupIndex(WORD, "form=(");
