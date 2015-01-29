@@ -1,5 +1,10 @@
 package parser;
 
+import static utils.DictionarySet.DictionaryTypes.DEPLABEL;
+import static utils.DictionarySet.DictionaryTypes.POS;
+import static utils.DictionarySet.DictionaryTypes.WORD;
+import static utils.DictionarySet.DictionaryTypes.WORDVEC;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -8,9 +13,9 @@ import java.util.*;
 import java.io.*;
 
 import parser.Options.PossibleLang;
-
 import utils.Alphabet;
 import utils.Dictionary;
+import utils.DictionarySet;
 
 public class DependencyInstance implements Serializable {
 	
@@ -106,42 +111,40 @@ public class DependencyInstance implements Serializable {
     //	this.depids = depids;
     //}
     
-    public void setInstIds(Dictionary tagDict, Dictionary wordDict, 
-    		Alphabet typeAlphabet, Dictionary wordVecDict, 
+    
+    public void setInstIds(DictionarySet dicts, 
     		HashMap<String, String> coarseMap, HashSet<String> conjWord, PossibleLang lang) {
     	    	
     	formids = new int[length];    	
-		deprelids = new int[length];
 		deplbids = new int[length];
 		postagids = new int[length];
 		cpostagids = new int[length];
 		
     	for (int i = 0; i < length; ++i) {
-    		formids[i] = wordDict.lookupIndex("form="+forms[i]);
-			postagids[i] = tagDict.lookupIndex("pos="+postags[i]);
-			cpostagids[i] = tagDict.lookupIndex("cpos="+cpostags[i]);
-			deprelids[i] = tagDict.lookupIndex("label="+deprels[i]);
-			deplbids[i] = typeAlphabet.lookupIndex(deprelids[i]);
+    		formids[i] = dicts.lookupIndex(WORD, "form="+forms[i]);
+			postagids[i] = dicts.lookupIndex(POS, "pos="+postags[i]);
+			cpostagids[i] = dicts.lookupIndex(POS, "cpos="+cpostags[i]);
+			deplbids[i] = dicts.lookupIndex(DEPLABEL, deprels[i]) - 1;	// zero-based
     	}
-    	    	
+    	
     	if (lemmas != null) {
     		lemmaids = new int[length];
     		for (int i = 0; i < length; ++i)
-    			lemmaids[i] = wordDict.lookupIndex("lemma="+lemmas[i]);
+    			lemmaids[i] = dicts.lookupIndex(WORD, "lemma="+lemmas[i]);
     	}
 
 		featids = new int[length][];
 		for (int i = 0; i < length; ++i) if (feats[i] != null) {
 			featids[i] = new int[feats[i].length];
 			for (int j = 0; j < feats[i].length; ++j)
-				featids[i][j] = tagDict.lookupIndex("feat="+feats[i][j]);
+				featids[i][j] = dicts.lookupIndex(POS, "feat="+feats[i][j]);
 		}
 		
-		if (wordVecDict != null) {
+		if (dicts.size(WORDVEC) > 0) {
 			wordVecIds = new int[length];
 			for (int i = 0; i < length; ++i) {
-				int wvid = wordVecDict.lookupIndex(forms[i]);
-				if (wvid <= 0) wvid = wordVecDict.lookupIndex(forms[i].toLowerCase());
+				int wvid = dicts.lookupIndex(WORDVEC, forms[i]);
+				if (wvid <= 0) wvid = dicts.lookupIndex(WORDVEC, forms[i].toLowerCase());
 				if (wvid > 0) wordVecIds[i] = wvid; else wordVecIds[i] = -1; 
 			}
 		}
@@ -170,4 +173,5 @@ public class DependencyInstance implements Serializable {
 			}
 		}
     }
+
 }

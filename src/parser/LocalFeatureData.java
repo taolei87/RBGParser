@@ -70,8 +70,8 @@ public class LocalFeatureData {
 		len = inst.length;
 		ntypes = pipe.types.length;
 		rank = options.R;
-		size = pipe.numArcFeats;
-		sizeL = pipe.numLabeledArcFeats;
+		size = pipe.synFactory.numArcFeats;
+		sizeL = pipe.synFactory.numLabeledArcFeats;
 		gamma = options.gamma;
 		gammaLabel = options.gammaLabel;
 		
@@ -102,7 +102,7 @@ public class LocalFeatureData {
 	private void initFirstOrderTables() 
 	{
 		for (int i = 0; i < len; ++i) {
-			wordFvs[i] = pipe.createWordFeatures(inst, i);
+			wordFvs[i] = pipe.synFactory.createWordFeatures(inst, i);
 			//wpU[i] = parameters.projectU(wordFvs[i]);
 			//wpV[i] = parameters.projectV(wordFvs[i]);
 			parameters.projectU(wordFvs[i], wpU[i]);
@@ -112,7 +112,7 @@ public class LocalFeatureData {
 		for (int i = 0; i < len; ++i)
 			for (int j = 0; j < len; ++j) 
 				if (i != j) {
-					arcFvs[i*len+j] = pipe.createArcFeatures(inst, i, j);
+					arcFvs[i*len+j] = pipe.synFactory.createArcFeatures(inst, i, j);
                     arcNtScores[i*len+j] = parameters.dotProduct(arcFvs[i*len+j]) * gamma;
 					arcScores[i*len+j] = parameters.dotProduct(arcFvs[i*len+j]) * gamma
 									+ parameters.dotProduct(wpU[i], wpV[j], i-j) * (1-gamma);
@@ -696,7 +696,7 @@ public class LocalFeatureData {
 		int pos = id*len+s;
 		FeatureDataItem item = trips[pos];
 		if (item == null) {
-			FeatureVector fv = pipe.createTripsFeatureVector(inst, h, m, s);
+			FeatureVector fv = pipe.synFactory.createTripsFeatureVector(inst, h, m, s);
 			double score = parameters.dotProduct(fv) * gamma;
 			item = new FeatureDataItem(fv, score);
 			trips[pos] = item;			
@@ -709,7 +709,7 @@ public class LocalFeatureData {
 		int pos = m*len+s;
 		FeatureDataItem item = sib[pos];
 		if (item == null) {					
-			FeatureVector fv = pipe.createSibFeatureVector(inst, m, s/*, false*/);
+			FeatureVector fv = pipe.synFactory.createSibFeatureVector(inst, m, s/*, false*/);
 			double score = parameters.dotProduct(fv) * gamma;
 			item = new FeatureDataItem(fv, score);
 			sib[pos] = item;
@@ -725,7 +725,7 @@ public class LocalFeatureData {
 		int pos = id*len+m;
 		FeatureDataItem item = gpc[pos];
 		if (item == null) {
-			FeatureVector fv = pipe.createGPCFeatureVector(inst, gp, h, m);
+			FeatureVector fv = pipe.synFactory.createGPCFeatureVector(inst, gp, h, m);
 			double score = parameters.dotProduct(fv) * gamma;
 			item = new FeatureDataItem(fv, score);
 			gpc[pos] = item;			
@@ -742,7 +742,7 @@ public class LocalFeatureData {
 		int pos = id*len+h2;
 		FeatureDataItem item = headbi[pos];
 		if (item == null) {
-			FeatureVector fv = pipe.createHeadBiFeatureVector(inst, m, h, h2);
+			FeatureVector fv = pipe.synFactory.createHeadBiFeatureVector(inst, m, h, h2);
 			double score = parameters.dotProduct(fv) * gamma;
 			item = new FeatureDataItem(fv, score);
 			headbi[pos] = item;			
@@ -759,7 +759,7 @@ public class LocalFeatureData {
 		int pos = (id*len+m)*len+s;
 		FeatureDataItem item = gpsib[pos];
 		if (item == null) {
-			FeatureVector fv = pipe.createGPSibFeatureVector(inst, gp, h, m, s);
+			FeatureVector fv = pipe.synFactory.createGPSibFeatureVector(inst, gp, h, m, s);
 			double score = parameters.dotProduct(fv) * gamma;
 			item = new FeatureDataItem(fv, score);
 			gpsib[pos] = item;			
@@ -776,7 +776,7 @@ public class LocalFeatureData {
 		int pos = (id*len+s1)*len+s2;
 		FeatureDataItem item = trisib[pos];
 		if (item == null) {
-			FeatureVector fv = pipe.createTriSibFeatureVector(inst, h, s1, m, s2);
+			FeatureVector fv = pipe.synFactory.createTriSibFeatureVector(inst, h, s1, m, s2);
 			double score = parameters.dotProduct(fv) * gamma;
 			item = new FeatureDataItem(fv, score);
 			trisib[pos] = item;			
@@ -793,7 +793,7 @@ public class LocalFeatureData {
 		int pos = id1 * nuparcs + id2;
 		FeatureDataItem item = ggpc[pos];
 		if (item == null) {
-			FeatureVector fv = pipe.createGGPCFeatureVector(inst, ggp, gp, h, m);
+			FeatureVector fv = pipe.synFactory.createGGPCFeatureVector(inst, ggp, gp, h, m);
 			double score = parameters.dotProduct(fv) * gamma;
 			item = new FeatureDataItem(fv, score);
 			ggpc[pos] = item;
@@ -810,7 +810,7 @@ public class LocalFeatureData {
 		int pos = id1 * nuparcs + id2;
 		FeatureDataItem item = psc[pos];
 		if (item == null) {
-			FeatureVector fv = pipe.createPSCFeatureVector(inst, h, m, c, sib);
+			FeatureVector fv = pipe.synFactory.createPSCFeatureVector(inst, h, m, c, sib);
 			double score = parameters.dotProduct(fv) * gamma;
 			item = new FeatureDataItem(fv, score);
 			psc[pos] = item;
@@ -847,7 +847,7 @@ public class LocalFeatureData {
 	
 	private FeatureVector getLabelFeature(DependencyArcList arcLis, int head, int mod, int type)
 	{
-		return pipe.createLabelFeatures(inst, arcLis, mod, type);
+		return pipe.synFactory.createLabelFeatures(inst, arcLis, mod, type);
 	}
 	
 	private double getLabelScore(DependencyArcList arcLis, int head, int mod, int type)

@@ -33,12 +33,12 @@ public class Parameters implements Serializable {
 	{
 		 //T = pipe.types.length;
         D = d * 2 + 1;
-		size = pipe.numArcFeats;		
+		size = pipe.synFactory.numArcFeats;		
 		params = new double[size];
 		total = new double[size];
 		
 		if (options.learnLabel) {
-			sizeL = pipe.numLabeledArcFeats;
+			sizeL = pipe.synFactory.numLabeledArcFeats;
 			paramsL = new double[sizeL];
 			totalL = new double[sizeL];
 		}
@@ -50,7 +50,7 @@ public class Parameters implements Serializable {
 		gammaLabel = options.gammaLabel;
 		rank = options.R;
 		
-		N = pipe.numWordFeats;
+		N = pipe.synFactory.numWordFeats;
 		M = N;
 		U = new double[rank][N];		
 		V = new double[rank][M];

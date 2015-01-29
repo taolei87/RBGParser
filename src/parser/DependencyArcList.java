@@ -3,10 +3,10 @@ package parser;
 import utils.Utils;
 
 public class DependencyArcList {
-	int n;
-	int[] st, edges;
-	int[] left, right;		// span
-	int[] nonproj;			// non-proj
+	public int n;
+	public int[] st, edges;
+	public int[] left, right;		// span
+	public int[] nonproj;			// non-proj
 	
 	public DependencyArcList(int n)
 	{

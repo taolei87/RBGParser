@@ -1,20 +1,22 @@
 package parser;
 
 import parser.DependencyInstance.SpecialPos;
-import parser.FeatureTemplate.Arc;
+import parser.feature.FeatureTemplate.Arc;
+import parser.feature.SyntacticFeatureFactory;
 import utils.FeatureVector;
 import utils.Utils;
+import static utils.DictionarySet.DictionaryTypes.*;
 
 public class GlobalFeatureData {
 
-	final static int BINNED_BUCKET = 8;
-	final static int MAX_CHILD_NUM = 5;
-	final static int MAX_SPAN_LENGTH = 5;
-	final static int MAX_FEATURE_NUM = 7;
+	public final static int BINNED_BUCKET = 8;
+	public final static int MAX_CHILD_NUM = 5;
+	public final static int MAX_SPAN_LENGTH = 5;
+	public final static int MAX_FEATURE_NUM = 7;
 
-	int flagBits;
-	
 	LocalFeatureData lfd;
+	DependencyPipe pipe;
+	SyntacticFeatureFactory synFactory;
 
 	FeatureDataItem[] cn;	// [len][leftNum][rightNum]
 
@@ -31,16 +33,16 @@ public class GlobalFeatureData {
 	public GlobalFeatureData(LocalFeatureData lfd) 
 	{
 		this.lfd = lfd;
+		pipe = lfd.pipe;
+		synFactory = pipe.synFactory;
 		
 		// init array
 		if (lfd.options.useHO) {
-			flagBits = lfd.pipe.flagBits;
-			
 			cn = new FeatureDataItem[lfd.len * (MAX_CHILD_NUM + 1) * (MAX_CHILD_NUM + 1)];
 
 			span = new FeatureDataItem[lfd.len * 2 * 2 * (MAX_SPAN_LENGTH + 1)];
 
-			nb = new FeatureDataItem[lfd.nuparcs * lfd.pipe.tagDictionary.size() * lfd.pipe.tagDictionary.size()];
+			nb = new FeatureDataItem[lfd.nuparcs * pipe.dictionaries.size(POS) * pipe.dictionaries.size(POS)];
 
 			ppcc1 = new FeatureDataItem[lfd.len * lfd.len * lfd.len];	// pp attachment, punc head and part of conjunction
 
@@ -58,7 +60,7 @@ public class GlobalFeatureData {
 		int pos = (h * lfd.len + gp) * lfd.len + m;		// h is preposition, different from conj/punc
 		FeatureDataItem item = ppcc1[pos];
 		if (item == null) {
-			FeatureVector fv = lfd.pipe.createPPFeatureVector(lfd.inst, gp, h, m);
+			FeatureVector fv = synFactory.createPPFeatureVector(lfd.inst, gp, h, m);
 			double score = lfd.parameters.dotProduct(fv) * lfd.gamma;
 			item = new FeatureDataItem(fv, score);
 			ppcc1[pos] = item;
@@ -72,7 +74,7 @@ public class GlobalFeatureData {
 		int pos = (arg * lfd.len + left) * lfd.len + right;		// arg is conj, different from prep/punc
 		FeatureDataItem item = ppcc1[pos];
 		if (item == null) {
-			FeatureVector fv = lfd.pipe.createCC1FeatureVector(lfd.inst, left, arg, right);
+			FeatureVector fv = synFactory.createCC1FeatureVector(lfd.inst, left, arg, right);
 			double score = lfd.parameters.dotProduct(fv) * lfd.gamma;
 			item = new FeatureDataItem(fv, score);
 			ppcc1[pos] = item;
@@ -86,7 +88,7 @@ public class GlobalFeatureData {
 		int pos = (arg * lfd.len + head) * lfd.len + child;	
 		FeatureDataItem item = cc2[pos];
 		if (item == null) {
-			FeatureVector fv = lfd.pipe.createCC2FeatureVector(lfd.inst, arg, head, child);
+			FeatureVector fv = synFactory.createCC2FeatureVector(lfd.inst, arg, head, child);
 			double score = lfd.parameters.dotProduct(fv) * lfd.gamma;
 			item = new FeatureDataItem(fv, score);
 			cc2[pos] = item;
@@ -100,7 +102,7 @@ public class GlobalFeatureData {
 		int pos = (arg * lfd.len + head) * lfd.len + pair;		// arg is punc, different from prep/conj
 		FeatureDataItem item = ppcc1[pos];
 		if (item == null) {
-			FeatureVector fv = lfd.pipe.createPNXFeatureVector(lfd.inst, head, arg, pair);
+			FeatureVector fv = synFactory.createPNXFeatureVector(lfd.inst, head, arg, pair);
 			double score = lfd.parameters.dotProduct(fv) * lfd.gamma;
 			item = new FeatureDataItem(fv, score);
 			ppcc1[pos] = item;
@@ -114,7 +116,7 @@ public class GlobalFeatureData {
 		int pos = ((h * 2 + end) * 2 + punc) * (MAX_SPAN_LENGTH + 1) + bin;
 		FeatureDataItem item = span[pos];
 		if (item == null) {
-			FeatureVector fv = lfd.pipe.createSpanFeatureVector(lfd.inst, h, end, punc, bin);
+			FeatureVector fv = synFactory.createSpanFeatureVector(lfd.inst, h, end, punc, bin);
 			double score = lfd.parameters.dotProduct(fv) * lfd.gamma;
 			item = new FeatureDataItem(fv, score);
 			span[pos] = item;
@@ -124,14 +126,14 @@ public class GlobalFeatureData {
 	
 	public FeatureVector getNeighborFeatureVector(int par, int h, int left, int right) {
 		int id = lfd.arc2id[h * lfd.len + par];
-		int size = lfd.pipe.tagDictionary.size();
+		int size = pipe.dictionaries.size(POS);
 		
 		Utils.Assert(id >= 0 && left < size && right < size);
 		
 		int pos = (id * size + left) * size + right;		
 		FeatureDataItem item = nb[pos];
 		if (item == null) {
-			FeatureVector fv = lfd.pipe.createNeighborFeatureVector(lfd.inst, par, h, left, right);
+			FeatureVector fv = synFactory.createNeighborFeatureVector(lfd.inst, par, h, left, right);
 			double score = lfd.parameters.dotProduct(fv) * lfd.gamma;
 			item = new FeatureDataItem(fv, score);
 			nb[pos] = item;
@@ -145,7 +147,7 @@ public class GlobalFeatureData {
 		int pos = (h * (MAX_CHILD_NUM + 1) + leftNum) * (MAX_CHILD_NUM + 1) + rightNum;		
 		FeatureDataItem item = cn[pos];
 		if (item == null) {
-			FeatureVector fv = lfd.pipe.createChildNumFeatureVector(lfd.inst, h, leftNum, rightNum);
+			FeatureVector fv = synFactory.createChildNumFeatureVector(lfd.inst, h, leftNum, rightNum);
 			double score = lfd.parameters.dotProduct(fv) * lfd.gamma;
 			item = new FeatureDataItem(fv, score);
 			cn[pos] = item;
@@ -155,14 +157,14 @@ public class GlobalFeatureData {
 	
 	public FeatureVector getNonprojFeatureVector(DependencyArcList arclis, int h, int m) {
 		int id = lfd.arc2id[m * lfd.len + h];
-		int num = lfd.pipe.getBinnedDistance(arclis.nonproj[m]);
+		int num = synFactory.getBinnedDistance(arclis.nonproj[m]);
 		
 		Utils.Assert(id >= 0 && num >= 0 && num < BINNED_BUCKET);
 		
 		int pos = id * BINNED_BUCKET + num;		
 		FeatureDataItem item = nonproj[pos];
 		if (item == null) {
-			FeatureVector fv = lfd.pipe.createNonprojFeatureVector(lfd.inst, num, h, m);
+			FeatureVector fv = synFactory.createNonprojFeatureVector(lfd.inst, num, h, m);
 			double score = lfd.parameters.dotProduct(fv) * lfd.gamma;
 			item = new FeatureDataItem(fv, score);
 			nonproj[pos] = item;
@@ -224,7 +226,7 @@ public class GlobalFeatureData {
 	
 	public double getNeighborScore(int par, int h, int left, int right) {
 		int id = lfd.arc2id[h * lfd.len + par];
-		int size = lfd.pipe.tagDictionary.size();
+		int size = pipe.dictionaries.size(POS);
 		
 		Utils.Assert(id >= 0 && left < size && right < size);
 		
@@ -247,7 +249,7 @@ public class GlobalFeatureData {
 	
 	public double getNonprojScore(DependencyArcList arclis, int h, int m) {
 		int id = lfd.arc2id[m * lfd.len + h];
-		int num = lfd.pipe.getBinnedDistance(arclis.nonproj[m]);
+		int num = synFactory.getBinnedDistance(arclis.nonproj[m]);
 		
 		Utils.Assert(id >= 0 && num >= 0 && num < BINNED_BUCKET);
 		
@@ -288,7 +290,7 @@ public class GlobalFeatureData {
 			// pp attachment
 			if (SpecialPos.P == specialPos[i]) {
 				int par = heads[i];
-				int[] c = lfd.pipe.findPPArg(heads, specialPos, arcLis, i);
+				int[] c = synFactory.findPPArg(heads, specialPos, arcLis, i);
 				for (int z = 0; z < c.length; ++z) {
 					if (par != -1 && c[z] != -1) {
 						fv.addEntries(getPPFeatureVector(par, i, c[z]));
@@ -298,7 +300,7 @@ public class GlobalFeatureData {
 
 			// conjunction pos
 			if (SpecialPos.C == specialPos[i]) {
-				int[] arg = lfd.pipe.findConjArg(arcLis, heads, i);
+				int[] arg = synFactory.findConjArg(arcLis, heads, i);
 				int head = arg[0];
 				int left = arg[1];
 				int right = arg[2];
@@ -313,25 +315,25 @@ public class GlobalFeatureData {
 
 			// punc head
 			if (SpecialPos.PNX == specialPos[i]) {
-				int j = lfd.pipe.findPuncCounterpart(toks, i);
+				int j = synFactory.findPuncCounterpart(toks, i);
 				if (j != -1 && heads[i] == heads[j])
 					fv.addEntries(getPNXFeatureVector(heads[i], i, j));
 			}
 		}
 
-		int rb = lfd.pipe.getMSTRightBranch(specialPos, arcLis, 0, 0);
+		int rb = synFactory.getMSTRightBranch(specialPos, arcLis, 0, 0);
 		
-		code = lfd.pipe.createArcCodeP(Arc.RB, 0x0);
-		lfd.pipe.addArcFeature(code, (double)rb / len, fv);
+		code = synFactory.createArcCodeP(Arc.RB, 0x0);
+		synFactory.addArcFeature(code, (double)rb / len, fv);
 
 		for (int m = 1; m < len; ++m) {
 
 			// child num
 			int leftNum = 0;
 			int rightNum = 0;
-			int maxDigit = 64 - Arc.numArcFeatBits - flagBits;
+			int maxDigit = 64 - Arc.numArcFeatBits - synFactory.flagBits;
 			//int maxDigit = 64 - Arc.numArcFeatBits - 4;
-			int maxChildStrNum = (maxDigit / lfd.pipe.tagNumBits) - 1;
+			int maxChildStrNum = (maxDigit / synFactory.tagNumBits) - 1;
 			int childStrNum = 0;
 			code = pos[m];
 			
@@ -346,13 +348,14 @@ public class GlobalFeatureData {
 					else if (cid > m && rightNum < MAX_CHILD_NUM)
 						rightNum++;
 					if (childStrNum < maxChildStrNum) {
-						code = ((code << lfd.pipe.tagNumBits) | pos[cid]);
+						code = ((code << synFactory.tagNumBits) | pos[cid]);
 						childStrNum++;
 					}
 				}
 			}
-			code = ((code << Arc.numArcFeatBits) | Arc.CN_STR.ordinal()) << flagBits;
-			lfd.pipe.addArcFeature(code, fv);
+			code = ((code << Arc.numArcFeatBits) | Arc.CN_STR.ordinal()) << synFactory.flagBits;
+			//code = ((code << Arc.numArcFeatBits) | Arc.CN_STR.ordinal()) << 4;
+			synFactory.addArcFeature(code, fv);
 
 			fv.addEntries(getChildNumFeatureVector(m, leftNum, rightNum));
 
@@ -364,8 +367,8 @@ public class GlobalFeatureData {
 
 			if (heads[m] != -1) {
 				// neighbors
-				int leftID = spanLeft[m] > 0 ? posA[spanLeft[m] - 1] : DependencyPipe.TOKEN_START;
-				int rightID = spanRight[m] < len ? posA[spanRight[m]] : DependencyPipe.TOKEN_END;
+				int leftID = spanLeft[m] > 0 ? posA[spanLeft[m] - 1] : synFactory.TOKEN_START;
+				int rightID = spanRight[m] < len ? posA[spanRight[m]] : synFactory.TOKEN_END;
 				if (leftID > 0 && rightID > 0) {
 					fv.addEntries(getNeighborFeatureVector(heads[m], m, leftID, rightID));
 				}
@@ -380,6 +383,7 @@ public class GlobalFeatureData {
 	}
 	
 	public double getScore(int[] heads) {
+		
 		DependencyInstance now = lfd.inst;
 		
 		FeatureVector tmpFv = new FeatureVector(lfd.size);
@@ -411,7 +415,7 @@ public class GlobalFeatureData {
 			// pp attachment
 			if (SpecialPos.P == specialPos[i]) {
 				int par = heads[i];
-				int[] c = lfd.pipe.findPPArg(heads, specialPos, arcLis, i);
+				int[] c = synFactory.findPPArg(heads, specialPos, arcLis, i);
 				for (int z = 0; z < c.length; ++z) {
 					if (par != -1 && c[z] != -1) {
 						score += getPPScore(par, i, c[z]);
@@ -421,7 +425,7 @@ public class GlobalFeatureData {
 
 			// conjunction pos
 			if (SpecialPos.C == specialPos[i]) {
-				int[] arg = lfd.pipe.findConjArg(arcLis, heads, i);
+				int[] arg = synFactory.findConjArg(arcLis, heads, i);
 				int head = arg[0];
 				int left = arg[1];
 				int right = arg[2];
@@ -436,24 +440,25 @@ public class GlobalFeatureData {
 
 			// punc head
 			if (SpecialPos.PNX == specialPos[i]) {
-				int j = lfd.pipe.findPuncCounterpart(toks, i);
+				int j = synFactory.findPuncCounterpart(toks, i);
 				if (j != -1 && heads[i] == heads[j])
 					score += getPNXScore(heads[i], i, j);
 			}
 		}
 
-		int rb = lfd.pipe.getMSTRightBranch(specialPos, arcLis, 0, 0);
+		int rb = synFactory.getMSTRightBranch(specialPos, arcLis, 0, 0);
 		
-		code = lfd.pipe.createArcCodeP(Arc.RB, 0x0);
-		lfd.pipe.addArcFeature(code, (double)rb / len, tmpFv);
+		code = synFactory.createArcCodeP(Arc.RB, 0x0);
+		synFactory.addArcFeature(code, (double)rb / len, tmpFv);
 
 		for (int m = 1; m < len; ++m) {
 
 			// child num
 			int leftNum = 0;
 			int rightNum = 0;
-			int maxDigit = 64 - Arc.numArcFeatBits - 4;
-			int maxChildStrNum = (maxDigit / lfd.pipe.tagNumBits) - 1;
+			int maxDigit = 64 - Arc.numArcFeatBits - synFactory.flagBits;
+			//int maxDigit = 64 - Arc.numArcFeatBits - 4;
+			int maxChildStrNum = (maxDigit / synFactory.tagNumBits) - 1;
 			int childStrNum = 0;
 			code = pos[m];
 			
@@ -468,13 +473,14 @@ public class GlobalFeatureData {
 					else if (cid > m && rightNum < MAX_CHILD_NUM)
 						rightNum++;
 					if (childStrNum < maxChildStrNum) {
-						code = ((code << lfd.pipe.tagNumBits) | pos[cid]);
+						code = ((code << synFactory.tagNumBits) | pos[cid]);
 						childStrNum++;
 					}
 				}
 			}
-			code = ((code << Arc.numArcFeatBits) | Arc.CN_STR.ordinal()) << 4;
-			lfd.pipe.addArcFeature(code, tmpFv);
+			code = ((code << Arc.numArcFeatBits) | Arc.CN_STR.ordinal()) << synFactory.flagBits;
+			//code = ((code << Arc.numArcFeatBits) | Arc.CN_STR.ordinal()) << 4;
+			synFactory.addArcFeature(code, tmpFv);
 
 			score += getChildNumScore(m, leftNum, rightNum);
 
@@ -486,8 +492,8 @@ public class GlobalFeatureData {
 
 			if (heads[m] != -1) {
 				// neighbors
-				int leftID = spanLeft[m] > 0 ? posA[spanLeft[m] - 1] : DependencyPipe.TOKEN_START;
-				int rightID = spanRight[m] < len ? posA[spanRight[m]] : DependencyPipe.TOKEN_END;
+				int leftID = spanLeft[m] > 0 ? posA[spanLeft[m] - 1] : synFactory.TOKEN_START;
+				int rightID = spanRight[m] < len ? posA[spanRight[m]] : synFactory.TOKEN_END;
 				if (leftID > 0 && rightID > 0) {
 					score += getNeighborScore(heads[m], m, leftID, rightID);
 				}

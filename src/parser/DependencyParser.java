@@ -178,7 +178,7 @@ public class DependencyParser implements Serializable {
     		
     		System.out.println("Init tensor ... ");
     		LowRankParam tensor = new LowRankParam(parameters);
-    		pipe.fillParameters(tensor, parameters);
+    		pipe.synFactory.fillParameters(tensor, parameters);
     		tensor.decompose(1, parameters);
             System.out.println();
     		end = System.currentTimeMillis();

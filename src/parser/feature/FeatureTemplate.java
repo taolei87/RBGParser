@@ -1,4 +1,4 @@
-package parser;
+package parser.feature;
 
 import utils.Utils;
 
@@ -354,7 +354,7 @@ public class FeatureTemplate {
 	    
 	    FEATURE_TEMPLATE_END;
 		
-		static int numArcFeatBits = Utils.log2(FEATURE_TEMPLATE_END.ordinal());
+		public static int numArcFeatBits = Utils.log2(FEATURE_TEMPLATE_END.ordinal());
 	}
 
 	public enum Word {
@@ -387,7 +387,7 @@ public class FeatureTemplate {
 	    
 	    FEATURE_TEMPLATE_END;
 	    
-		static int numWordFeatBits = Utils.log2(FEATURE_TEMPLATE_END.ordinal());
+		public static int numWordFeatBits = Utils.log2(FEATURE_TEMPLATE_END.ordinal());
 	}
 }
 
