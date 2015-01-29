@@ -17,13 +17,13 @@ public class Parameters implements Serializable {
 	public transient Options options;
 	public final int labelLossType;
 	public double C, gamma, gammaLabel;
-	public int size;
+	public int size, sizeL;
 	public int rank;
 	public int N, M, T, D;
 	
-	public double[] params;
+	public double[] params, paramsL;
 	public double[][] U, V, W;
-	public transient double[] backup, total;
+	public transient double[] backup, total, backupL, totalL;
 	public transient double[][] totalU, totalV, totalW;
 	public transient double[][] backupU, backupV, backupW;
 	
@@ -36,7 +36,13 @@ public class Parameters implements Serializable {
 		size = pipe.numArcFeats;		
 		params = new double[size];
 		total = new double[size];
-
+		
+		if (options.learnLabel) {
+			sizeL = pipe.numLabeledArcFeats;
+			paramsL = new double[sizeL];
+			totalL = new double[sizeL];
+		}
+		
 		this.options = options;
 		this.labelLossType = options.labelLossType;
 		C = options.C;
@@ -79,6 +85,13 @@ public class Parameters implements Serializable {
 		}		
 		params = avgParams;
 		
+		backupL = paramsL;
+		double[] avgParamsL = new double[sizeL];
+		for (int i = 0; i < sizeL; ++i) {
+			avgParamsL[i] = (paramsL[i] * (T+1) - totalL[i])/T;			
+		}		
+		paramsL = avgParamsL;
+		
 		backupU = U;
 		double[][] avgU = new double[rank][N];
 		for (int i = 0; i < rank; ++i)
@@ -107,6 +120,7 @@ public class Parameters implements Serializable {
 	public void unaverageParameters() 
 	{
 		params = backup;
+		paramsL = backupL;
 		U = backupU;
 		V = backupV;
 		W = backupW;
@@ -189,6 +203,11 @@ public class Parameters implements Serializable {
 		return fv.dotProduct(params);
 	}
 	
+	public double dotProductL(FeatureVector fv)
+	{
+		return fv.dotProduct(paramsL);
+	}
+	
 	public double dotProduct(double[] proju, double[] projv, int dist)
 	{
 		double sum = 0;
@@ -211,7 +230,7 @@ public class Parameters implements Serializable {
     	double Fi = getLabelDis(actDeps, actLabs, predDeps, predLabs);
         	
     	FeatureVector dtl = lfd.getLabeledFeatureDifference(gold, pred);
-    	double loss = - dtl.dotProduct(params) + Fi;
+    	double loss = - dtl.dotProduct(paramsL) + Fi;
         double l2norm = dtl.Squaredl2NormUnsafe();
     	
         double alpha = loss/l2norm;
@@ -222,8 +241,8 @@ public class Parameters implements Serializable {
     		for (int i = 0, K = dtl.size(); i < K; ++i) {
 	    		int x = dtl.x(i);
 	    		double z = dtl.value(i);
-	    		params[x] += coeff * z;
-	    		total[x] += coeff2 * z;
+	    		paramsL[x] += coeff * z;
+	    		totalL[x] += coeff2 * z;
     		}
     	}
     	

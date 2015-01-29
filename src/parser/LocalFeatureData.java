@@ -17,7 +17,7 @@ public class LocalFeatureData {
 	
 	int len;						// sentence length
 	int ntypes;						// number of label types
-	int size;						
+	int size, sizeL;						
 	int rank;								
 	double gamma, gammaLabel;
 	
@@ -71,6 +71,7 @@ public class LocalFeatureData {
 		ntypes = pipe.types.length;
 		rank = options.R;
 		size = pipe.numArcFeats;
+		sizeL = pipe.numLabeledArcFeats;
 		gamma = options.gamma;
 		gammaLabel = options.gammaLabel;
 		
@@ -851,7 +852,7 @@ public class LocalFeatureData {
 	
 	private double getLabelScore(DependencyArcList arcLis, int head, int mod, int type)
 	{
-		return parameters.dotProduct(getLabelFeature(arcLis, head, mod, type)) * gammaLabel;
+		return parameters.dotProductL(getLabelFeature(arcLis, head, mod, type)) * gammaLabel;
 	}
 	
 	public void predictLabels(int[] heads, int[] deplbids, boolean addLoss)
@@ -883,7 +884,7 @@ public class LocalFeatureData {
 		
 		if (!options.learnLabel) return null;
 		
-		FeatureVector dlfv = new FeatureVector(size);
+		FeatureVector dlfv = new FeatureVector(sizeL);
 		
     	int N = inst.length;
     	int[] actDeps = gold.heads;

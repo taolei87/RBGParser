@@ -63,11 +63,13 @@ public class DependencyPipe implements Serializable {
 	
 	public int numArcFeats;					// number of arc structure features
 	public int numWordFeats;				// number of word features
+	public int numLabeledArcFeats;
 	
     public String[] types;					// array that maps label index to label hash code in tagDictionary
     public Alphabet typeAlphabet;
 	private Alphabet wordAlphabet;			// the alphabet of word features (e.g. \phi_h, \phi_m)
 	private Alphabet arcAlphabet;			// the alphabet of 1st order arc features (e.g. \phi_{h->m})
+	private Alphabet labeledArcAlphabet;
 	
 	// language specific info
 	public int ccDepType;
@@ -82,10 +84,12 @@ public class DependencyPipe implements Serializable {
 		
 		wordAlphabet = new Alphabet();
 		arcAlphabet = new Alphabet();
+		labeledArcAlphabet = new Alphabet();
 		this.options = options;
 		
 		numArcFeats = 0;
 		numWordFeats = 0;
+		numLabeledArcFeats = 0;
 		
 		loadLanguageInfo();
 	}
@@ -317,8 +321,8 @@ public class DependencyPipe implements Serializable {
 		
 		System.out.printf("Num of CONLL fine POS tags: %d%n", posTagSet.size());
 		System.out.printf("Num of CONLL coarse POS tags: %d%n", cposTagSet.size());
-		System.out.printf("Num of Features: %d %d%n", 
-				numWordFeats, numArcFeats);
+		System.out.printf("Num of Features: %d %d %d%n", 
+				numWordFeats, numArcFeats, numLabeledArcFeats);
 	    System.out.printf("Num of labels: %d%n", types.length);
 	    
 //	    if (wordVectors != null)
@@ -404,6 +408,7 @@ public class DependencyPipe implements Serializable {
 		//typeAlphabet.stopGrowth();
 		wordAlphabet.stopGrowth();
 		arcAlphabet.stopGrowth();
+		labeledArcAlphabet.stopGrowth();
 		
 		TLongObjectHashMap<String> reverse = new TLongObjectHashMap<String>();
 		for (Object key : tagDictionary.toArray()) {
@@ -730,48 +735,41 @@ public class DependencyPipe implements Serializable {
      * @param c		index of the modifier
      * @return
      */
-    
-    
-    public FeatureVector createArcFeatures(DependencyInstance inst, int h, int c)
-    {
-    	return createArcFeatures(inst, h, c, 0);
-    }
-    
-    public FeatureVector createArcFeatures(DependencyInstance inst, int h, int c, int type) 
+    public FeatureVector createArcFeatures(DependencyInstance inst, int h, int c) 
     {
     	
     	int attDist = getBinnedDistance(h-c);
     	
     	FeatureVector fv = new FeatureVector(arcAlphabet.size());
     	
-    	addBasic1OFeatures(fv, inst, h, c, attDist, type);
+    	addBasic1OFeatures(fv, inst, h, c, attDist);
     	
-    	addCore1OPosFeatures(fv, inst, h, c, attDist, type);
+    	addCore1OPosFeatures(fv, inst, h, c, attDist);
     		    		
     	addCore1OBigramFeatures(fv, inst.formids[h], inst.postagids[h], 
-    			inst.formids[c], inst.postagids[c], attDist, type);
+    			inst.formids[c], inst.postagids[c], attDist);
     	    		
 		if (inst.lemmaids != null)
 			addCore1OBigramFeatures(fv, inst.lemmaids[h], inst.postagids[h], 
-					inst.lemmaids[c], inst.postagids[c], attDist, type);
+					inst.lemmaids[c], inst.postagids[c], attDist);
 		
 		addCore1OBigramFeatures(fv, inst.formids[h], inst.cpostagids[h], 
-    			inst.formids[c], inst.cpostagids[c], attDist, type);
+    			inst.formids[c], inst.cpostagids[c], attDist);
 		
 		if (inst.lemmaids != null)
 			addCore1OBigramFeatures(fv, inst.lemmaids[h], inst.cpostagids[h], 
-					inst.lemmaids[c], inst.cpostagids[c], attDist, type);
+					inst.lemmaids[c], inst.cpostagids[c], attDist);
     	
     	if (inst.featids[h] != null && inst.featids[c] != null) {
     		for (int i = 0, N = inst.featids[h].length; i < N; ++i)
     			for (int j = 0, M = inst.featids[c].length; j < M; ++j) {
     				
     				addCore1OBigramFeatures(fv, inst.formids[h], inst.featids[h][i], 
-    						inst.formids[c], inst.featids[c][j], attDist, type);
+    						inst.formids[c], inst.featids[c][j], attDist);
     				
     				if (inst.lemmas != null)
     					addCore1OBigramFeatures(fv, inst.lemmaids[h], inst.featids[h][i], 
-    							inst.lemmaids[c], inst.featids[c][j], attDist, type);
+    							inst.lemmaids[c], inst.featids[c][j], attDist);
     			}
     	}
     			
@@ -779,7 +777,7 @@ public class DependencyPipe implements Serializable {
     }
     
     public void addBasic1OFeatures(FeatureVector fv, DependencyInstance inst, 
-    		int h, int m, int attDist, int type) 
+    		int h, int m, int attDist) 
     {
     	
     	long code = 0; 			// feature code
@@ -788,17 +786,16 @@ public class DependencyPipe implements Serializable {
     	int[] cpostags = inst.cpostagids;
     	int[][] feats = inst.featids;
     	
-    	int tid = type << 4;
 
-    	code = createArcCodeW(CORE_HEAD_WORD, forms[h]) | tid;
+    	code = createArcCodeW(CORE_HEAD_WORD, forms[h]);
     	addArcFeature(code, fv);
     	addArcFeature(code | attDist, fv);
     	    	    	
-    	code = createArcCodeW(CORE_MOD_WORD, forms[m]) | tid;
+    	code = createArcCodeW(CORE_MOD_WORD, forms[m]);
     	addArcFeature(code, fv);
     	addArcFeature(code | attDist, fv);
     	
-    	code = createArcCodeWW(HW_MW, forms[h], forms[m]) | tid;
+    	code = createArcCodeWW(HW_MW, forms[h], forms[m]);
     	addArcFeature(code, fv);
     	addArcFeature(code | attDist, fv);
     	
@@ -807,58 +804,58 @@ public class DependencyPipe implements Serializable {
     	int pMF = m == 0 ? TOKEN_START : (m == h+1 ? TOKEN_MID : forms[m-1]);
     	int nMF = m == inst.length - 1 ? TOKEN_END : (m+1 == h ? TOKEN_MID : forms[m+1]);
     	
-    	code = createArcCodeW(CORE_HEAD_pWORD, pHF) | tid;
+    	code = createArcCodeW(CORE_HEAD_pWORD, pHF);
     	addArcFeature(code, fv);
     	addArcFeature(code | attDist, fv);
     	
-    	code = createArcCodeW(CORE_HEAD_nWORD, nHF) | tid;
+    	code = createArcCodeW(CORE_HEAD_nWORD, nHF);
     	addArcFeature(code, fv);
     	addArcFeature(code | attDist, fv);
     	
-    	code = createArcCodeW(CORE_MOD_pWORD, pMF) | tid;
+    	code = createArcCodeW(CORE_MOD_pWORD, pMF);
     	addArcFeature(code, fv);
     	addArcFeature(code | attDist, fv);
     	
-    	code = createArcCodeW(CORE_MOD_nWORD, nMF) | tid;
+    	code = createArcCodeW(CORE_MOD_nWORD, nMF);
     	addArcFeature(code, fv);
     	addArcFeature(code | attDist, fv);
 	
 		
-    	code = createArcCodeP(CORE_HEAD_POS, postags[h]) | tid;
+    	code = createArcCodeP(CORE_HEAD_POS, postags[h]);
     	addArcFeature(code, fv);
     	addArcFeature(code | attDist, fv);
     	
-    	code = createArcCodeP(CORE_HEAD_POS, cpostags[h]) | tid;
+    	code = createArcCodeP(CORE_HEAD_POS, cpostags[h]);
     	addArcFeature(code, fv);
     	addArcFeature(code | attDist, fv);
     	
-    	code = createArcCodeP(CORE_MOD_POS, postags[m]) | tid;
+    	code = createArcCodeP(CORE_MOD_POS, postags[m]);
     	addArcFeature(code, fv);
     	addArcFeature(code | attDist, fv);
     	
-    	code = createArcCodeP(CORE_MOD_POS, cpostags[m]) | tid;
+    	code = createArcCodeP(CORE_MOD_POS, cpostags[m]);
     	addArcFeature(code, fv);
     	addArcFeature(code | attDist, fv);
     	
-    	code = createArcCodePP(HP_MP, postags[h], postags[m]) | tid;
+    	code = createArcCodePP(HP_MP, postags[h], postags[m]);
     	addArcFeature(code, fv);
     	addArcFeature(code | attDist, fv);
     	
-    	code = createArcCodePP(HP_MP, cpostags[h], cpostags[m]) | tid;
+    	code = createArcCodePP(HP_MP, cpostags[h], cpostags[m]);
     	addArcFeature(code, fv);
     	addArcFeature(code | attDist, fv);
     	
     	     	
     	if (lemmas != null) {
-    		code = createArcCodeW(CORE_HEAD_WORD, lemmas[h]) | tid;
+    		code = createArcCodeW(CORE_HEAD_WORD, lemmas[h]);
         	addArcFeature(code, fv);
         	addArcFeature(code | attDist, fv);
         	
-    		code = createArcCodeW(CORE_MOD_WORD, lemmas[m]) | tid;
+    		code = createArcCodeW(CORE_MOD_WORD, lemmas[m]);
         	addArcFeature(code, fv);
         	addArcFeature(code | attDist, fv);
         	
-        	code = createArcCodeWW(HW_MW, lemmas[h], lemmas[m]) | tid;
+        	code = createArcCodeWW(HW_MW, lemmas[h], lemmas[m]);
         	addArcFeature(code, fv);
         	addArcFeature(code | attDist, fv);
         	
@@ -867,33 +864,33 @@ public class DependencyPipe implements Serializable {
 	    	int pML = m == 0 ? TOKEN_START : (m == h+1 ? TOKEN_MID : lemmas[m-1]);
 	    	int nML = m == inst.length - 1 ? TOKEN_END : (m+1 == h ? TOKEN_MID : lemmas[m+1]);
 	    	
-	    	code = createArcCodeW(CORE_HEAD_pWORD, pHL) | tid;
+	    	code = createArcCodeW(CORE_HEAD_pWORD, pHL);
 	    	addArcFeature(code, fv);
 	    	addArcFeature(code | attDist, fv);
 	    	
-	    	code = createArcCodeW(CORE_HEAD_nWORD, nHL) | tid;
+	    	code = createArcCodeW(CORE_HEAD_nWORD, nHL);
 	    	addArcFeature(code, fv);
 	    	addArcFeature(code | attDist, fv);
 	    	
-	    	code = createArcCodeW(CORE_MOD_pWORD, pML) | tid;
+	    	code = createArcCodeW(CORE_MOD_pWORD, pML);
 	    	addArcFeature(code, fv);
 	    	addArcFeature(code | attDist, fv);
 	    	
-	    	code = createArcCodeW(CORE_MOD_nWORD, nML) | tid;
+	    	code = createArcCodeW(CORE_MOD_nWORD, nML);
 	    	addArcFeature(code, fv);
 	    	addArcFeature(code | attDist, fv);
     	}
     	
 		if (feats[h] != null)
 			for (int i = 0, N = feats[h].length; i < N; ++i) {
-				code = createArcCodeP(CORE_HEAD_POS, feats[h][i]) | tid;
+				code = createArcCodeP(CORE_HEAD_POS, feats[h][i]);
 	        	addArcFeature(code, fv);
 	        	addArcFeature(code | attDist, fv);
 			}
 		
 		if (feats[m] != null)
 			for (int i = 0, N = feats[m].length; i < N; ++i) {
-				code = createArcCodeP(CORE_MOD_POS, feats[m][i]) | tid;
+				code = createArcCodeP(CORE_MOD_POS, feats[m][i]);
 	        	addArcFeature(code, fv);
 	        	addArcFeature(code | attDist, fv);
 			}
@@ -901,7 +898,7 @@ public class DependencyPipe implements Serializable {
 		if (feats[h] != null && feats[m] != null) {
 			for (int i = 0, N = feats[h].length; i < N; ++i)
 				for (int j = 0, M = feats[m].length; j < M; ++j) {
-			    	code = createArcCodePP(HP_MP, feats[h][i], feats[m][j]) | tid;
+			    	code = createArcCodePP(HP_MP, feats[h][i], feats[m][j]);
 			    	addArcFeature(code, fv);
 			    	addArcFeature(code | attDist, fv);
 				}
@@ -913,7 +910,7 @@ public class DependencyPipe implements Serializable {
 			double [] v = wvid > 0 ? wordVectors[wvid] : unknownWv;
 			if (v != null) {
 				for (int i = 0; i < v.length; ++i) {
-					code = createArcCodeW(HEAD_EMB, i) | tid;
+					code = createArcCodeW(HEAD_EMB, i);
 					addArcFeature(code, v[i], fv);
 					addArcFeature(code | attDist, v[i], fv);
 				}
@@ -923,7 +920,7 @@ public class DependencyPipe implements Serializable {
 			v = wvid > 0 ? wordVectors[wvid] : unknownWv;
 			if (v != null) {
 				for (int i = 0; i < v.length; ++i) {
-					code = createArcCodeW(MOD_EMB, i) | tid;
+					code = createArcCodeW(MOD_EMB, i);
 					addArcFeature(code, v[i], fv);
 					addArcFeature(code | attDist, v[i], fv);
 				}
@@ -932,14 +929,12 @@ public class DependencyPipe implements Serializable {
     }
     
     public void addCore1OPosFeatures(FeatureVector fv, DependencyInstance inst, 
-    		int h, int c, int attDist, int type) 
+    		int h, int c, int attDist) 
     {  	
     	
     	int[] pos = inst.postagids;
     	int[] posA = inst.cpostagids;
 	
-    	int tid = type << 4;
-    	
     	int pHead = pos[h], pHeadA = posA[h];
     	int pMod = pos[c], pModA = posA[c];
     	int pHeadLeft = h > 0 ? (h-1 == c ? TOKEN_MID : pos[h-1]) : TOKEN_START;    	
@@ -958,156 +953,155 @@ public class DependencyPipe implements Serializable {
     	int small = h < c ? h : c;
     	int large = h > c ? h : c;
     	for(int i = small+1; i < large; i++) {    		
-    		code = createArcCodePPP(HP_BP_MP, pHead, pos[i], pMod) | tid;
+    		code = createArcCodePPP(HP_BP_MP, pHead, pos[i], pMod);
     		addArcFeature(code, fv);
     		addArcFeature(code | attDist, fv);
     		
-    		code = createArcCodePPP(HP_BP_MP, pHeadA, posA[i], pModA) | tid;
+    		code = createArcCodePPP(HP_BP_MP, pHeadA, posA[i], pModA);
     		addArcFeature(code, fv);
     		addArcFeature(code | attDist, fv);
     	}
     	
     	// feature posL-1 posL posR posR+1
-    	code = createArcCodePPPP(HPp_HP_MP_MPn, pHeadLeft, pHead, pMod, pModRight) | tid;
+    	code = createArcCodePPPP(HPp_HP_MP_MPn, pHeadLeft, pHead, pMod, pModRight);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 		
-    	code = createArcCodePPP(HP_MP_MPn, pHead, pMod, pModRight) | tid;
+    	code = createArcCodePPP(HP_MP_MPn, pHead, pMod, pModRight);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 		
-    	code = createArcCodePPP(HPp_HP_MP, pHeadLeft, pHead, pMod) | tid;
+    	code = createArcCodePPP(HPp_HP_MP, pHeadLeft, pHead, pMod);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 		
-    	code = createArcCodePPP(HPp_MP_MPn, pHeadLeft, pMod, pModRight) | tid;
+    	code = createArcCodePPP(HPp_MP_MPn, pHeadLeft, pMod, pModRight);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 		
-    	code = createArcCodePPP(HPp_HP_MPn, pHeadLeft, pHead, pModRight) | tid;
+    	code = createArcCodePPP(HPp_HP_MPn, pHeadLeft, pHead, pModRight);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 
-    	code = createArcCodePPPP(HPp_HP_MP_MPn, pHeadLeftA, pHeadA, pModA, pModRightA) | tid;
+    	code = createArcCodePPPP(HPp_HP_MP_MPn, pHeadLeftA, pHeadA, pModA, pModRightA);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 		
-    	code = createArcCodePPP(HP_MP_MPn, pHeadA, pModA, pModRightA) | tid;
+    	code = createArcCodePPP(HP_MP_MPn, pHeadA, pModA, pModRightA);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 		
-    	code = createArcCodePPP(HPp_HP_MP, pHeadLeftA, pHeadA, pModA) | tid;
+    	code = createArcCodePPP(HPp_HP_MP, pHeadLeftA, pHeadA, pModA);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 		
-    	code = createArcCodePPP(HPp_MP_MPn, pHeadLeftA, pModA, pModRightA) | tid;
+    	code = createArcCodePPP(HPp_MP_MPn, pHeadLeftA, pModA, pModRightA);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 		
-    	code = createArcCodePPP(HPp_HP_MPn, pHeadLeftA, pHeadA, pModRightA) | tid;
+    	code = createArcCodePPP(HPp_HP_MPn, pHeadLeftA, pHeadA, pModRightA);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 		
     	
     	// feature posL posL+1 posR-1 posR
-		code = createArcCodePPPP(HP_HPn_MPp_MP, pHead, pHeadRight, pModLeft, pMod) | tid;
+		code = createArcCodePPPP(HP_HPn_MPp_MP, pHead, pHeadRight, pModLeft, pMod);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 		
-		code = createArcCodePPP(HP_MPp_MP, pHead, pModLeft, pMod) | tid;
+		code = createArcCodePPP(HP_MPp_MP, pHead, pModLeft, pMod);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 		
-		code = createArcCodePPP(HP_HPn_MP, pHead, pHeadRight, pMod) | tid;
+		code = createArcCodePPP(HP_HPn_MP, pHead, pHeadRight, pMod);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 		
-		code = createArcCodePPP(HPn_MPp_MP, pHeadRight, pModLeft, pMod) | tid;
+		code = createArcCodePPP(HPn_MPp_MP, pHeadRight, pModLeft, pMod);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 		
-		code = createArcCodePPP(HP_HPn_MPp, pHead, pHeadRight, pModLeft) | tid;
+		code = createArcCodePPP(HP_HPn_MPp, pHead, pHeadRight, pModLeft);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 		
-		code = createArcCodePPPP(HP_HPn_MPp_MP, pHeadA, pHeadRightA, pModLeftA, pModA) | tid;
+		code = createArcCodePPPP(HP_HPn_MPp_MP, pHeadA, pHeadRightA, pModLeftA, pModA);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 		
-		code = createArcCodePPP(HP_MPp_MP, pHeadA, pModLeftA, pModA) | tid;
+		code = createArcCodePPP(HP_MPp_MP, pHeadA, pModLeftA, pModA);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 		
-		code = createArcCodePPP(HP_HPn_MP, pHeadA, pHeadRightA, pModA) | tid;
+		code = createArcCodePPP(HP_HPn_MP, pHeadA, pHeadRightA, pModA);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 		
-		code = createArcCodePPP(HPn_MPp_MP, pHeadRightA, pModLeftA, pModA) | tid;
+		code = createArcCodePPP(HPn_MPp_MP, pHeadRightA, pModLeftA, pModA);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 		
-		code = createArcCodePPP(HP_HPn_MPp, pHeadA, pHeadRightA, pModLeftA) | tid;
+		code = createArcCodePPP(HP_HPn_MPp, pHeadA, pHeadRightA, pModLeftA);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 	
     	
 		// feature posL-1 posL posR-1 posR
 		// feature posL posL+1 posR posR+1
-		code = createArcCodePPPP(HPp_HP_MPp_MP, pHeadLeft, pHead, pModLeft, pMod) | tid;
+		code = createArcCodePPPP(HPp_HP_MPp_MP, pHeadLeft, pHead, pModLeft, pMod);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 		
-		code = createArcCodePPPP(HP_HPn_MP_MPn, pHead, pHeadRight, pMod, pModRight) | tid;
+		code = createArcCodePPPP(HP_HPn_MP_MPn, pHead, pHeadRight, pMod, pModRight);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 		
-		code = createArcCodePPPP(HPp_HP_MPp_MP, pHeadLeftA, pHeadA, pModLeftA, pModA) | tid;
+		code = createArcCodePPPP(HPp_HP_MPp_MP, pHeadLeftA, pHeadA, pModLeftA, pModA);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 		
-		code = createArcCodePPPP(HP_HPn_MP_MPn, pHeadA, pHeadRightA, pModA, pModRightA) | tid;
+		code = createArcCodePPPP(HP_HPn_MP_MPn, pHeadA, pHeadRightA, pModA, pModRightA);
 		addArcFeature(code, fv);
 		addArcFeature(code | attDist, fv);
 		
     }
 
     public void addCore1OBigramFeatures(FeatureVector fv, int head, int headP, 
-    		int mod, int modP, int attDist, int type) 
+    		int mod, int modP, int attDist) 
     {
     	
     	long code = 0;
     	
-    	int tid = type << 4;
-    	
-    	code = createArcCodeWWPP(HW_MW_HP_MP, head, mod, headP, modP) | tid;
+    	code = createArcCodeWWPP(HW_MW_HP_MP, head, mod, headP, modP);
     	addArcFeature(code, fv);
     	addArcFeature(code | attDist, fv);
     	
-    	code = createArcCodeWPP(MW_HP_MP, mod, headP, modP) | tid;
+    	code = createArcCodeWPP(MW_HP_MP, mod, headP, modP);
     	addArcFeature(code, fv);
     	addArcFeature(code | attDist, fv);
     	
-    	code = createArcCodeWPP(HW_HP_MP, head, headP, modP) | tid;
+    	code = createArcCodeWPP(HW_HP_MP, head, headP, modP);
     	addArcFeature(code, fv);
     	addArcFeature(code | attDist, fv);
     	
-    	code = createArcCodeWP(MW_HP, mod, headP) | tid;
+    	code = createArcCodeWP(MW_HP, mod, headP);
     	addArcFeature(code, fv);
     	addArcFeature(code | attDist, fv);
     	
-    	code = createArcCodeWP(HW_MP, head, modP) | tid;
+    	code = createArcCodeWP(HW_MP, head, modP);
     	addArcFeature(code, fv);
     	addArcFeature(code | attDist, fv);
     	    	
-    	code = createArcCodeWP(HW_HP, head, headP) | tid;
+    	code = createArcCodeWP(HW_HP, head, headP);
     	addArcFeature(code, fv);
     	addArcFeature(code | attDist, fv);
     	
-    	code = createArcCodeWP(MW_MP, mod, modP) | tid;
+    	code = createArcCodeWP(MW_MP, mod, modP);
     	addArcFeature(code, fv);
     	addArcFeature(code | attDist, fv);
       
     }
+
     
     /************************************************************************
      *  Region end #
@@ -1259,7 +1253,7 @@ public class DependencyPipe implements Serializable {
     	int[] heads = inst.heads;
     	int head = heads[mod];
     	    	
-    	fv.addEntries(createArcFeatures(inst, head, mod, type+1));
+    	fv.addEntries(createLabeledArcFeatures(inst, head, mod, type+1));
     	
     	//int ghead = heads[head];
     	//if (ghead != -1) {
@@ -1269,204 +1263,576 @@ public class DependencyPipe implements Serializable {
     	return fv;
     }
     
-    public FeatureVector createLabelFeatures(DependencyInstance inst,
-    		int head, int mod, int type)
+    public FeatureVector createLabeledArcFeatures(DependencyInstance inst, int h, int c, int type) 
     {
-    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
-    	if (!options.learnLabel) return fv;
     	
-    	int[] forms = inst.formids;
-    	int[] pos = inst.postagids;
-    	int[] cpos = inst.cpostagids;
-    	int[][] feats = inst.featids;
+    	int attDist = getBinnedDistance(h-c);
     	
-    	int hw = forms[head], hp = pos[head], hcp = cpos[head];
-    	int mw = forms[mod], mp = pos[mod], mcp = cpos[mod];
+    	FeatureVector fv = new FeatureVector(numLabeledArcFeats);
+    	
+    	addBasic1OFeatures(fv, inst, h, c, attDist, type);
+    	
+    	addCore1OPosFeatures(fv, inst, h, c, attDist, type);
+    		    		
+    	addCore1OBigramFeatures(fv, inst.formids[h], inst.postagids[h], 
+    			inst.formids[c], inst.postagids[c], attDist, type);
+    	    		
+		if (inst.lemmaids != null)
+			addCore1OBigramFeatures(fv, inst.lemmaids[h], inst.postagids[h], 
+					inst.lemmaids[c], inst.postagids[c], attDist, type);
+		
+		addCore1OBigramFeatures(fv, inst.formids[h], inst.cpostagids[h], 
+    			inst.formids[c], inst.cpostagids[c], attDist, type);
+		
+		if (inst.lemmaids != null)
+			addCore1OBigramFeatures(fv, inst.lemmaids[h], inst.cpostagids[h], 
+					inst.lemmaids[c], inst.cpostagids[c], attDist, type);
+    	
+    	if (inst.featids[h] != null && inst.featids[c] != null) {
+    		for (int i = 0, N = inst.featids[h].length; i < N; ++i)
+    			for (int j = 0, M = inst.featids[c].length; j < M; ++j) {
+    				
+    				addCore1OBigramFeatures(fv, inst.formids[h], inst.featids[h][i], 
+    						inst.formids[c], inst.featids[c][j], attDist, type);
+    				
+    				if (inst.lemmas != null)
+    					addCore1OBigramFeatures(fv, inst.lemmaids[h], inst.featids[h][i], 
+    							inst.lemmaids[c], inst.featids[c][j], attDist, type);
+    			}
+    	}
     			
-    	long code = 0;
-  
-    	int dist = getBinnedDistance(head-mod);
-    	
-		code = createArcCodeWP(HW_LABEL, hw, type);
-		addArcFeature(code, fv);
-		addArcFeature(code | dist, fv);	
-		
-		code = createArcCodePP(HP_LABEL, hp, type);
-		addArcFeature(code, fv);
-		addArcFeature(code | dist, fv);	
-		
-		code = createArcCodePP(HP_LABEL, hcp, type);
-		addArcFeature(code, fv);
-		addArcFeature(code | dist, fv);	
-		
-		if (feats[head] != null) {
-			for (int f : feats[head]) {
-				code = createArcCodePP(HP_LABEL, f, type);
-				addArcFeature(code, fv);
-				addArcFeature(code | dist, fv);	
-			}
-		}
-		
-		code = createArcCodeWP(MW_LABEL, mw, type);
-		addArcFeature(code, fv);
-		addArcFeature(code | dist, fv);	
-		
-		code = createArcCodePP(MP_LABEL, mp, type);
-		addArcFeature(code, fv);
-		addArcFeature(code | dist, fv);	
-		
-		code = createArcCodePP(MP_LABEL, mcp, type);
-		addArcFeature(code, fv);
-		addArcFeature(code | dist, fv);	
-		
-		if (feats[mod] != null) {
-			for (int f : feats[mod]) {
-				code = createArcCodePP(MP_LABEL, f, type);
-				addArcFeature(code, fv);
-				addArcFeature(code | dist, fv);	
-			}
-		}
-		
-		code = createArcCodeWPP(HW_MP_LABEL, hw, mp, type);
-		addArcFeature(code, fv);
-		addArcFeature(code | dist, fv);	
-		
-		code = createArcCodeWPP(HW_MP_LABEL, hw, mcp, type);
-		addArcFeature(code, fv);
-		addArcFeature(code | dist, fv);	
-		
-		code = createArcCodePPP(HP_MP_LABEL, hp, mp, type);
-		addArcFeature(code, fv);
-		addArcFeature(code | dist, fv);	
-		
-		code = createArcCodePPP(HP_MP_LABEL, hp, mcp, type);
-		addArcFeature(code, fv);
-		addArcFeature(code | dist, fv);	
-		
-		code = createArcCodePPP(HP_MP_LABEL, hcp, mp, type);
-		addArcFeature(code, fv);
-		addArcFeature(code | dist, fv);	
-		
-		code = createArcCodePPP(HP_MP_LABEL, hcp, mcp, type);
-		addArcFeature(code, fv);
-		addArcFeature(code | dist, fv);	
-		
-		code = createArcCodeWPP(MW_HP_LABEL, mw, hp, type);
-		addArcFeature(code, fv);
-		addArcFeature(code | dist, fv);	
-		
-		code = createArcCodeWPP(MW_HP_LABEL, mw, hcp, type);
-		addArcFeature(code, fv);
-		addArcFeature(code | dist, fv);	
-		
-		if (feats[head] != null) {
-			for (int f : feats[head]) {
-				code = createArcCodeWPP(MW_HP_LABEL, mw, f, type);
-				addArcFeature(code, fv);
-				addArcFeature(code | dist, fv);	
-				
-				code = createArcCodePPP(HP_MP_LABEL, f, mp, type);
-				addArcFeature(code, fv);
-				addArcFeature(code | dist, fv);
-				
-				code = createArcCodePPP(HP_MP_LABEL, f, mcp, type);
-				addArcFeature(code, fv);
-				addArcFeature(code | dist, fv);	
-			}
-		}
-		
-		if (feats[mod] != null) {
-			for (int f : feats[mod]) {
-				code = createArcCodeWPP(HW_MP_LABEL, hw, f, type);
-				addArcFeature(code, fv);
-				addArcFeature(code | dist, fv);
-				
-				code = createArcCodePPP(HP_MP_LABEL, hp, f, type);
-				addArcFeature(code, fv);
-				addArcFeature(code | dist, fv);
-				
-				code = createArcCodePPP(HP_MP_LABEL, hcp, f, type);
-				addArcFeature(code, fv);
-				addArcFeature(code | dist, fv);	
-			}
-		}
-		
-		{
-			int pmw = mod > 0 ? forms[mod-1] : TOKEN_START;
-			int pmp = mod > 0 ? pos[mod-1] : TOKEN_START;
-			
-			code = createArcCodePPP(HP_pMP_LABEL, hp, pmp, type);
-			addArcFeature(code, fv);
-			addArcFeature(code | dist, fv);
-			
-			code = createArcCodePPP(HP_pMP_LABEL, hcp, pmp, type);
-			addArcFeature(code, fv);
-			addArcFeature(code | dist, fv);
-			
-			code = createArcCodeWPP(HP_pMW_LABEL, pmw, hp, type);
-			addArcFeature(code, fv);
-			addArcFeature(code | dist, fv);
-			
-			code = createArcCodeWPP(HP_pMW_LABEL, pmw, hcp, type);
-			addArcFeature(code, fv);
-			addArcFeature(code | dist, fv);
-			
-			code = createArcCodePPP(MP_pMP_LABEL, mp, pmp, type);
-			addArcFeature(code, fv);
-			addArcFeature(code | dist, fv);
-			
-			code = createArcCodePPP(MP_pMP_LABEL, mcp, pmp, type);
-			addArcFeature(code, fv);
-			addArcFeature(code | dist, fv);
-			
-			code = createArcCodeWPP(MP_pMW_LABEL, pmw, mp, type);
-			addArcFeature(code, fv);
-			addArcFeature(code | dist, fv);
-			
-			code = createArcCodeWPP(MP_pMW_LABEL, pmw, mcp, type);
-			addArcFeature(code, fv);
-			addArcFeature(code | dist, fv);
-		}
-    	
-		{
-			int nmw = mod < inst.length-1 ? forms[mod+1] : TOKEN_END;
-			int nmp = mod < inst.length-1 ? pos[mod+1] : TOKEN_END;
-			
-			code = createArcCodePPP(HP_nMP_LABEL, hp, nmp, type);
-			addArcFeature(code, fv);
-			addArcFeature(code | dist, fv);
-			
-			code = createArcCodePPP(HP_nMP_LABEL, hcp, nmp, type);
-			addArcFeature(code, fv);
-			addArcFeature(code | dist, fv);
-			
-			code = createArcCodeWPP(HP_nMW_LABEL, nmw, hp, type);
-			addArcFeature(code, fv);
-			addArcFeature(code | dist, fv);
-			
-			code = createArcCodeWPP(HP_nMW_LABEL, nmw, hcp, type);
-			addArcFeature(code, fv);
-			addArcFeature(code | dist, fv);
-			
-			code = createArcCodePPP(MP_nMP_LABEL, mp, nmp, type);
-			addArcFeature(code, fv);
-			addArcFeature(code | dist, fv);
-			
-			code = createArcCodePPP(MP_nMP_LABEL, mcp, nmp, type);
-			addArcFeature(code, fv);
-			addArcFeature(code | dist, fv);
-			
-			code = createArcCodeWPP(MP_nMW_LABEL, nmw, mp, type);
-			addArcFeature(code, fv);
-			addArcFeature(code | dist, fv);
-			
-			code = createArcCodeWPP(MP_nMW_LABEL, nmw, mcp, type);
-			addArcFeature(code, fv);
-			addArcFeature(code | dist, fv);
-		}
-		
     	return fv;
     }
+    
+    public void addBasic1OFeatures(FeatureVector fv, DependencyInstance inst, 
+    		int h, int m, int attDist, int type) 
+    {
+    	
+    	long code = 0; 			// feature code
+    	
+    	int[] forms = inst.formids, lemmas = inst.lemmaids, postags = inst.postagids;
+    	int[] cpostags = inst.cpostagids;
+    	int[][] feats = inst.featids;
+    	
+    	int tid = type << 4;
+
+    	code = createArcCodeW(CORE_HEAD_WORD, forms[h]) | tid;
+    	addLabeledArcFeature(code, fv);
+    	addLabeledArcFeature(code | attDist, fv);
+    	    	    	
+    	code = createArcCodeW(CORE_MOD_WORD, forms[m]) | tid;
+    	addLabeledArcFeature(code, fv);
+    	addLabeledArcFeature(code | attDist, fv);
+    	
+    	code = createArcCodeWW(HW_MW, forms[h], forms[m]) | tid;
+    	addLabeledArcFeature(code, fv);
+    	addLabeledArcFeature(code | attDist, fv);
+    	
+    	int pHF = h == 0 ? TOKEN_START : (h == m+1 ? TOKEN_MID : forms[h-1]);
+    	int nHF = h == inst.length - 1 ? TOKEN_END : (h+1 == m ? TOKEN_MID : forms[h+1]);
+    	int pMF = m == 0 ? TOKEN_START : (m == h+1 ? TOKEN_MID : forms[m-1]);
+    	int nMF = m == inst.length - 1 ? TOKEN_END : (m+1 == h ? TOKEN_MID : forms[m+1]);
+    	
+    	code = createArcCodeW(CORE_HEAD_pWORD, pHF) | tid;
+    	addLabeledArcFeature(code, fv);
+    	addLabeledArcFeature(code | attDist, fv);
+    	
+    	code = createArcCodeW(CORE_HEAD_nWORD, nHF) | tid;
+    	addLabeledArcFeature(code, fv);
+    	addLabeledArcFeature(code | attDist, fv);
+    	
+    	code = createArcCodeW(CORE_MOD_pWORD, pMF) | tid;
+    	addLabeledArcFeature(code, fv);
+    	addLabeledArcFeature(code | attDist, fv);
+    	
+    	code = createArcCodeW(CORE_MOD_nWORD, nMF) | tid;
+    	addLabeledArcFeature(code, fv);
+    	addLabeledArcFeature(code | attDist, fv);
+	
+		
+    	code = createArcCodeP(CORE_HEAD_POS, postags[h]) | tid;
+    	addLabeledArcFeature(code, fv);
+    	addLabeledArcFeature(code | attDist, fv);
+    	
+    	code = createArcCodeP(CORE_HEAD_POS, cpostags[h]) | tid;
+    	addLabeledArcFeature(code, fv);
+    	addLabeledArcFeature(code | attDist, fv);
+    	
+    	code = createArcCodeP(CORE_MOD_POS, postags[m]) | tid;
+    	addLabeledArcFeature(code, fv);
+    	addLabeledArcFeature(code | attDist, fv);
+    	
+    	code = createArcCodeP(CORE_MOD_POS, cpostags[m]) | tid;
+    	addLabeledArcFeature(code, fv);
+    	addLabeledArcFeature(code | attDist, fv);
+    	
+    	code = createArcCodePP(HP_MP, postags[h], postags[m]) | tid;
+    	addLabeledArcFeature(code, fv);
+    	addLabeledArcFeature(code | attDist, fv);
+    	
+    	code = createArcCodePP(HP_MP, cpostags[h], cpostags[m]) | tid;
+    	addLabeledArcFeature(code, fv);
+    	addLabeledArcFeature(code | attDist, fv);
+    	
+    	     	
+    	if (lemmas != null) {
+    		code = createArcCodeW(CORE_HEAD_WORD, lemmas[h]) | tid;
+        	addLabeledArcFeature(code, fv);
+        	addLabeledArcFeature(code | attDist, fv);
+        	
+    		code = createArcCodeW(CORE_MOD_WORD, lemmas[m]) | tid;
+        	addLabeledArcFeature(code, fv);
+        	addLabeledArcFeature(code | attDist, fv);
+        	
+        	code = createArcCodeWW(HW_MW, lemmas[h], lemmas[m]) | tid;
+        	addLabeledArcFeature(code, fv);
+        	addLabeledArcFeature(code | attDist, fv);
+        	
+	    	int pHL = h == 0 ? TOKEN_START : (h == m+1 ? TOKEN_MID : lemmas[h-1]);
+	    	int nHL = h == inst.length - 1 ? TOKEN_END : (h+1 == m ? TOKEN_MID : lemmas[h+1]);
+	    	int pML = m == 0 ? TOKEN_START : (m == h+1 ? TOKEN_MID : lemmas[m-1]);
+	    	int nML = m == inst.length - 1 ? TOKEN_END : (m+1 == h ? TOKEN_MID : lemmas[m+1]);
+	    	
+	    	code = createArcCodeW(CORE_HEAD_pWORD, pHL) | tid;
+	    	addLabeledArcFeature(code, fv);
+	    	addLabeledArcFeature(code | attDist, fv);
+	    	
+	    	code = createArcCodeW(CORE_HEAD_nWORD, nHL) | tid;
+	    	addLabeledArcFeature(code, fv);
+	    	addLabeledArcFeature(code | attDist, fv);
+	    	
+	    	code = createArcCodeW(CORE_MOD_pWORD, pML) | tid;
+	    	addLabeledArcFeature(code, fv);
+	    	addLabeledArcFeature(code | attDist, fv);
+	    	
+	    	code = createArcCodeW(CORE_MOD_nWORD, nML) | tid;
+	    	addLabeledArcFeature(code, fv);
+	    	addLabeledArcFeature(code | attDist, fv);
+    	}
+    	
+		if (feats[h] != null)
+			for (int i = 0, N = feats[h].length; i < N; ++i) {
+				code = createArcCodeP(CORE_HEAD_POS, feats[h][i]) | tid;
+	        	addLabeledArcFeature(code, fv);
+	        	addLabeledArcFeature(code | attDist, fv);
+			}
+		
+		if (feats[m] != null)
+			for (int i = 0, N = feats[m].length; i < N; ++i) {
+				code = createArcCodeP(CORE_MOD_POS, feats[m][i]) | tid;
+	        	addLabeledArcFeature(code, fv);
+	        	addLabeledArcFeature(code | attDist, fv);
+			}
+		
+		if (feats[h] != null && feats[m] != null) {
+			for (int i = 0, N = feats[h].length; i < N; ++i)
+				for (int j = 0, M = feats[m].length; j < M; ++j) {
+			    	code = createArcCodePP(HP_MP, feats[h][i], feats[m][j]) | tid;
+			    	addLabeledArcFeature(code, fv);
+			    	addLabeledArcFeature(code | attDist, fv);
+				}
+		}
+		
+		if (wordVectors != null) {
+			
+			int wvid = inst.wordVecIds[h];
+			double [] v = wvid > 0 ? wordVectors[wvid] : unknownWv;
+			if (v != null) {
+				for (int i = 0; i < v.length; ++i) {
+					code = createArcCodeW(HEAD_EMB, i) | tid;
+					addLabeledArcFeature(code, v[i], fv);
+					addLabeledArcFeature(code | attDist, v[i], fv);
+				}
+			}
+			
+			wvid = inst.wordVecIds[m];
+			v = wvid > 0 ? wordVectors[wvid] : unknownWv;
+			if (v != null) {
+				for (int i = 0; i < v.length; ++i) {
+					code = createArcCodeW(MOD_EMB, i) | tid;
+					addLabeledArcFeature(code, v[i], fv);
+					addLabeledArcFeature(code | attDist, v[i], fv);
+				}
+			}
+		}
+    }
+    
+    public void addCore1OPosFeatures(FeatureVector fv, DependencyInstance inst, 
+    		int h, int c, int attDist, int type) 
+    {  	
+    	
+    	int[] pos = inst.postagids;
+    	int[] posA = inst.cpostagids;
+	
+    	int tid = type << 4;
+    	
+    	int pHead = pos[h], pHeadA = posA[h];
+    	int pMod = pos[c], pModA = posA[c];
+    	int pHeadLeft = h > 0 ? (h-1 == c ? TOKEN_MID : pos[h-1]) : TOKEN_START;    	
+    	int pModRight = c < pos.length-1 ? (c+1 == h ? TOKEN_MID : pos[c+1]) : TOKEN_END;
+    	int pHeadRight = h < pos.length-1 ? (h+1 == c ? TOKEN_MID: pos[h+1]) : TOKEN_END;
+    	int pModLeft = c > 0 ? (c-1 == h ? TOKEN_MID : pos[c-1]) : TOKEN_START;
+    	int pHeadLeftA = h > 0 ? (h-1 == c ? TOKEN_MID : posA[h-1]) : TOKEN_START;    	
+    	int pModRightA = c < posA.length-1 ? (c+1 == h ? TOKEN_MID : posA[c+1]) : TOKEN_END;
+    	int pHeadRightA = h < posA.length-1 ? (h+1 == c ? TOKEN_MID: posA[h+1]) : TOKEN_END;
+    	int pModLeftA = c > 0 ? (c-1 == h ? TOKEN_MID : posA[c-1]) : TOKEN_START;
+    	
+    	    	
+    	long code = 0;
+    	
+    	// feature posR posMid posL
+    	int small = h < c ? h : c;
+    	int large = h > c ? h : c;
+    	for(int i = small+1; i < large; i++) {    		
+    		code = createArcCodePPP(HP_BP_MP, pHead, pos[i], pMod) | tid;
+    		addLabeledArcFeature(code, fv);
+    		addLabeledArcFeature(code | attDist, fv);
+    		
+    		code = createArcCodePPP(HP_BP_MP, pHeadA, posA[i], pModA) | tid;
+    		addLabeledArcFeature(code, fv);
+    		addLabeledArcFeature(code | attDist, fv);
+    	}
+    	
+    	// feature posL-1 posL posR posR+1
+    	code = createArcCodePPPP(HPp_HP_MP_MPn, pHeadLeft, pHead, pMod, pModRight) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+		
+    	code = createArcCodePPP(HP_MP_MPn, pHead, pMod, pModRight) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+		
+    	code = createArcCodePPP(HPp_HP_MP, pHeadLeft, pHead, pMod) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+		
+    	code = createArcCodePPP(HPp_MP_MPn, pHeadLeft, pMod, pModRight) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+		
+    	code = createArcCodePPP(HPp_HP_MPn, pHeadLeft, pHead, pModRight) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+
+    	code = createArcCodePPPP(HPp_HP_MP_MPn, pHeadLeftA, pHeadA, pModA, pModRightA) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+		
+    	code = createArcCodePPP(HP_MP_MPn, pHeadA, pModA, pModRightA) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+		
+    	code = createArcCodePPP(HPp_HP_MP, pHeadLeftA, pHeadA, pModA) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+		
+    	code = createArcCodePPP(HPp_MP_MPn, pHeadLeftA, pModA, pModRightA) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+		
+    	code = createArcCodePPP(HPp_HP_MPn, pHeadLeftA, pHeadA, pModRightA) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+		
+    	
+    	// feature posL posL+1 posR-1 posR
+		code = createArcCodePPPP(HP_HPn_MPp_MP, pHead, pHeadRight, pModLeft, pMod) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+		
+		code = createArcCodePPP(HP_MPp_MP, pHead, pModLeft, pMod) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+		
+		code = createArcCodePPP(HP_HPn_MP, pHead, pHeadRight, pMod) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+		
+		code = createArcCodePPP(HPn_MPp_MP, pHeadRight, pModLeft, pMod) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+		
+		code = createArcCodePPP(HP_HPn_MPp, pHead, pHeadRight, pModLeft) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+		
+		code = createArcCodePPPP(HP_HPn_MPp_MP, pHeadA, pHeadRightA, pModLeftA, pModA) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+		
+		code = createArcCodePPP(HP_MPp_MP, pHeadA, pModLeftA, pModA) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+		
+		code = createArcCodePPP(HP_HPn_MP, pHeadA, pHeadRightA, pModA) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+		
+		code = createArcCodePPP(HPn_MPp_MP, pHeadRightA, pModLeftA, pModA) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+		
+		code = createArcCodePPP(HP_HPn_MPp, pHeadA, pHeadRightA, pModLeftA) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+	
+    	
+		// feature posL-1 posL posR-1 posR
+		// feature posL posL+1 posR posR+1
+		code = createArcCodePPPP(HPp_HP_MPp_MP, pHeadLeft, pHead, pModLeft, pMod) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+		
+		code = createArcCodePPPP(HP_HPn_MP_MPn, pHead, pHeadRight, pMod, pModRight) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+		
+		code = createArcCodePPPP(HPp_HP_MPp_MP, pHeadLeftA, pHeadA, pModLeftA, pModA) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+		
+		code = createArcCodePPPP(HP_HPn_MP_MPn, pHeadA, pHeadRightA, pModA, pModRightA) | tid;
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
+		
+    }
+
+    public void addCore1OBigramFeatures(FeatureVector fv, int head, int headP, 
+    		int mod, int modP, int attDist, int type) 
+    {
+    	
+    	long code = 0;
+    	
+    	int tid = type << 4;
+    	
+    	code = createArcCodeWWPP(HW_MW_HP_MP, head, mod, headP, modP) | tid;
+    	addLabeledArcFeature(code, fv);
+    	addLabeledArcFeature(code | attDist, fv);
+    	
+    	code = createArcCodeWPP(MW_HP_MP, mod, headP, modP) | tid;
+    	addLabeledArcFeature(code, fv);
+    	addLabeledArcFeature(code | attDist, fv);
+    	
+    	code = createArcCodeWPP(HW_HP_MP, head, headP, modP) | tid;
+    	addLabeledArcFeature(code, fv);
+    	addLabeledArcFeature(code | attDist, fv);
+    	
+    	code = createArcCodeWP(MW_HP, mod, headP) | tid;
+    	addLabeledArcFeature(code, fv);
+    	addLabeledArcFeature(code | attDist, fv);
+    	
+    	code = createArcCodeWP(HW_MP, head, modP) | tid;
+    	addLabeledArcFeature(code, fv);
+    	addLabeledArcFeature(code | attDist, fv);
+    	    	
+    	code = createArcCodeWP(HW_HP, head, headP) | tid;
+    	addLabeledArcFeature(code, fv);
+    	addLabeledArcFeature(code | attDist, fv);
+    	
+    	code = createArcCodeWP(MW_MP, mod, modP) | tid;
+    	addLabeledArcFeature(code, fv);
+    	addLabeledArcFeature(code | attDist, fv);
+      
+    }
+    
+//    public FeatureVector createLabelFeatures(DependencyInstance inst,
+//    		int head, int mod, int type)
+//    {
+//    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
+//    	if (!options.learnLabel) return fv;
+//    	
+//    	int[] forms = inst.formids;
+//    	int[] pos = inst.postagids;
+//    	int[] cpos = inst.cpostagids;
+//    	int[][] feats = inst.featids;
+//    	
+//    	int hw = forms[head], hp = pos[head], hcp = cpos[head];
+//    	int mw = forms[mod], mp = pos[mod], mcp = cpos[mod];
+//    			
+//    	long code = 0;
+//  
+//    	int dist = getBinnedDistance(head-mod);
+//    	
+//		code = createArcCodeWP(HW_LABEL, hw, type);
+//		addArcFeature(code, fv);
+//		addArcFeature(code | dist, fv);	
+//		
+//		code = createArcCodePP(HP_LABEL, hp, type);
+//		addArcFeature(code, fv);
+//		addArcFeature(code | dist, fv);	
+//		
+//		code = createArcCodePP(HP_LABEL, hcp, type);
+//		addArcFeature(code, fv);
+//		addArcFeature(code | dist, fv);	
+//		
+//		if (feats[head] != null) {
+//			for (int f : feats[head]) {
+//				code = createArcCodePP(HP_LABEL, f, type);
+//				addArcFeature(code, fv);
+//				addArcFeature(code | dist, fv);	
+//			}
+//		}
+//		
+//		code = createArcCodeWP(MW_LABEL, mw, type);
+//		addArcFeature(code, fv);
+//		addArcFeature(code | dist, fv);	
+//		
+//		code = createArcCodePP(MP_LABEL, mp, type);
+//		addArcFeature(code, fv);
+//		addArcFeature(code | dist, fv);	
+//		
+//		code = createArcCodePP(MP_LABEL, mcp, type);
+//		addArcFeature(code, fv);
+//		addArcFeature(code | dist, fv);	
+//		
+//		if (feats[mod] != null) {
+//			for (int f : feats[mod]) {
+//				code = createArcCodePP(MP_LABEL, f, type);
+//				addArcFeature(code, fv);
+//				addArcFeature(code | dist, fv);	
+//			}
+//		}
+//		
+//		code = createArcCodeWPP(HW_MP_LABEL, hw, mp, type);
+//		addArcFeature(code, fv);
+//		addArcFeature(code | dist, fv);	
+//		
+//		code = createArcCodeWPP(HW_MP_LABEL, hw, mcp, type);
+//		addArcFeature(code, fv);
+//		addArcFeature(code | dist, fv);	
+//		
+//		code = createArcCodePPP(HP_MP_LABEL, hp, mp, type);
+//		addArcFeature(code, fv);
+//		addArcFeature(code | dist, fv);	
+//		
+//		code = createArcCodePPP(HP_MP_LABEL, hp, mcp, type);
+//		addArcFeature(code, fv);
+//		addArcFeature(code | dist, fv);	
+//		
+//		code = createArcCodePPP(HP_MP_LABEL, hcp, mp, type);
+//		addArcFeature(code, fv);
+//		addArcFeature(code | dist, fv);	
+//		
+//		code = createArcCodePPP(HP_MP_LABEL, hcp, mcp, type);
+//		addArcFeature(code, fv);
+//		addArcFeature(code | dist, fv);	
+//		
+//		code = createArcCodeWPP(MW_HP_LABEL, mw, hp, type);
+//		addArcFeature(code, fv);
+//		addArcFeature(code | dist, fv);	
+//		
+//		code = createArcCodeWPP(MW_HP_LABEL, mw, hcp, type);
+//		addArcFeature(code, fv);
+//		addArcFeature(code | dist, fv);	
+//		
+//		if (feats[head] != null) {
+//			for (int f : feats[head]) {
+//				code = createArcCodeWPP(MW_HP_LABEL, mw, f, type);
+//				addArcFeature(code, fv);
+//				addArcFeature(code | dist, fv);	
+//				
+//				code = createArcCodePPP(HP_MP_LABEL, f, mp, type);
+//				addArcFeature(code, fv);
+//				addArcFeature(code | dist, fv);
+//				
+//				code = createArcCodePPP(HP_MP_LABEL, f, mcp, type);
+//				addArcFeature(code, fv);
+//				addArcFeature(code | dist, fv);	
+//			}
+//		}
+//		
+//		if (feats[mod] != null) {
+//			for (int f : feats[mod]) {
+//				code = createArcCodeWPP(HW_MP_LABEL, hw, f, type);
+//				addArcFeature(code, fv);
+//				addArcFeature(code | dist, fv);
+//				
+//				code = createArcCodePPP(HP_MP_LABEL, hp, f, type);
+//				addArcFeature(code, fv);
+//				addArcFeature(code | dist, fv);
+//				
+//				code = createArcCodePPP(HP_MP_LABEL, hcp, f, type);
+//				addArcFeature(code, fv);
+//				addArcFeature(code | dist, fv);	
+//			}
+//		}
+//		
+//		{
+//			int pmw = mod > 0 ? forms[mod-1] : TOKEN_START;
+//			int pmp = mod > 0 ? pos[mod-1] : TOKEN_START;
+//			
+//			code = createArcCodePPP(HP_pMP_LABEL, hp, pmp, type);
+//			addArcFeature(code, fv);
+//			addArcFeature(code | dist, fv);
+//			
+//			code = createArcCodePPP(HP_pMP_LABEL, hcp, pmp, type);
+//			addArcFeature(code, fv);
+//			addArcFeature(code | dist, fv);
+//			
+//			code = createArcCodeWPP(HP_pMW_LABEL, pmw, hp, type);
+//			addArcFeature(code, fv);
+//			addArcFeature(code | dist, fv);
+//			
+//			code = createArcCodeWPP(HP_pMW_LABEL, pmw, hcp, type);
+//			addArcFeature(code, fv);
+//			addArcFeature(code | dist, fv);
+//			
+//			code = createArcCodePPP(MP_pMP_LABEL, mp, pmp, type);
+//			addArcFeature(code, fv);
+//			addArcFeature(code | dist, fv);
+//			
+//			code = createArcCodePPP(MP_pMP_LABEL, mcp, pmp, type);
+//			addArcFeature(code, fv);
+//			addArcFeature(code | dist, fv);
+//			
+//			code = createArcCodeWPP(MP_pMW_LABEL, pmw, mp, type);
+//			addArcFeature(code, fv);
+//			addArcFeature(code | dist, fv);
+//			
+//			code = createArcCodeWPP(MP_pMW_LABEL, pmw, mcp, type);
+//			addArcFeature(code, fv);
+//			addArcFeature(code | dist, fv);
+//		}
+//    	
+//		{
+//			int nmw = mod < inst.length-1 ? forms[mod+1] : TOKEN_END;
+//			int nmp = mod < inst.length-1 ? pos[mod+1] : TOKEN_END;
+//			
+//			code = createArcCodePPP(HP_nMP_LABEL, hp, nmp, type);
+//			addArcFeature(code, fv);
+//			addArcFeature(code | dist, fv);
+//			
+//			code = createArcCodePPP(HP_nMP_LABEL, hcp, nmp, type);
+//			addArcFeature(code, fv);
+//			addArcFeature(code | dist, fv);
+//			
+//			code = createArcCodeWPP(HP_nMW_LABEL, nmw, hp, type);
+//			addArcFeature(code, fv);
+//			addArcFeature(code | dist, fv);
+//			
+//			code = createArcCodeWPP(HP_nMW_LABEL, nmw, hcp, type);
+//			addArcFeature(code, fv);
+//			addArcFeature(code | dist, fv);
+//			
+//			code = createArcCodePPP(MP_nMP_LABEL, mp, nmp, type);
+//			addArcFeature(code, fv);
+//			addArcFeature(code | dist, fv);
+//			
+//			code = createArcCodePPP(MP_nMP_LABEL, mcp, nmp, type);
+//			addArcFeature(code, fv);
+//			addArcFeature(code | dist, fv);
+//			
+//			code = createArcCodeWPP(MP_nMW_LABEL, nmw, mp, type);
+//			addArcFeature(code, fv);
+//			addArcFeature(code | dist, fv);
+//			
+//			code = createArcCodeWPP(MP_nMW_LABEL, nmw, mcp, type);
+//			addArcFeature(code, fv);
+//			addArcFeature(code | dist, fv);
+//		}
+//		
+//    	return fv;
+//    }
     
 //    public FeatureVector createLabelFeatures(DependencyInstance inst, int word,
 //    		int type, boolean toRight, boolean isChild) 
@@ -2990,6 +3356,22 @@ public class DependencyPipe implements Serializable {
     	if (id >= 0) {
     		mat.addEntry(id, value);
     		if (id == numArcFeats) ++numArcFeats;
+    	}
+    }
+    
+    public void addLabeledArcFeature(long code, FeatureVector mat) {
+    	int id = labeledArcAlphabet.lookupIndex(code, numLabeledArcFeats);
+    	if (id >= 0) {
+    		mat.addEntry(id, 1.0);
+    		if (id == numLabeledArcFeats) ++numLabeledArcFeats;
+    	}
+    }
+    
+    public void addLabeledArcFeature(long code, double value, FeatureVector mat) {
+    	int id = labeledArcAlphabet.lookupIndex(code, numLabeledArcFeats);
+    	if (id >= 0) {
+    		mat.addEntry(id, value);
+    		if (id == numLabeledArcFeats) ++numLabeledArcFeats;
     	}
     }
     
