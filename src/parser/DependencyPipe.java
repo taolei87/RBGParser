@@ -3356,15 +3356,17 @@ public class DependencyPipe implements Serializable {
     }
     
     public void addLabeledArcFeature(long code, FeatureVector mat) {
-    	int hash = (int)((code ^ (code&0xffffffff00000000L) >>> 32)*31);
-    	int id = (hash < 0 ? -hash : hash) % 115911564;
+    	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
+    	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;
+    	if (id < 0)
+    		System.out.println(id + " " + hash + " " + code + " " + Math.abs(-2147483648));
     	mat.addEntry(id, 1.0);
     }
     
     public void addLabeledArcFeature(long code, double value, FeatureVector mat) {
-    	int hash = (int)((code ^ (code&0xffffffff00000000L) >>> 32)*31);
-    	int id = (hash < 0 ? -hash : hash) % 115911564;
+    	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
+    	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;
     	mat.addEntry(id, value);
     }
