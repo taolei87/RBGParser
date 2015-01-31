@@ -3,7 +3,6 @@ package parser.feature;
 
 import static parser.feature.FeatureTemplate.Arc.*;
 import static parser.feature.FeatureTemplate.Word.*;
-import gnu.trove.set.hash.TLongHashSet;
 
 import java.io.Serializable;
 
@@ -21,7 +20,7 @@ import utils.Alphabet;
 import utils.FeatureVector;
 import utils.Utils;
 
-public class SyntacticFeatureFactory implements Serializable {
+public class FastSyntacticFeatureFactory implements Serializable {
 
 	/**
 	 * 
@@ -47,35 +46,28 @@ public class SyntacticFeatureFactory implements Serializable {
 	
 	public int ccDepType;
 	
-	public int numArcFeats = 115911564;	// number of arc structure features
+	public int numArcFeats;				// number of arc structure features
 	public int numWordFeats;			// number of word features
 	public int numLabeledArcFeats = 115911564;
 	
-	private boolean stoppedGrowth;
-	private TLongHashSet featureHashSet;
 	private Alphabet wordAlphabet;		// the alphabet of word features (e.g. \phi_h, \phi_m)
-	//private Alphabet arcAlphabet;		// the alphabet of 1st order arc features (e.g. \phi_{h->m})
+	private Alphabet arcAlphabet;		// the alphabet of 1st order arc features (e.g. \phi_{h->m})
 	
-	public SyntacticFeatureFactory(Options options)
+	public FastSyntacticFeatureFactory(Options options)
 	{
 		this.options = options;
 		
 		wordAlphabet = new Alphabet();
-		//arcAlphabet = new Alphabet();
+		arcAlphabet = new Alphabet();
 		
-		stoppedGrowth = false;
-		featureHashSet = new TLongHashSet(100000);
-		
-		//numArcFeats = 0;
+		numArcFeats = 0;
 		numWordFeats = 0;
 	}
 	
 	public void closeAlphabets()
 	{
 		wordAlphabet.stopGrowth();
-		//arcAlphabet.stopGrowth();
-		
-		stoppedGrowth = true;
+		arcAlphabet.stopGrowth();
 	}
     public void initFeatureAlphabets(DependencyInstance inst) 
     {
@@ -190,7 +182,7 @@ public class SyntacticFeatureFactory implements Serializable {
 			
 			// global feature
 			if (options.useHO) {
-				FeatureVector fv = new FeatureVector(numArcFeats);
+				FeatureVector fv = new FeatureVector(arcAlphabet.size());
 				
 				// non-proj
 				for (int i = 0; i < n; ++i) {
@@ -334,7 +326,7 @@ public class SyntacticFeatureFactory implements Serializable {
     	
     	int attDist = getBinnedDistance(h-c);
     	
-    	FeatureVector fv = new FeatureVector(numArcFeats);
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
     	
     	addBasic1OFeatures(fv, inst, h, c, attDist);
     	
@@ -1484,7 +1476,7 @@ public class SyntacticFeatureFactory implements Serializable {
     public FeatureVector createTripsFeatureVector(DependencyInstance inst, int par,
     		int ch1, int ch2) {
 
-    	FeatureVector fv = new FeatureVector(numArcFeats);
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
     	
     	int[] pos = inst.postagids;
     	int[] posA = inst.cpostagids;
@@ -1689,7 +1681,7 @@ public class SyntacticFeatureFactory implements Serializable {
 
     public FeatureVector createSibFeatureVector(DependencyInstance inst, int ch1, int ch2/*, boolean isST*/) {
     	
-    	FeatureVector fv = new FeatureVector(numArcFeats);
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
 
     	int[] pos = inst.postagids;
     	int[] posA = inst.cpostagids;
@@ -1753,7 +1745,7 @@ public class SyntacticFeatureFactory implements Serializable {
     }
 
     public FeatureVector createHeadBiFeatureVector(DependencyInstance inst, int ch, int par1, int par2) {
-    	FeatureVector fv = new FeatureVector(numArcFeats);
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
     	
     	int[] pos = inst.postagids;
     	int[] posA = inst.cpostagids;
@@ -1806,7 +1798,7 @@ public class SyntacticFeatureFactory implements Serializable {
     		int gp, int par, int c, int type) 
     {
 
-    	FeatureVector fv = new FeatureVector(numArcFeats);
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
     	
     	int tid = type << 4;
     	
@@ -2095,7 +2087,7 @@ public class SyntacticFeatureFactory implements Serializable {
      ************************************************************************/
 
     public FeatureVector createGPSibFeatureVector(DependencyInstance inst, int par, int arg, int prev, int curr) {
-    	FeatureVector fv = new FeatureVector(numArcFeats);
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
 
     	int[] posA = inst.cpostagids;
         //int[] lemma = inst.lemmaids;
@@ -2141,7 +2133,7 @@ public class SyntacticFeatureFactory implements Serializable {
     }
 
     public FeatureVector createTriSibFeatureVector(DependencyInstance inst, int arg, int prev, int curr, int next) {
-    	FeatureVector fv = new FeatureVector(numArcFeats);
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
 
     	int[] posA = inst.cpostagids;
     	//int[] lemma = inst.lemmaids;
@@ -2231,7 +2223,7 @@ public class SyntacticFeatureFactory implements Serializable {
     }
 
     public FeatureVector createGGPCFeatureVector(DependencyInstance inst, int ggp, int gp, int par, int c) {
-    	FeatureVector fv = new FeatureVector(numArcFeats);
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
     	
     	int[] posA = inst.cpostagids;
     	int[] lemma = inst.lemmaids != null ? inst.lemmaids : inst.formids;
@@ -2324,7 +2316,7 @@ public class SyntacticFeatureFactory implements Serializable {
     }
 
     public FeatureVector createPSCFeatureVector(DependencyInstance inst, int par, int mod, int ch, int sib) {
-    	FeatureVector fv = new FeatureVector(numArcFeats);
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
     	
     	int[] posA = inst.cpostagids;
     	int[] lemma = inst.lemmaids != null ? inst.lemmaids : inst.formids;
@@ -2567,7 +2559,7 @@ public class SyntacticFeatureFactory implements Serializable {
     }
 
     public FeatureVector createPPFeatureVector(DependencyInstance inst, int gp, int par, int c) {
-    	FeatureVector fv = new FeatureVector(numArcFeats);
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
 
     	int[] posA = inst.cpostagids;
     	int[] lemma = inst.lemmaids != null ? inst.lemmaids : inst.formids;
@@ -2608,7 +2600,7 @@ public class SyntacticFeatureFactory implements Serializable {
     }
 
     public FeatureVector createCC1FeatureVector(DependencyInstance inst, int left, int arg, int right) {
-    	FeatureVector fv = new FeatureVector(numArcFeats);
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
     	
     	int[] pos = inst.postagids;
     	int[] word = inst.formids;
@@ -2656,7 +2648,7 @@ public class SyntacticFeatureFactory implements Serializable {
     }
 
     public FeatureVector createCC2FeatureVector(DependencyInstance inst, int arg, int head, int child) {
-    	FeatureVector fv = new FeatureVector(numArcFeats);
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
 
     	int[] pos = inst.postagids;
     	int[] word = inst.formids;
@@ -2721,7 +2713,7 @@ public class SyntacticFeatureFactory implements Serializable {
     }
 
     public FeatureVector createPNXFeatureVector(DependencyInstance inst, int head, int arg, int pair) {
-    	FeatureVector fv = new FeatureVector(numArcFeats);
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
     	
     	int[] pos = inst.postagids;
     	int[] word = inst.formids;
@@ -2742,7 +2734,7 @@ public class SyntacticFeatureFactory implements Serializable {
     }
 
     public FeatureVector createChildNumFeatureVector(DependencyInstance s, int id, int leftNum, int rightNum) {
-    	FeatureVector fv = new FeatureVector(numArcFeats);
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
     	
     	int childNum = Math.min(GlobalFeatureData.MAX_CHILD_NUM, leftNum + rightNum);
     	int HP = s.postagids[id];
@@ -2763,7 +2755,7 @@ public class SyntacticFeatureFactory implements Serializable {
     }
 
     public FeatureVector createSpanFeatureVector(DependencyInstance s, int id, int end, int punc, int bin) {
-    	FeatureVector fv = new FeatureVector(numArcFeats);
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
     	
     	int HP = s.postagids[id];
     	int HC = s.cpostagids[id];
@@ -2781,7 +2773,7 @@ public class SyntacticFeatureFactory implements Serializable {
     }
 
     public FeatureVector createNeighborFeatureVector(DependencyInstance s, int par, int id, int left, int right) {
-    	FeatureVector fv = new FeatureVector(numArcFeats);
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
     	
     	int HP = s.postagids[id];
     	int HC = s.cpostagids[id];
@@ -2870,7 +2862,7 @@ public class SyntacticFeatureFactory implements Serializable {
 
     public FeatureVector createNonprojFeatureVector(DependencyInstance inst, 
     		int num, int head, int mod) {
-    	FeatureVector fv = new FeatureVector(numArcFeats);
+    	FeatureVector fv = new FeatureVector(arcAlphabet.size());
 
     	int[] posA = inst.cpostagids;
     	int[] lemma = inst.lemmaids != null ? inst.lemmaids : inst.formids;
@@ -2937,35 +2929,28 @@ public class SyntacticFeatureFactory implements Serializable {
      *  
      ************************************************************************/
     
-    private int hashcode2int(long code)
-    {
-    	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
-    	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
-    	return id;
-    }
-    
     public void addArcFeature(long code, FeatureVector mat) {
-    	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
-    	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
-    	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;
-    	mat.addEntry(id, 1.0);
-    	if (!stoppedGrowth)
-    		featureHashSet.add(code);
+    	int id = arcAlphabet.lookupIndex(code, numArcFeats);
+    	if (id >= 0) {
+    		mat.addEntry(id, 1.0);
+    		if (id == numArcFeats) ++numArcFeats;
+    	}
     }
     
     public void addArcFeature(long code, double value, FeatureVector mat) {
-    	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
-    	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
-    	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;
-    	mat.addEntry(id, value);
-    	if (!stoppedGrowth)
-    		featureHashSet.add(code);
+    	int id = arcAlphabet.lookupIndex(code, numArcFeats);
+    	if (id >= 0) {
+    		mat.addEntry(id, value);
+    		if (id == numArcFeats) ++numArcFeats;
+    	}
     }
     
     public void addLabeledArcFeature(long code, FeatureVector mat) {
     	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
     	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;
+    	if (id < 0)
+    		System.out.println(id + " " + hash + " " + code + " " + Math.abs(-2147483648));
     	mat.addEntry(id, 1.0);
     }
     
@@ -3193,14 +3178,12 @@ public class SyntacticFeatureFactory implements Serializable {
     
     public void fillParameters(LowRankParam tensor, Parameters params) {
         //System.out.println(arcAlphabet.size());	
-    	long[] codes = //arcAlphabet.toArray();
-    					featureHashSet.toArray();
+    	long[] codes = arcAlphabet.toArray();
     	int[] x = new int[4];
     	
     	for (long code : codes) {
     		
-    		//int id = arcAlphabet.lookupIndex(code);
-    		int id = hashcode2int(code);
+    		int id = arcAlphabet.lookupIndex(code);
     		if (id < 0) continue;
     		
     		int dist = (int) extractDistanceCode(code);

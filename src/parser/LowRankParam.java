@@ -96,7 +96,8 @@ public class LowRankParam implements Comparator<Integer> {
 			double[] Ut2 = new double[M];
 			double[] Vt2 = new double[D];
 			int rank2 = SVD.svd(A2, M, D, S2, Ut2, Vt2);
-			Utils.Assert(rank2 == 1);
+			//System.out.println(rank2);
+			//Utils.Assert(rank2 == 1);
 
 			for (int j = 0; j < M; ++j)
 				params.V[i][j] = (Ut2[j] + invSqrtV * rnd.nextGaussian());
