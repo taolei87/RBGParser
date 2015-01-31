@@ -236,29 +236,6 @@ public class LocalFeatureData {
 			if (vis[y] && !isPruned(x, y)) traverse(y, vis);
 	}
 	
-//	public int[][] getStaticTypes() {
-//		
-//		int N = len, T = ntypes;
-//		int[][] staticTypes = new int[N][N];
-//		for (int i = 0; i < N; ++i)
-//			for (int j = 0; j < N; ++j) if (i != j) {
-//				
-//				int k = -1;
-//				double maxv = Double.NEGATIVE_INFINITY;				
-//				int toRight = i < j ? 1 : 0;	
-//				
-//				for (int t = 0; t < T; ++t) {
-//					double va = lbScores[i][t][toRight][0] + lbScores[j][t][toRight][1];
-//					if (va > maxv) {
-//						k = t;
-//						maxv = va;
-//					}
-//				}				
-//				staticTypes[i][j] = k;
-//			}
-//		return staticTypes;
-//	}
-	
 	public boolean isPruned(int h, int m) 
 	{
 		return isPruned[m*len+h];
@@ -273,12 +250,6 @@ public class LocalFeatureData {
     {
         return arcNtScores[h*len+m];
     }
-	
-	//public double getLabeledArcScore(int h, int m, int t)
-	//{
-	//	int toR = h < m ? 1 : 0;
-	//	return lbScores[h][t][toR][0] + lbScores[m][t][toR][1];
-	//}
 	
 	public double getTripsScore(int h, int m, int s) 
 	{

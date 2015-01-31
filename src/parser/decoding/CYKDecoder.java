@@ -12,7 +12,6 @@ public class CYKDecoder extends DependencyDecoder {
 	public CYKDecoder(Options options) {
 		this.options = options;
 		this.labelLossType = options.labelLossType;
-		System.out.println(options.gamma + " " + options.gammaLabel + " " + options.labelLossType + " " + options.learnLabel);
 	}
 	
 	@Override

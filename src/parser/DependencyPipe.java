@@ -248,7 +248,7 @@ public class DependencyPipe implements Serializable {
 		if (options.learnLabel)
 			synFactory.flagBits = synFactory.depNumBits + 4;
 		else
-			synFactory.flagBits = 0;
+			synFactory.flagBits = 4;
 		
 		types = new String[dictionaries.size(DEPLABEL)];	 
 		Dictionary labelDict = dictionaries.get(DEPLABEL);
@@ -264,7 +264,7 @@ public class DependencyPipe implements Serializable {
 		System.out.printf("Tag/label items: %d (%d bits)  %d (%d bits)%n", 
 				dictionaries.size(POS), synFactory.tagNumBits,
 				dictionaries.size(DEPLABEL), synFactory.depNumBits);
-		
+		System.out.printf("Flag Bits: %d%n", synFactory.flagBits);
 		System.out.printf("Creation took [%d ms]%n", System.currentTimeMillis() - start);
 	}
 

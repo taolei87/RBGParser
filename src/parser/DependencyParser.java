@@ -42,8 +42,7 @@ public class DependencyParser implements Serializable {
 	{
 		
 		Options options = new Options();
-		options.processArguments(args);
-		options.printOptions();
+		options.processArguments(args);		
 		
 		DependencyParser pruner = null;
 		if (options.train && options.pruning && options.learningMode != LearningMode.Basic) {
@@ -77,6 +76,7 @@ public class DependencyParser implements Serializable {
 		if (options.train) {
 			DependencyParser parser = new DependencyParser();
 			parser.options = options;
+			options.printOptions();
 			
 			DependencyPipe pipe = new DependencyPipe(options);
 			parser.pipe = pipe;
@@ -95,12 +95,11 @@ public class DependencyParser implements Serializable {
 		
 		if (options.test) {
 			DependencyParser parser = new DependencyParser();
-			parser.options = options;
+			parser.options = options;			
 			
 			parser.loadModel();
-			
-			if (!options.train && options.wordVectorFile != null)
-            	parser.pipe.loadWordVectors(options.wordVectorFile);
+			parser.options.processArguments(args);
+			if (!options.train) parser.options.printOptions(); 
 			
 			System.out.printf(" Evaluating: %s%n", options.testFile);
 			parser.evaluateSet(true, false);
@@ -114,6 +113,7 @@ public class DependencyParser implements Serializable {
     			new GZIPOutputStream(new FileOutputStream(options.modelFile)));
     	out.writeObject(pipe);
     	out.writeObject(parameters);
+    	out.writeObject(options);
     	if (options.pruning && options.learningMode != LearningMode.Basic) 
     		out.writeObject(pruner);
     	out.close();
@@ -125,6 +125,7 @@ public class DependencyParser implements Serializable {
                 new GZIPInputStream(new FileInputStream(options.modelFile)));    
         pipe = (DependencyPipe) in.readObject();
         parameters = (Parameters) in.readObject();
+        options = (Options) in.readObject();
         if (options.pruning && options.learningMode != LearningMode.Basic)
         	//pruner = (DependencyParser) in.readObject();
         	pruner = (BasicArcPruner) in.readObject();
@@ -377,8 +378,8 @@ public class DependencyParser implements Serializable {
     	}
     	
     	DependencyDecoder decoder = DependencyDecoder.createDependencyDecoder(options);   	
-    	int nUCorrect = 0, nLCorrect = 0;
-    	int nDeps = 0, nWhole = 0, nSents = 0;
+    	
+    	Evaluator eval = new Evaluator(options, pipe);
     	
 		long start = System.currentTimeMillis();
     	
@@ -386,32 +387,13 @@ public class DependencyParser implements Serializable {
     	while (inst != null) {
     		LocalFeatureData lfd = new LocalFeatureData(inst, this, true);
     		GlobalFeatureData gfd = new GlobalFeatureData(lfd); 
-    		
-    		++nSents;
-            
-            int nToks = 0;
-            if (evalWithPunc)
-    		    nToks = (inst.length - 1);
-            else {
-                for (int i = 1; i < inst.length; ++i) {
-                	if (inst.forms[i].matches("[-!\"#%&'()*,./:;?@\\[\\]_{}、]+")) continue;
-                    ++nToks;
-                }
-            }
-            nDeps += nToks;
+
     		    		
             DependencyInstance predInst = decoder.decode(inst, lfd, gfd, false);
             if (options.learnLabel)
             	lfd.predictLabels(predInst.heads, predInst.deplbids, false);
             
-    		int ua = evaluateUnlabelCorrect(inst, predInst, evalWithPunc), la = 0;
-    		if (options.learnLabel)
-    			la = evaluateLabelCorrect(inst, predInst, evalWithPunc);
-    		nUCorrect += ua;
-    		nLCorrect += la;
-    		if ((options.learnLabel && la == nToks) ||
-    				(!options.learnLabel && ua == nToks)) 
-    			++nWhole;
+            eval.add(inst, predInst, evalWithPunc);
     		
     		if (writer != null) {
     			inst.heads = predInst.heads;
@@ -425,18 +407,16 @@ public class DependencyParser implements Serializable {
     	reader.close();
     	if (writer != null) writer.close();
     	
-    	System.out.printf("  Tokens: %d%n", nDeps);
-    	System.out.printf("  Sentences: %d%n", nSents);
+    	System.out.printf("  Tokens: %d%n", eval.tot);
+    	System.out.printf("  Sentences: %d%n", eval.nsents);
     	System.out.printf("  UAS=%.6f\tLAS=%.6f\tCAS=%.6f\t[%ds]%n",
-    			(nUCorrect+0.0)/nDeps,
-    			(nLCorrect+0.0)/nDeps,
-    			(nWhole + 0.0)/nSents,
+    			eval.UAS(), eval.LAS(), eval.CAS(),
     			(System.currentTimeMillis() - start)/1000);
     	if (options.pruning && options.learningMode != LearningMode.Basic && pruner != null)
     		pruner.printPruningStats();
         
         decoder.shutdown();
 
-    	return (nUCorrect+0.0)/nDeps;
+        return eval.UAS();
     }
 }
