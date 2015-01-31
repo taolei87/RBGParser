@@ -16,7 +16,11 @@ public class DictionarySet implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	private static final String unseen = "#OTHERS#";
-	
+    private static final String token_start = "#TOKEN_START#"; 
+    private static final String token_end = "#TOKEN_END#";
+    private static final String token_mid = "#TOKEN_MID#";
+
+
 	public enum DictionaryTypes 
 	{
 		POS,
@@ -44,9 +48,29 @@ public class DictionarySet implements Serializable {
 			dicts[i] = new Dictionary();
 			int id = dicts[i].lookupIndex(unseen);	// id=1 means unseen item (pos,word,etc.)
 			Utils.Assert(id == 1);
+            if (i == DictionaryTypes.POS.ordinal())
+                initDict(DictionaryTypes.POS, dicts[i]);
+            if (i == DictionaryTypes.WORD.ordinal())
+                initDict(DictionaryTypes.WORD, dicts[i]);
 		}
 	}
-	
+    
+    private void initDict(DictionaryTypes tag, Dictionary dict)
+    {
+        int id = dict.lookupIndex(unseen);
+        Utils.Assert(id == 1);
+
+        // add special tokens for POS tags and words
+        if (tag == DictionaryTypes.POS || tag == DictionaryTypes.WORD) {
+            id = dict.lookupIndex(token_start);
+            Utils.Assert(id == 2);
+            id = dict.lookupIndex(token_end);
+            Utils.Assert(id == 3);
+            id = dict.lookupIndex(token_mid);
+            Utils.Assert(id == 4);
+        }
+    }
+
 	public int lookupIndex(DictionaryTypes tag, String item) 
 	{
 		int id = dicts[tag.ordinal()].lookupIndex(item);
@@ -117,7 +141,7 @@ public class DictionarySet implements Serializable {
 		}
 	
 		Dictionary filtered = new Dictionary();
-		filtered.lookupIndex(unseen);
+        initDict(tag, filtered);
 		for (Object obj : dicts[t].toArray()) {
 			int id = dicts[t].lookupIndex(obj);
 			int value = counters[t].get(id);
