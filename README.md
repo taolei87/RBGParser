@@ -1,18 +1,20 @@
 
-### RBGParser
+### RBGParser v1.1
+
+
 =========
 
-This project is developed at Natural Language Processing group in MIT. The project contains a Java implementation of a syntactic dependency parser with tensor decomposition, described in the following papers:
+#### About
 
-[1] Tao Lei, Yu Xin, Yuan Zhang, Regina Barzilay and Tommi Jaakkola. Low-Rank Tensors for Scoring Dependency Structures.  ACL 2014. [PDF](http://people.csail.mit.edu/taolei/papers/acl2014.pdf)
-
-[2] Yuan Zhang, Tao Lei, Regina Barzilay, Tommi Jaakkola and Amir Globerson. Steps to Excellence: Simple Inference with Refined Scoring of Dependency Trees.  ACL 2014. [PDF](http://people.csail.mit.edu/yuanzh/papers/acl2014.pdf)
-
-[3] Yuan Zhang\*, Tao Lei\*, Regina Barzilay and Tommi Jaakkola. Greed is Good if Randomized: New Inference for Dependency Parsing. EMNLP 2014. [PDF](http://people.csail.mit.edu/taolei/papers/emnlp2014.pdf)
+This project is developed at Natural Language Processing group in MIT. The project contains a Java implementation of a syntactic dependency parser with tensor decomposition, described in [1,2,3].
 
 This project is implemented by Tao Lei (taolei [at] csail.mit.edu) and Yuan Zhang (yuanzh [at] csail.mit.edu).
 
+
 =========
+
+#### Usage
+
 
 <br>
 
@@ -92,3 +94,15 @@ to 0.11 0.01 0.15 0.08 0.23
 ...
 ```
 There may be a special word \*UNKNOWN\* used for OOV (out-of-vocabulary) word. Each line should contain the same number of real numbers. 
+
+======
+
+#### References
+
+[1] Tao Lei, Yu Xin, Yuan Zhang, Regina Barzilay and Tommi Jaakkola. Low-Rank Tensors for Scoring Dependency Structures.  ACL 2014. [PDF](http://people.csail.mit.edu/taolei/papers/acl2014.pdf)
+
+[2] Yuan Zhang, Tao Lei, Regina Barzilay, Tommi Jaakkola and Amir Globerson. Steps to Excellence: Simple Inference with Refined Scoring of Dependency Trees.  ACL 2014. [PDF](http://people.csail.mit.edu/yuanzh/papers/acl2014.pdf)
+
+[3] Yuan Zhang\*, Tao Lei\*, Regina Barzilay and Tommi Jaakkola. Greed is Good if Randomized: New Inference for Dependency Parsing. EMNLP 2014. [PDF](http://people.csail.mit.edu/taolei/papers/emnlp2014.pdf)
+
+
