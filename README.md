@@ -1,6 +1,8 @@
 
 ### RBGParser v1.1
-
+  * Improved parsing speed -- feature index lookup using hash kernel (see [4])
+  * Improved labeled attachment score (LAS) 
+  * Slightly improved unlabeled attachment score (UAS) by modified online update method
 
 =========
 
@@ -10,11 +12,9 @@ This project is developed at Natural Language Processing group in MIT. The proje
 
 This project is implemented by Tao Lei (taolei [at] csail.mit.edu) and Yuan Zhang (yuanzh [at] csail.mit.edu).
 
-
 =========
 
 #### Usage
-
 
 <br>
 
@@ -105,4 +105,4 @@ There may be a special word \*UNKNOWN\* used for OOV (out-of-vocabulary) word. E
 
 [3] Yuan Zhang\*, Tao Lei\*, Regina Barzilay and Tommi Jaakkola. Greed is Good if Randomized: New Inference for Dependency Parsing. EMNLP 2014. [PDF](http://people.csail.mit.edu/taolei/papers/emnlp2014.pdf)
 
-
+[4] Bernd Bohnet. Very High Accuracy and Fast Dependency Parsing is not a Contradiction. The 23rd International Conference on Computational Linguistics. COLING 2010. [PDF](http://anthology.aclweb.org/C/C10/C10-1011.pdf)
