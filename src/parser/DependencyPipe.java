@@ -220,7 +220,8 @@ public class DependencyPipe implements Serializable {
 		
 		//dumpPathStats(pathCounts, pathlengthCounts);
 		
-		//dictionaries.filterDictionary(DEPLABEL);
+		dictionaries.filterDictionary(DEPLABEL);
+        dictionaries.filterDictionary(WORD);
 		dictionaries.closeCounters();
 		
 		synFactory.TOKEN_START = dictionaries.lookupIndex(POS, "#TOKEN_START#");
