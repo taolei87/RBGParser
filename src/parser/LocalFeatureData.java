@@ -351,14 +351,14 @@ public class LocalFeatureData {
 		return psc[pos].score;
 	}
 	
-	public double getPartialScore2(int[] heads, int x)
+	public double getPartialScore2(int[] heads, int x, DependencyArcList arcLis)
 	{
 		// 1st order arc
 		double score = arcScores[heads[x]*len+x];
 		
 		if (options.learningMode != LearningMode.Basic) {
 			
-			DependencyArcList arcLis = new DependencyArcList(heads);
+			//DependencyArcList arcLis = new DependencyArcList(heads);
 			
 			// 2nd order (h,m,s) & (m,s)
 			for (int h = 0; h < len; ++h) /*if (!isPruned(h, x)) (h != x)*/ {
@@ -484,14 +484,14 @@ public class LocalFeatureData {
 		return score;
 	}
 	
-	public double getPartialScore(int[] heads, int x)
+	public double getPartialScore(int[] heads, int x, DependencyArcList arcLis)
 	{
 		// 1st order arc
 		double score = arcScores[heads[x]*len+x];
 		
 		if (options.learningMode != LearningMode.Basic) {
 			
-			DependencyArcList arcLis = new DependencyArcList(heads);
+			//DependencyArcList arcLis = new DependencyArcList(heads);
 			
 			// 2nd order (h,m,s) & (m,s)
 			for (int h = 0; h < len; ++h) if /*(!isPruned(h, x))*/ (h != x) {
