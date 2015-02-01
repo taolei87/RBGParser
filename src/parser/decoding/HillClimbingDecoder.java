@@ -196,7 +196,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		
 		private double calcScore(int[] heads, int m)
 		{
-			double score = lfd.getPartialScore(heads, m)
+			double score = lfd.getPartialScore2(heads, m)
 						 + gfd.getScore(heads);
 //			if (options.learnLabel) {
 //				int t = staticTypes[heads[m]][m];
