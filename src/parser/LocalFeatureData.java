@@ -351,20 +351,155 @@ public class LocalFeatureData {
 		return psc[pos].score;
 	}
 	
-	public double getPartialScore(int[] heads, int x)
+	public double getPartialScore2(int[] heads, int x, DependencyArcList arcLis)
 	{
 		// 1st order arc
 		double score = arcScores[heads[x]*len+x];
 		
 		if (options.learningMode != LearningMode.Basic) {
 			
-			DependencyArcList arcLis = new DependencyArcList(heads);
+			//DependencyArcList arcLis = new DependencyArcList(heads);
 			
 			// 2nd order (h,m,s) & (m,s)
-			for (int h = 0; h < len; ++h) if (h != x) {
+			for (int h = 0; h < len; ++h) /*if (!isPruned(h, x)) (h != x)*/ {
 				
 				int st = arcLis.startIndex(h);
 				int ed = arcLis.endIndex(h);
+				
+				if (st >= ed || x < arcLis.get(st) || x > arcLis.get(ed-1) || isPruned(h, x)) continue;
+				
+				int gp = heads[h];
+				
+				for (int p = st; p+1 < ed; ++p) {
+					// mod and sib
+					int m = arcLis.get(p);
+					int s = arcLis.get(p+1);
+					
+					if (x < m) break;
+					
+					if (options.useCS && x <= s)
+						score += getTripsScore(h, m, s) + getSibScore(m, s);
+					
+					// tri-sibling
+					if (options.useTS && p + 2 < ed) {
+						int s2 = arcLis.get(p + 2);
+						if (x <= s2)
+							score += getTriSibScore(h, m, s, s2);
+					}	
+					
+					//if (x < m) break;
+					if (x > s) continue;
+					
+					// gp-sibling
+					if (options.useGS && gp >= 0 /*&& m <= x && x <= s*/)
+						score += getGPSibScore(gp, h, m, s);
+					
+					// parent, sibling and child
+					if (options.usePSC) {
+						// mod's child
+						int mst = arcLis.startIndex(m);
+						int med = arcLis.endIndex(m);
+						
+						for (int mp = mst; mp < med; ++mp) {
+							int c = arcLis.get(mp);
+							//if ((m <= x && x <= s) || x == c)
+							score += getPSCScore(h, m, c, s);
+						}
+						
+						// sib's child
+						int sst = arcLis.startIndex(s);
+						int sed = arcLis.endIndex(s);
+						
+						for (int sp = sst; sp < sed; ++sp) {
+							int c = arcLis.get(sp);
+							//if ((m <= x && x <= s) || x == c)
+							score += getPSCScore(h, s, c, m);
+						}
+					}
+				}
+			}
+			
+			// g--x--m&s
+			if (options.useGS) {
+				int gp = heads[x];
+				int st = arcLis.startIndex(x);
+				int ed = arcLis.endIndex(x);
+				for (int p = st; p+1 < ed; ++p) {
+					// mod and sib
+					int m = arcLis.get(p);
+					int s = arcLis.get(p+1);
+					score += getGPSibScore(gp, x, m, s);
+				}
+			}
+			
+			// h--m&m2--x
+			if (options.usePSC) {
+				int m = heads[x];
+				int h = heads[m];
+				if (h >= 0) {
+					int st = arcLis.startIndex(h);
+					int ed = arcLis.endIndex(h);
+					int p;
+					for (p = st; p < ed; ++p) 
+						if (arcLis.get(p) == m) break;
+					Utils.Assert(p < ed);
+					if (p > st)
+						score += getPSCScore(h, m, x, arcLis.get(p-1));
+					if (p+1 < ed)
+						score += getPSCScore(h, m, x, arcLis.get(p+1));
+				}
+			}
+			
+			// g--h--m;  gg--h--m;  h--m h'--m+1 
+			for (int m = 1; m < len; ++m) {
+				int h = heads[m];
+				
+				Utils.Assert(h >= 0);
+				
+				// grandparent
+				int gp = heads[h];
+				if (options.useGP && gp != -1
+						&& (x == m || x == h)) {
+					score += getGPCScore(gp, h, m);
+				}
+				
+				// head bigram
+				if (options.useHB && m + 1 < len
+						&& (x == m || x == m + 1)) {
+					int h2 = heads[m + 1];
+					Utils.Assert(h2 >= 0);
+					
+					score += getHeadBiScore(h, m, h2);
+				}
+
+				// great-grandparent
+				if (options.useGGP && gp != -1 && heads[gp] != -1
+						&& (x == m || x == h || x == gp)) {
+					int ggp = heads[gp];
+					score += getGGPCScore(ggp, gp, h, m);
+				}
+			}
+		}
+		
+		return score;
+	}
+	
+	public double getPartialScore(int[] heads, int x, DependencyArcList arcLis)
+	{
+		// 1st order arc
+		double score = arcScores[heads[x]*len+x];
+		
+		if (options.learningMode != LearningMode.Basic) {
+			
+			//DependencyArcList arcLis = new DependencyArcList(heads);
+			
+			// 2nd order (h,m,s) & (m,s)
+			for (int h = 0; h < len; ++h) if /*(!isPruned(h, x))*/ (h != x) {
+				
+				int st = arcLis.startIndex(h);
+				int ed = arcLis.endIndex(h);
+				
+				if (st >= ed || x < arcLis.get(st) || x > arcLis.get(ed-1)) continue;
 				
 				for (int p = st; p+1 < ed; ++p) {
 					// mod and sib
@@ -474,7 +609,7 @@ public class LocalFeatureData {
 		
 		if (options.learningMode != LearningMode.Basic) {
 			
-			DependencyArcList arcLis = new DependencyArcList(heads);
+			DependencyArcList arcLis = new DependencyArcList(heads, options.useHO);
 			
 			// 2nd order (h,m,s) & (m,s)
 			for (int h = 0; h < len; ++h) {
@@ -574,7 +709,7 @@ public class LocalFeatureData {
 		
 		if (options.learningMode != LearningMode.Basic) {
 			
-			DependencyArcList arcLis = new DependencyArcList(heads);
+			DependencyArcList arcLis = new DependencyArcList(heads, options.useHO);
 			
 			// 2nd order (h,m,s) & (m,s)
 			for (int h = 0; h < len; ++h) {
@@ -829,7 +964,7 @@ public class LocalFeatureData {
 	public void predictLabels(int[] heads, int[] deplbids, boolean addLoss)
 	{
 		assert(heads.length == len);
-		DependencyArcList arcLis = new DependencyArcList(heads);
+		DependencyArcList arcLis = new DependencyArcList(heads, options.useHO);
 		int T = ntypes;
 		for (int mod = 1; mod < len; ++mod) {
 			int head = heads[mod];
@@ -862,7 +997,7 @@ public class LocalFeatureData {
     	int[] actLabs = gold.deplbids;
     	int[] predDeps = pred.heads;
     	int[] predLabs = pred.deplbids;
-    	DependencyArcList arcLis = new DependencyArcList(gold.heads);
+    	DependencyArcList arcLis = new DependencyArcList(gold.heads, options.useHO);
     	
     	for (int mod = 1; mod < N; ++mod) {
     		int type = actLabs[mod];

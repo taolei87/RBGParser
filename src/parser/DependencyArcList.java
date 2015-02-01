@@ -8,37 +8,43 @@ public class DependencyArcList {
 	public int[] left, right;		// span
 	public int[] nonproj;			// non-proj
 	
-	public DependencyArcList(int n)
+	public DependencyArcList(int n, boolean useHO)
 	{
 		this.n = n;
 		st = new int[n];
 		edges = new int[n];
-		left = new int[n];
-		right = new int[n];
-		nonproj = new int[n];
+		if (useHO) {
+			left = new int[n];
+			right = new int[n];
+			nonproj = new int[n];
+		}
 	}
 	
-	public DependencyArcList(int[] heads)
+	public DependencyArcList(int[] heads, boolean useHO)
 	{
 		n = heads.length;
 		st = new int[n];
 		edges = new int[n];
-		left = new int[n];
-		right = new int[n];
-		nonproj = new int[n];
 		constructDepTreeArcList(heads);
-		constructSpan();
-		constructNonproj(heads);
+		if (useHO) {
+			left = new int[n];
+			right = new int[n];
+			nonproj = new int[n];
+			constructSpan();
+			constructNonproj(heads);
+		}
 	}
 	
-	public void resize(int n)
+	public void resize(int n, boolean useHO)
 	{
 		if (n > st.length) {
 			st = new int[n];
 			edges = new int[n];
-			left = new int[n];
-			right = new int[n];
-			nonproj = new int[n];
+			if (useHO) {
+				left = new int[n];
+				right = new int[n];
+				nonproj = new int[n];
+			}
 		}
 		this.n = n;
 	}
@@ -97,6 +103,73 @@ public class DependencyArcList {
 //		for (int i = 1; i < n; ++i) {
 //			Utils.Assert(!isAncestorOf(heads, i, heads[i]));
 //		}
+	}
+	
+	public void update(int m, int oldH, int newH, int[] heads) {
+		updateDepTreeArcList(m, oldH, newH);
+		if (left != null && right != null)
+			constructSpan();
+		if (nonproj != null)
+			constructNonproj(heads);
+	}
+	
+	public void updateDepTreeArcList(int m, int oldH, int newH) {
+		//System.out.println("m: " + m + " oldH: " + oldH + " newH: " + newH);
+		if (oldH == newH)
+			return;
+		// update the head of m from oldH to newH
+		if (oldH < newH) {
+			int end = endIndex(oldH);
+			int pos = startIndex(oldH);
+			for (; pos < end; ++pos)
+				if (edges[pos] == m)
+					break;
+			//Utils.Assert(pos < end);
+			// update oldH
+			for (; pos < end - 1; ++pos)
+				edges[pos] = edges[pos + 1];
+			// update oldH + 1 to newH - 1
+			for (int i = oldH + 1; i < newH; ++i) {
+				--st[i];
+				end = endIndex(i);
+				for (; pos < end - 1; ++pos)
+					edges[pos] = edges[pos + 1];
+			}
+			// update newH
+			st[newH]--;
+			end = endIndex(newH);
+			while (pos < end - 1 && edges[pos + 1] < m) {
+				edges[pos] = edges[pos + 1];
+				++pos;
+			}
+			edges[pos] = m;
+		}
+		else {
+			int start = startIndex(oldH);
+			int pos = endIndex(oldH) - 1;
+			for (; pos >= start; --pos)
+				if (edges[pos] == m)
+					break;
+			//Utils.Assert(pos >= start);
+			// update oldH
+			for (; pos > start; --pos)
+				edges[pos] = edges[pos - 1];
+			++st[oldH];
+			// update oldH - 1 to newH + 1
+			for (int i = oldH - 1; i > newH; --i) {
+				start = startIndex(i);
+				for (; pos > start; --pos)
+					edges[pos] = edges[pos - 1];
+				++st[i];
+			}
+			// update newH
+			start = startIndex(newH);
+			while (pos > start && edges[pos - 1] > m) {
+				edges[pos] = edges[pos - 1];
+				--pos;
+			}
+			edges[pos] = m;
+		}
 	}
 	
 	private boolean isAncestorOf(int[] heads, int par, int ch) 
