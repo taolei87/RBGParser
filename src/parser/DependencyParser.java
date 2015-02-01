@@ -298,7 +298,10 @@ public class DependencyParser implements Serializable {
 	  			System.out.println(); 
                 if (options.average) 
                 	parameters.averageParameters((iIter+1)*N);
+                int cnvg = options.numTestConverge;
+                options.numTestConverge = options.numTrainConverge;
 	  			double res = evaluateSet(false, false);
+                options.numTestConverge = cnvg;
                 System.out.println();
 	  			System.out.println("_____________________________________________");
 	  			System.out.println();
