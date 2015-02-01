@@ -88,7 +88,7 @@ public class SyntacticFeatureFactory implements Serializable {
         int[] heads = inst.heads;
         int[] deplbids = inst.deplbids;
     	
-        DependencyArcList arcLis = new DependencyArcList(heads);
+        DependencyArcList arcLis = new DependencyArcList(heads, options.useHO);
         
         // 1st order arc
         for (int i = 0; i < n; ++i) {

@@ -8,37 +8,43 @@ public class DependencyArcList {
 	public int[] left, right;		// span
 	public int[] nonproj;			// non-proj
 	
-	public DependencyArcList(int n)
+	public DependencyArcList(int n, boolean useHO)
 	{
 		this.n = n;
 		st = new int[n];
 		edges = new int[n];
-		//left = new int[n];
-		//right = new int[n];
-		//nonproj = new int[n];
+		if (useHO) {
+			left = new int[n];
+			right = new int[n];
+			nonproj = new int[n];
+		}
 	}
 	
-	public DependencyArcList(int[] heads)
+	public DependencyArcList(int[] heads, boolean useHO)
 	{
 		n = heads.length;
 		st = new int[n];
 		edges = new int[n];
-		//left = new int[n];
-		//right = new int[n];
-		//nonproj = new int[n];
 		constructDepTreeArcList(heads);
-		//constructSpan();
-		//constructNonproj(heads);
+		if (useHO) {
+			left = new int[n];
+			right = new int[n];
+			nonproj = new int[n];
+			constructSpan();
+			constructNonproj(heads);
+		}
 	}
 	
-	public void resize(int n)
+	public void resize(int n, boolean useHO)
 	{
 		if (n > st.length) {
 			st = new int[n];
 			edges = new int[n];
-			left = new int[n];
-			right = new int[n];
-			nonproj = new int[n];
+			if (useHO) {
+				left = new int[n];
+				right = new int[n];
+				nonproj = new int[n];
+			}
 		}
 		this.n = n;
 	}
@@ -97,6 +103,14 @@ public class DependencyArcList {
 //		for (int i = 1; i < n; ++i) {
 //			Utils.Assert(!isAncestorOf(heads, i, heads[i]));
 //		}
+	}
+	
+	public void update(int m, int oldH, int newH, int[] heads) {
+		updateDepTreeArcList(m, oldH, newH);
+		if (left != null && right != null)
+			constructSpan();
+		if (nonproj != null)
+			constructNonproj(heads);
 	}
 	
 	public void updateDepTreeArcList(int m, int oldH, int newH) {

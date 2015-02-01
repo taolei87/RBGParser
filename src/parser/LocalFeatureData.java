@@ -609,7 +609,7 @@ public class LocalFeatureData {
 		
 		if (options.learningMode != LearningMode.Basic) {
 			
-			DependencyArcList arcLis = new DependencyArcList(heads);
+			DependencyArcList arcLis = new DependencyArcList(heads, options.useHO);
 			
 			// 2nd order (h,m,s) & (m,s)
 			for (int h = 0; h < len; ++h) {
@@ -709,7 +709,7 @@ public class LocalFeatureData {
 		
 		if (options.learningMode != LearningMode.Basic) {
 			
-			DependencyArcList arcLis = new DependencyArcList(heads);
+			DependencyArcList arcLis = new DependencyArcList(heads, options.useHO);
 			
 			// 2nd order (h,m,s) & (m,s)
 			for (int h = 0; h < len; ++h) {
@@ -964,7 +964,7 @@ public class LocalFeatureData {
 	public void predictLabels(int[] heads, int[] deplbids, boolean addLoss)
 	{
 		assert(heads.length == len);
-		DependencyArcList arcLis = new DependencyArcList(heads);
+		DependencyArcList arcLis = new DependencyArcList(heads, options.useHO);
 		int T = ntypes;
 		for (int mod = 1; mod < len; ++mod) {
 			int head = heads[mod];
@@ -997,7 +997,7 @@ public class LocalFeatureData {
     	int[] actLabs = gold.deplbids;
     	int[] predDeps = pred.heads;
     	int[] predLabs = pred.deplbids;
-    	DependencyArcList arcLis = new DependencyArcList(gold.heads);
+    	DependencyArcList arcLis = new DependencyArcList(gold.heads, options.useHO);
     	
     	for (int mod = 1; mod < N; ++mod) {
     		int type = actLabs[mod];

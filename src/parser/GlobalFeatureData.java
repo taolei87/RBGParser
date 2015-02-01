@@ -269,7 +269,7 @@ public class GlobalFeatureData {
 		int[] heads = now.heads;
 		int[] toks = now.formids;
 		int len = now.length;
-		DependencyArcList arcLis = new DependencyArcList(heads);
+		DependencyArcList arcLis = new DependencyArcList(heads, lfd.options.useHO);
 		
 		// non-proj
 		for (int i = 0; i < len; ++i) {
@@ -394,7 +394,7 @@ public class GlobalFeatureData {
 		
 		int[] toks = now.formids;
 		int len = now.length;
-		DependencyArcList arcLis = new DependencyArcList(heads);
+		DependencyArcList arcLis = new DependencyArcList(heads, lfd.options.useHO);
 		
 		// non-proj
 		for (int i = 0; i < len; ++i) {
