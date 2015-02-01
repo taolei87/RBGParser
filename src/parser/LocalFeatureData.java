@@ -1,12 +1,16 @@
 package parser;
 
+import java.util.Arrays;
+
 import parser.Options.LearningMode;
 import parser.decoding.DependencyDecoder;
 import utils.FeatureVector;
 import utils.Utils;
 
 public class LocalFeatureData {
-		
+	
+	static double NULL = Double.NEGATIVE_INFINITY;
+	
 	DependencyInstance inst;
 	DependencyPipe pipe;
 	Options options;
@@ -34,25 +38,39 @@ public class LocalFeatureData {
 
 	//FeatureVector[][][][] lbFvs;	// labeled-arc feature vectors
 	//double[][][][] lbScores;		// labeled-arc scores
-	
-	//TODO: add high order feature vectors and score tables
-	
-	FeatureDataItem[] trips;		// [dep id][sib]
-	
-	FeatureDataItem[] sib;			// [mod][sib]
-	
-	FeatureDataItem[] gpc;			// [dep id][child]
 
-	FeatureDataItem[] headbi;		// [dep id][head2]
+	
+//	FeatureDataItem[] trips;		// [dep id][sib]
+//	
+//	FeatureDataItem[] sib;			// [mod][sib]
+//	
+//	FeatureDataItem[] gpc;			// [dep id][child]
+//
+//	FeatureDataItem[] headbi;		// [dep id][head2]
+//
+//	FeatureDataItem[] gpsib;		// grandparent-parent-child-sibling, gp-p is mapped to id [dep id][sib][mod]
+//
+//	FeatureDataItem[] trisib;		// parent-sibling-child-sibling [dep id][in sib][out sib]
+//	
+//	FeatureDataItem[] ggpc;			// [dep id (ggp, gp)][dep id (p, mod)]
+//	
+//	FeatureDataItem[] psc;			// parent-sib-mod-child, [dep id (p, sib)][dep id (mod, child)]
+	
+	double[] trips;			// [dep id][sib]
+	
+	double[] sib;			// [mod][sib]
+	
+	double[] gpc;			// [dep id][child]
 
-	FeatureDataItem[] gpsib;		// grandparent-parent-child-sibling, gp-p is mapped to id [dep id][sib][mod]
+	double[] headbi;		// [dep id][head2]
 
-	FeatureDataItem[] trisib;		// parent-sibling-child-sibling [dep id][in sib][out sib]
+	double[] gpsib;			// grandparent-parent-child-sibling, gp-p is mapped to id [dep id][sib][mod]
+
+	double[] trisib;		// parent-sibling-child-sibling [dep id][in sib][out sib]
 	
-	FeatureDataItem[] ggpc;			// [dep id (ggp, gp)][dep id (p, mod)]
+	double[] ggpc;			// [dep id (ggp, gp)][dep id (p, mod)]
 	
-	FeatureDataItem[] psc;			// parent-sib-mod-child, [dep id (p, sib)][dep id (mod, child)]
-	
+	double[] psc;			// parent-sib-mod-child, [dep id (p, sib)][dep id (mod, child)]
 	
 	public LocalFeatureData(DependencyInstance inst,
 			DependencyParser parser, boolean indexGoldArcs) 
@@ -136,40 +154,56 @@ public class LocalFeatureData {
 		
 		if (options.useCS) {
 			// 2nd order (head, mod, mod_sib) features
-			trips = new FeatureDataItem[nuparcs*len];	
+			//trips = new FeatureDataItem[nuparcs*len];
+			trips = new double[nuparcs*len];
+			Arrays.fill(trips, NULL);
 			
 			// 2nd order (mod, mod_sib) features
-			sib = new FeatureDataItem[len*len];
+			//sib = new FeatureDataItem[len*len];
+			sib = new double[len*len];
+			Arrays.fill(sib, NULL);
 		}
 		
 		if (options.useGP) {
 			// 2nd order (head, mod, child) features
-			gpc = new FeatureDataItem[nuparcs*len];
+			//gpc = new FeatureDataItem[nuparcs*len];
+			gpc = new double[nuparcs*len];
+			Arrays.fill(gpc, NULL);
 		}
 		
 		if (options.useHB) {
 			// 2nd order (head, mod, head2) features
-			headbi = new FeatureDataItem[nuparcs*len];
+			//headbi = new FeatureDataItem[nuparcs*len];
+			headbi = new double[nuparcs*len];
+			Arrays.fill(headbi, NULL);
 		}
 		
 		if (options.useGS) {
 			// 3rd order (grand, head, sib, mod) features
-			gpsib = new FeatureDataItem[nuparcs*len*len];
+			//gpsib = new FeatureDataItem[nuparcs*len*len];
+			gpsib = new double[nuparcs*len*len];
+			Arrays.fill(gpsib, NULL);
 		}
 		
 		if (options.useTS) {
 			// 3rd order (head, sib1, mod, sib2) features
-			trisib = new FeatureDataItem[nuparcs*len*len];
+			//trisib = new FeatureDataItem[nuparcs*len*len];
+			trisib = new double[nuparcs*len*len];
+			Arrays.fill(trisib, NULL);
 		}
 		
 		if (options.useGGP) {
 			// 3rd order (great-grand, grand, head, mod) features
-			ggpc = new FeatureDataItem[nuparcs*nuparcs];
+			//ggpc = new FeatureDataItem[nuparcs*nuparcs];
+			ggpc = new double[nuparcs*nuparcs];
+			Arrays.fill(ggpc, NULL);
 		}
 
 		if (options.usePSC) {
 			// 3rd order (head, mod, sib, child) features
-			psc = new FeatureDataItem[nuparcs*nuparcs];
+			//psc = new FeatureDataItem[nuparcs*nuparcs];
+			psc = new double[nuparcs*nuparcs];
+			Arrays.fill(psc, NULL);
 		}
 	}
 	
@@ -229,12 +263,12 @@ public class LocalFeatureData {
 		}
 	}
 	
-	private void traverse(int x, boolean[] vis)
-	{
-		vis[x] = false;
-		for (int y = 1; y < len; ++y)
-			if (vis[y] && !isPruned(x, y)) traverse(y, vis);
-	}
+//	private void traverse(int x, boolean[] vis)
+//	{
+//		vis[x] = false;
+//		for (int y = 1; y < len; ++y)
+//			if (vis[y] && !isPruned(x, y)) traverse(y, vis);
+//	}
 	
 	public boolean isPruned(int h, int m) 
 	{
@@ -258,19 +292,19 @@ public class LocalFeatureData {
 		Utils.Assert(id >= 0 && arc2id[s*len+h] >= 0);
 		
 		int pos = id*len+s;
-		if (trips[pos] == null)
+		if (trips[pos] == NULL)
 			getTripsFeatureVector(h, m, s);
 		
-		return trips[pos].score;
+		return trips[pos];
 	}
 	
 	public double getSibScore(int m, int s)
 	{
 		int pos = m*len+s;
-		if (sib[pos] == null)
+		if (sib[pos] == NULL)
 			getSibFeatureVector(m, s);
 		
-		return sib[pos].score;
+		return sib[pos];
 	}
 	
 	
@@ -280,10 +314,10 @@ public class LocalFeatureData {
 		Utils.Assert(id >= 0 && arc2id[m*len+h] >= 0);
 		
 		int pos = id*len+m;
-		if (gpc[pos] == null)
+		if (gpc[pos] == NULL)
 			getGPCFeatureVector(gp, h, m);
 		
-		return gpc[pos].score;
+		return gpc[pos];
 	}
 	
 	public double getHeadBiScore(int h, int m, int h2) {
@@ -293,10 +327,10 @@ public class LocalFeatureData {
 				&& arc2id[(m + 1)*len+h2] >= 0);
 		
 		int pos = id*len+h2;
-		if (headbi[pos] == null)
+		if (headbi[pos] == NULL)
 			getHeadBiFeatureVector(h, m, h2);
 
-		return headbi[pos].score;
+		return headbi[pos];
 	}
 	
 	public double getGPSibScore(int gp, int h, int m, int s) {
@@ -306,10 +340,10 @@ public class LocalFeatureData {
 		Utils.Assert(id >= 0 && arc2id[m*len+h] >= 0 && arc2id[s*len+h] >= 0);
 		
 		int pos = (id*len+m)*len+s;
-		if (gpsib[pos] == null)
+		if (gpsib[pos] == NULL)
 			getGPSibFeatureVector(gp, h, m, s);
 		
-		return gpsib[pos].score;
+		return gpsib[pos];
 	}
 	
 	public double getTriSibScore(int h, int s1, int m, int s2) {
@@ -319,10 +353,10 @@ public class LocalFeatureData {
 		Utils.Assert(id >= 0 && arc2id[s1*len+h] >= 0 && arc2id[s2*len+h] >= 0);
 		
 		int pos = (id*len+s1)*len+s2;
-		if (trisib[pos] == null)
+		if (trisib[pos] == NULL)
 			getTriSibFeatureVector(h, s1, m, s2);
 		
-		return trisib[pos].score;
+		return trisib[pos];
 	}
 	
 	public double getGGPCScore(int ggp, int gp, int h, int m) {
@@ -332,10 +366,10 @@ public class LocalFeatureData {
 		Utils.Assert(id1 >= 0 && id2 >= 0 && arc2id[h * len + gp] >= 0);
 		
 		int pos = id1 * nuparcs + id2;
-		if (ggpc[pos] == null)
+		if (ggpc[pos] == NULL)
 			getGGPCFeatureVector(ggp, gp, h, m);
 
-		return ggpc[pos].score;
+		return ggpc[pos];
 	}
 	
 	public double getPSCScore(int h, int m, int c, int sib) {
@@ -345,10 +379,10 @@ public class LocalFeatureData {
 		Utils.Assert(id1 >= 0 && id2 >= 0 && arc2id[m * len + h] >= 0);
 		
 		int pos = id1 * nuparcs + id2;
-		if (psc[pos] == null)
+		if (psc[pos] == NULL)
 			getPSCFeatureVector(h, m, c, sib);
 
-		return psc[pos].score;
+		return psc[pos];
 	}
 	
 	public double getPartialScore2(int[] heads, int x, DependencyArcList arcLis)
@@ -800,27 +834,17 @@ public class LocalFeatureData {
 		Utils.Assert(id >= 0 && arc2id[s*len+h] >= 0);
 		
 		int pos = id*len+s;
-		FeatureDataItem item = trips[pos];
-		if (item == null) {
-			FeatureVector fv = pipe.synFactory.createTripsFeatureVector(inst, h, m, s);
-			double score = parameters.dotProduct(fv) * gamma;
-			item = new FeatureDataItem(fv, score);
-			trips[pos] = item;			
-		}
-		return item.fv;
+		FeatureVector fv = pipe.synFactory.createTripsFeatureVector(inst, h, m, s);
+		trips[pos] = parameters.dotProduct(fv) * gamma;			
+		return fv;
 	}
 	
 	public FeatureVector getSibFeatureVector(int m, int s)
 	{
-		int pos = m*len+s;
-		FeatureDataItem item = sib[pos];
-		if (item == null) {					
-			FeatureVector fv = pipe.synFactory.createSibFeatureVector(inst, m, s/*, false*/);
-			double score = parameters.dotProduct(fv) * gamma;
-			item = new FeatureDataItem(fv, score);
-			sib[pos] = item;
-		}
-		return item.fv;
+		int pos = m*len+s;				
+		FeatureVector fv = pipe.synFactory.createSibFeatureVector(inst, m, s/*, false*/);
+		sib[pos] = parameters.dotProduct(fv) * gamma;
+		return fv;
 	}
 	
 	public FeatureVector getGPCFeatureVector(int gp, int h, int m) {
@@ -829,14 +853,9 @@ public class LocalFeatureData {
 		Utils.Assert(id >= 0 && arc2id[m*len+h] >= 0);
 		
 		int pos = id*len+m;
-		FeatureDataItem item = gpc[pos];
-		if (item == null) {
-			FeatureVector fv = pipe.synFactory.createGPCFeatureVector(inst, gp, h, m);
-			double score = parameters.dotProduct(fv) * gamma;
-			item = new FeatureDataItem(fv, score);
-			gpc[pos] = item;			
-		}
-		return item.fv;
+		FeatureVector fv = pipe.synFactory.createGPCFeatureVector(inst, gp, h, m);
+		gpc[pos] = parameters.dotProduct(fv) * gamma;
+		return fv;
 	}
 	
 	public FeatureVector getHeadBiFeatureVector(int h, int m, int h2) {
@@ -846,14 +865,10 @@ public class LocalFeatureData {
 				&& arc2id[(m + 1)*len+h2] >= 0);
 		
 		int pos = id*len+h2;
-		FeatureDataItem item = headbi[pos];
-		if (item == null) {
-			FeatureVector fv = pipe.synFactory.createHeadBiFeatureVector(inst, m, h, h2);
-			double score = parameters.dotProduct(fv) * gamma;
-			item = new FeatureDataItem(fv, score);
-			headbi[pos] = item;			
-		}
-		return item.fv;
+
+		FeatureVector fv = pipe.synFactory.createHeadBiFeatureVector(inst, m, h, h2);
+		headbi[pos] = parameters.dotProduct(fv) * gamma;
+		return fv;
 	}
 	
 	public FeatureVector getGPSibFeatureVector(int gp, int h, int m, int s) {
@@ -863,14 +878,9 @@ public class LocalFeatureData {
 		Utils.Assert(id >= 0 && arc2id[m*len+h] >= 0 && arc2id[s*len+h] >= 0);
 		
 		int pos = (id*len+m)*len+s;
-		FeatureDataItem item = gpsib[pos];
-		if (item == null) {
-			FeatureVector fv = pipe.synFactory.createGPSibFeatureVector(inst, gp, h, m, s);
-			double score = parameters.dotProduct(fv) * gamma;
-			item = new FeatureDataItem(fv, score);
-			gpsib[pos] = item;			
-		}
-		return item.fv;
+		FeatureVector fv = pipe.synFactory.createGPSibFeatureVector(inst, gp, h, m, s);
+		gpsib[pos] = parameters.dotProduct(fv) * gamma;
+		return fv;
 	}
 	
 	public FeatureVector getTriSibFeatureVector(int h, int s1, int m, int s2) {
@@ -880,14 +890,9 @@ public class LocalFeatureData {
 		Utils.Assert(id >= 0 && arc2id[s1*len+h] >= 0 && arc2id[s2*len+h] >= 0);
 		
 		int pos = (id*len+s1)*len+s2;
-		FeatureDataItem item = trisib[pos];
-		if (item == null) {
-			FeatureVector fv = pipe.synFactory.createTriSibFeatureVector(inst, h, s1, m, s2);
-			double score = parameters.dotProduct(fv) * gamma;
-			item = new FeatureDataItem(fv, score);
-			trisib[pos] = item;			
-		}
-		return item.fv;
+		FeatureVector fv = pipe.synFactory.createTriSibFeatureVector(inst, h, s1, m, s2);
+		trisib[pos] = parameters.dotProduct(fv) * gamma;
+		return fv;
 	}
 	
 	public FeatureVector getGGPCFeatureVector(int ggp, int gp, int h, int m) {
@@ -897,14 +902,9 @@ public class LocalFeatureData {
 		Utils.Assert(id1 >= 0 && id2 >= 0 && arc2id[h * len + gp] >= 0);
 		
 		int pos = id1 * nuparcs + id2;
-		FeatureDataItem item = ggpc[pos];
-		if (item == null) {
-			FeatureVector fv = pipe.synFactory.createGGPCFeatureVector(inst, ggp, gp, h, m);
-			double score = parameters.dotProduct(fv) * gamma;
-			item = new FeatureDataItem(fv, score);
-			ggpc[pos] = item;
-		}
-		return item.fv;
+		FeatureVector fv = pipe.synFactory.createGGPCFeatureVector(inst, ggp, gp, h, m);
+		ggpc[pos] = parameters.dotProduct(fv) * gamma;
+		return fv;
 	}
 	
 	public FeatureVector getPSCFeatureVector(int h, int m, int c, int sib) {
@@ -914,15 +914,11 @@ public class LocalFeatureData {
 		Utils.Assert(id1 >= 0 && id2 >= 0 && arc2id[m * len + h] >= 0);
 		
 		int pos = id1 * nuparcs + id2;
-		FeatureDataItem item = psc[pos];
-		if (item == null) {
-			FeatureVector fv = pipe.synFactory.createPSCFeatureVector(inst, h, m, c, sib);
-			double score = parameters.dotProduct(fv) * gamma;
-			item = new FeatureDataItem(fv, score);
-			psc[pos] = item;
-		}
-		return item.fv;
+		FeatureVector fv = pipe.synFactory.createPSCFeatureVector(inst, h, m, c, sib);
+		psc[pos] = parameters.dotProduct(fv) * gamma;
+		return fv;
 	}
+
 	
 	public FeatureVector getFeatureDifference(DependencyInstance gold, 
 						DependencyInstance pred)
