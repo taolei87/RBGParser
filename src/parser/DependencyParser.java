@@ -142,6 +142,11 @@ public class DependencyParser implements Serializable {
 				pruningTotUparcs / pruningTotArcs);
 	}
 	
+	public double pruningRecall()
+	{
+		return pruningGoldHits / pruningTotGold;
+	}
+	
 	public void resetPruningStats()
 	{
 		pruningGoldHits = 0;
@@ -415,9 +420,15 @@ public class DependencyParser implements Serializable {
     	System.out.printf("  UAS=%.6f\tLAS=%.6f\tCAS=%.6f\t[%.2fs]%n",
     			eval.UAS(), eval.LAS(), eval.CAS(),
     			(System.currentTimeMillis() - start)/1000.0);
-    	if (options.pruning && options.learningMode != LearningMode.Basic && pruner != null)
+    	if (options.pruning && options.learningMode != LearningMode.Basic && pruner != null) {
     		pruner.printPruningStats();
-        
+    		if (pruner.pruningRecall() < 0.99) {
+    			System.out.printf("%nWARNING: Pruning recall is less than 99%%!%n"
+    					+"Current pruning-weight=%.2f. Consider using a smaller value between (0,1)%n%n",
+    					options.pruningCoeff);
+    		}
+    	}
+    	
         decoder.shutdown();
 
         return eval.UAS();

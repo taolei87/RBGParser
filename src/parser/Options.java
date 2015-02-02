@@ -36,7 +36,7 @@ public class Options implements Cloneable, Serializable {
 	public boolean projective = false;
 	public boolean learnLabel = false;
 	public boolean pruning = true;
-	public double pruningCoeff = 0.1;
+	public double pruningCoeff = 0.2;
 	public int labelLossType = 0;
 	
 	public int numHcThreads = 8;		// hill climbing: number of threads

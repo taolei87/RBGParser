@@ -60,6 +60,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		this.addLoss = addLoss;
 		bestScore = Double.NEGATIVE_INFINITY;
 		pred = new DependencyInstance(inst);
+		pred.heads = null;
 		totRuns = 0;
 		unchangedRuns = 0;
 		stopped = false;
