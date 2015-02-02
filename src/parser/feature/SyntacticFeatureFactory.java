@@ -47,9 +47,9 @@ public class SyntacticFeatureFactory implements Serializable {
 	
 	public int ccDepType;
 	
-	public int numArcFeats = 115911564;	// number of arc structure features
+	public final int numArcFeats = 115911564;	// number of arc structure features
+	public final int numLabeledArcFeats = 115911564;
 	public int numWordFeats;			// number of word features
-	public int numLabeledArcFeats = 115911564;
 	
 	private boolean stoppedGrowth;
 	private TLongHashSet featureHashSet;
@@ -2937,14 +2937,14 @@ public class SyntacticFeatureFactory implements Serializable {
      *  
      ************************************************************************/
     
-    private int hashcode2int(long code)
+    private final int hashcode2int(long code)
     {
     	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
     	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	return id;
     }
     
-    public void addArcFeature(long code, FeatureVector mat) {
+    public final void addArcFeature(long code, FeatureVector mat) {
     	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
     	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;
@@ -2953,7 +2953,7 @@ public class SyntacticFeatureFactory implements Serializable {
     		featureHashSet.add(code);
     }
     
-    public void addArcFeature(long code, double value, FeatureVector mat) {
+    public final void addArcFeature(long code, double value, FeatureVector mat) {
     	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
     	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;
@@ -2962,21 +2962,21 @@ public class SyntacticFeatureFactory implements Serializable {
     		featureHashSet.add(code);
     }
     
-    public void addLabeledArcFeature(long code, FeatureVector mat) {
+    public final void addLabeledArcFeature(long code, FeatureVector mat) {
     	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
     	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;
     	mat.addEntry(id, 1.0);
     }
     
-    public void addLabeledArcFeature(long code, double value, FeatureVector mat) {
+    public final void addLabeledArcFeature(long code, double value, FeatureVector mat) {
     	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
     	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;
     	mat.addEntry(id, value);
     }
     
-    public void addWordFeature(long code, FeatureVector mat) {
+    public final void addWordFeature(long code, FeatureVector mat) {
     	int id = wordAlphabet.lookupIndex(code, numWordFeats);
     	if (id >= 0) {
     		mat.addEntry(id, 1.0);
@@ -2984,7 +2984,7 @@ public class SyntacticFeatureFactory implements Serializable {
     	}
     }
     
-    public void addWordFeature(long code, double value, FeatureVector mat) {
+    public final void addWordFeature(long code, double value, FeatureVector mat) {
     	int id = wordAlphabet.lookupIndex(code, numWordFeats);
     	if (id >= 0) {
     		mat.addEntry(id, value);
@@ -3012,7 +3012,7 @@ public class SyntacticFeatureFactory implements Serializable {
      *        DIST is the integer binned length  (4 bits)
      ************************************************************************/
     
-    public int getBinnedDistance(int x) {
+    public final int getBinnedDistance(int x) {
     	int flag = 0;
     	int add = 0;
     	if (x < 0) {
@@ -3029,31 +3029,31 @@ public class SyntacticFeatureFactory implements Serializable {
     	return flag+add;
     }
     
-    public long extractArcTemplateCode(long code) {
+    private final long extractArcTemplateCode(long code) {
     	return (code >> flagBits) & ((1 << numArcFeatBits)-1);
     }
     
-    public long extractDistanceCode(long code) {
+    private final long extractDistanceCode(long code) {
     	return code & 15;
     }
     
-    public long extractLabelCode(long code) {
+    private final long extractLabelCode(long code) {
     	return (code >> 4) & ((1 << labelNumBits)-1);
     }
     
-    public void extractArcCodeP(long code, int[] x) {
+    private final void extractArcCodeP(long code, int[] x) {
     	code = (code >> flagBits) >> numArcFeatBits;
 	    x[0] = (int) (code & ((1 << tagNumBits)-1));
     }
     
-    public void extractArcCodePP(long code, int[] x) {
+    private final void extractArcCodePP(long code, int[] x) {
     	code = (code >> flagBits) >> numArcFeatBits;
 	    x[1] = (int) (code & ((1 << tagNumBits)-1));
 	    code = code >> tagNumBits;
 	    x[0] = (int) (code & ((1 << tagNumBits)-1));
     }
     
-    public void extractArcCodePPP(long code, int[] x) {
+    private final void extractArcCodePPP(long code, int[] x) {
     	code = (code >> flagBits) >> numArcFeatBits;
 	    x[2] = (int) (code & ((1 << tagNumBits)-1));
 	    code = code >> tagNumBits;
@@ -3062,7 +3062,7 @@ public class SyntacticFeatureFactory implements Serializable {
 	    x[0] = (int) (code & ((1 << tagNumBits)-1));
     }
     
-    public void extractArcCodePPPP(long code, int[] x) {
+    private final void extractArcCodePPPP(long code, int[] x) {
     	code = (code >> flagBits) >> numArcFeatBits;
 	    x[3] = (int) (code & ((1 << tagNumBits)-1));
 	    code = code >> tagNumBits;
@@ -3073,26 +3073,26 @@ public class SyntacticFeatureFactory implements Serializable {
 	    x[0] = (int) (code & ((1 << tagNumBits)-1));
     }
     
-    public void extractArcCodeW(long code, int[] x) {
+    private final void extractArcCodeW(long code, int[] x) {
     	code = (code >> flagBits) >> numArcFeatBits;
 	    x[0] = (int) (code & ((1 << wordNumBits)-1));
     }
     
-    public void extractArcCodeWW(long code, int[] x) {
+    private final void extractArcCodeWW(long code, int[] x) {
     	code = (code >> flagBits) >> numArcFeatBits;
 	    x[1] = (int) (code & ((1 << wordNumBits)-1));
 	    code = code >> wordNumBits;
 	    x[0] = (int) (code & ((1 << wordNumBits)-1));
     }
     
-    public void extractArcCodeWP(long code, int[] x) {
+    private final void extractArcCodeWP(long code, int[] x) {
     	code = (code >> flagBits) >> numArcFeatBits;
 	    x[1] = (int) (code & ((1 << tagNumBits)-1));
 	    code = code >> tagNumBits;
 	    x[0] = (int) (code & ((1 << wordNumBits)-1));
     }
     
-    public void extractArcCodeWPP(long code, int[] x) {
+    private final void extractArcCodeWPP(long code, int[] x) {
     	code = (code >> flagBits) >> numArcFeatBits;
 	    x[2] = (int) (code & ((1 << tagNumBits)-1));
 	    code = code >> tagNumBits;
@@ -3101,7 +3101,7 @@ public class SyntacticFeatureFactory implements Serializable {
 	    x[0] = (int) (code & ((1 << wordNumBits)-1));
     }
     
-    public void extractArcCodeWWPP(long code, int[] x) {
+    private final void extractArcCodeWWPP(long code, int[] x) {
     	code = (code >> flagBits) >> numArcFeatBits;
 	    x[3] = (int) (code & ((1 << tagNumBits)-1));
 	    code = code >> tagNumBits;
@@ -3112,78 +3112,78 @@ public class SyntacticFeatureFactory implements Serializable {
 	    x[0] = (int) (code & ((1 << wordNumBits)-1));
     }
     
-    public long createArcCodeP(FeatureTemplate.Arc temp, long x) {
+    public final long createArcCodeP(FeatureTemplate.Arc temp, long x) {
     	return ((x << numArcFeatBits) | temp.ordinal()) << flagBits;
     }
     
-    public long createArcCodePP(FeatureTemplate.Arc temp, long x, long y) {
+    public final long createArcCodePP(FeatureTemplate.Arc temp, long x, long y) {
     	return ((((x << tagNumBits) | y) << numArcFeatBits) | temp.ordinal()) << flagBits;
     }
     
-    public long createArcCodePPP(FeatureTemplate.Arc temp, long x, long y, long z) {
+    public final long createArcCodePPP(FeatureTemplate.Arc temp, long x, long y, long z) {
     	return ((((((x << tagNumBits) | y) << tagNumBits) | z) << numArcFeatBits)
     			| temp.ordinal()) << flagBits;
     }
     
-    public long createArcCodePPPP(FeatureTemplate.Arc temp, long x, long y, long u, long v) {
+    public final long createArcCodePPPP(FeatureTemplate.Arc temp, long x, long y, long u, long v) {
     	return ((((((((x << tagNumBits) | y) << tagNumBits) | u) << tagNumBits) | v)
     			<< numArcFeatBits) | temp.ordinal()) << flagBits;
     }
     
-    public long createArcCodePPPPP(FeatureTemplate.Arc temp, long x, long y, long u, long v, long w) {
+    public final long createArcCodePPPPP(FeatureTemplate.Arc temp, long x, long y, long u, long v, long w) {
     	return ((((((((((x << tagNumBits) | y) << tagNumBits) | u) << tagNumBits) | v) << tagNumBits) | w)
     			<< numArcFeatBits) | temp.ordinal()) << flagBits;
     }
     
-    public long createArcCodeW(FeatureTemplate.Arc temp, long x) {
+    public final long createArcCodeW(FeatureTemplate.Arc temp, long x) {
     	return ((x << numArcFeatBits) | temp.ordinal()) << flagBits;
     }
     
-    public long createArcCodeWW(FeatureTemplate.Arc temp, long x, long y) {
+    public final long createArcCodeWW(FeatureTemplate.Arc temp, long x, long y) {
     	return ((((x << wordNumBits) | y) << numArcFeatBits) | temp.ordinal()) << flagBits;
     }
     
-    public long createArcCodeWP(FeatureTemplate.Arc temp, long x, long y) {
+    public final long createArcCodeWP(FeatureTemplate.Arc temp, long x, long y) {
     	return ((((x << tagNumBits) | y) << numArcFeatBits) | temp.ordinal()) << flagBits;
     }
     
-    public long createArcCodeWPP(FeatureTemplate.Arc temp, long x, long y, long z) {
+    public final long createArcCodeWPP(FeatureTemplate.Arc temp, long x, long y, long z) {
     	return ((((((x << tagNumBits) | y) << tagNumBits) | z) << numArcFeatBits)
     			| temp.ordinal()) << flagBits;
     }
     
-    public long createArcCodeWPPP(FeatureTemplate.Arc temp, long x, long y, long u, long v) {
+    public final long createArcCodeWPPP(FeatureTemplate.Arc temp, long x, long y, long u, long v) {
     	return ((((((((x << tagNumBits) | y) << tagNumBits) | u) << tagNumBits) | v) << numArcFeatBits)
     			| temp.ordinal()) << flagBits;
     }
     
-    public long createArcCodeWWP(FeatureTemplate.Arc temp, long x, long y, long z) {
+    public final long createArcCodeWWP(FeatureTemplate.Arc temp, long x, long y, long z) {
     	return ((((((x << wordNumBits) | y) << tagNumBits) | z) << numArcFeatBits) | temp.ordinal()) << flagBits;
     }
     
-    public long createArcCodeWWPP(FeatureTemplate.Arc temp, long x, long y, long u, long v) {
+    public final long createArcCodeWWPP(FeatureTemplate.Arc temp, long x, long y, long u, long v) {
     	return ((((((((x << wordNumBits) | y) << tagNumBits) | u) << tagNumBits) | v)
     			<< numArcFeatBits) | temp.ordinal()) << flagBits;
     }
     
-    public long createWordCodeW(FeatureTemplate.Word temp, long x) {
+    public final long createWordCodeW(FeatureTemplate.Word temp, long x) {
     	return ((x << numWordFeatBits) | temp.ordinal()) << flagBits;
     }
     
-    public long createWordCodeP(FeatureTemplate.Word temp, long x) {
+    public final long createWordCodeP(FeatureTemplate.Word temp, long x) {
     	return ((x << numWordFeatBits) | temp.ordinal()) << flagBits;
     }
     
-    public long createWordCodePP(FeatureTemplate.Word temp, long x, long y) {
+    public final long createWordCodePP(FeatureTemplate.Word temp, long x, long y) {
     	return ((((x << tagNumBits) | y) << numWordFeatBits) | temp.ordinal()) << flagBits;
     }
     
-    public long createWordCodePPP(FeatureTemplate.Word temp, long x, long y, long z) {
+    public final long createWordCodePPP(FeatureTemplate.Word temp, long x, long y, long z) {
     	return ((((((x << tagNumBits) | y) << tagNumBits) | z) << numWordFeatBits)
     			| temp.ordinal()) << flagBits;
     }
     
-    public long createWordCodeWP(FeatureTemplate.Word temp, long x, long y) {
+    public final long createWordCodeWP(FeatureTemplate.Word temp, long x, long y) {
     	return ((((x << tagNumBits) | y) << numWordFeatBits) | temp.ordinal()) << flagBits;
     }
     

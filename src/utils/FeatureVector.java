@@ -19,12 +19,12 @@ public class FeatureVector {
 	
 	public FeatureVector(int _nRows) {		
 		nRows = _nRows;
-		initCapacity(10);
+		initCapacity(40);
 	}
 	
 	public FeatureVector(int _nRows, int _nCols) {
 		nRows = _nRows;
-		initCapacity(10);
+		initCapacity(40);
 	}
 	
 	public FeatureVector(int _nRows, int _nCols, int _capacity) {
