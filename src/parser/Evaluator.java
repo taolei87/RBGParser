@@ -14,12 +14,14 @@ public class Evaluator
 	int whole, nsents;
 	
 	boolean learnLabel;
+	String[] labels;
 	
 	public Evaluator(Options options, DependencyPipe pipe)
 	{
 		uas = las = tot = 0;
 		whole = nsents = 0;
 		learnLabel = options.learnLabel;
+		if (learnLabel) labels = pipe.types;
 	}
 	
 	
@@ -57,7 +59,7 @@ public class Evaluator
             ++tt;
     		if (gold.heads[i] == pred.heads[i]) {
     			++ua;
-    			if (learnLabel && gold.deplbids[i] == pred.deplbids[i]) ++la;
+    			if (learnLabel && gold.deprels[i].equals(labels[pred.deplbids[i]])) ++la;
     		}
     	
     	}    		
