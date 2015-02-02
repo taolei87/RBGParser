@@ -155,7 +155,7 @@ public class DependencyInstance implements Serializable {
 			if (coarseMap.containsKey(postags[i])) {
 				String cpos = coarseMap.get(postags[i]);
 				if ((cpos.equals("CONJ")
-						|| PossibleLang.Japanese == lang) && conjWord.contains(normalize(forms[i]))) {
+						|| PossibleLang.Japanese == lang) && conjWord.contains(forms[i])) {
 					specialPos[i] = SpecialPos.C;
 				}
 				else if (cpos.equals("ADP"))
@@ -176,7 +176,7 @@ public class DependencyInstance implements Serializable {
 
 	
     private String normalize(String s) {
-		if(s.matches("[0-9]+|[0-9]+\\.[0-9]+|[0-9]+[0-9,]+"))
+		if(s!=null && s.matches("[0-9]+|[0-9]+\\.[0-9]+|[0-9]+[0-9,]+"))
 		    return "<num>";
 		return s;
     }
