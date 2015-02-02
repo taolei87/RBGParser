@@ -965,10 +965,10 @@ public class LocalFeatureData {
 		int T = ntypes;
 		for (int mod = 1; mod < len; ++mod) {
 			int head = heads[mod];
-			int type = 0;
-			double best = getLabelScore(arcLis, head, mod, 0) +
+			int type = addLoss ? 0 : 1;
+			double best = getLabelScore(arcLis, head, mod, type) +
 				(addLoss && inst.deplbids[mod] != 0 ? 1.0 : 0.0);
-			for (int t = 1; t < T; ++t) {
+			for (int t = type+1; t < T; ++t) {
 				double va = getLabelScore(arcLis, head, mod, t) +
 					(addLoss && inst.deplbids[mod] != t ? 1.0 : 0.0);
 				if (va > best) {

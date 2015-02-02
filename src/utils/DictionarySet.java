@@ -139,13 +139,14 @@ public class DictionarySet implements Serializable {
 				break;
 			}
 		}
+        cut = cut <= 1 ? 2 : cut;
 	
 		Dictionary filtered = new Dictionary();
         initDict(tag, filtered);
 		for (Object obj : dicts[t].toArray()) {
 			int id = dicts[t].lookupIndex(obj);
 			int value = counters[t].get(id);
-			if (value > cut) {
+			if (value >= cut) {
 				//System.out.println(((String)obj) + " " + value);
 				filtered.lookupIndex((String)obj);
 			}
