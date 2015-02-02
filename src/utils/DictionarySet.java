@@ -114,7 +114,7 @@ public class DictionarySet implements Serializable {
 	
 	public void filterDictionary(DictionaryTypes tag)
 	{
-		filterDictionary(tag, 0.999f);
+		filterDictionary(tag, 0.99f);
 	}
 	
 	public void filterDictionary(DictionaryTypes tag, float percent)
