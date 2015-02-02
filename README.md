@@ -1,22 +1,24 @@
 
 ### RBGParser v1.1
-  * Improved parsing speed -- feature index lookup using hash kernel (see [4])
-  * Improved labeled attachment score (LAS) 
-  * Slightly improved unlabeled attachment score (UAS) by modified online update method
+
+This version improves parsing speed using the hash kernel (see [4]) and by optimizing the code. We also improved the unlabeled attachment score (UAS) slightly and labeled attachment score (LAS) significantly. 
+  * feature index lookup: use hash kernel (i.e. ignoring collisions) instead of a look-up table
+  * dependency labels: now use a complete set of first-order features; will consider adding rich features later
+  * online update method: a slightly modified version
+  * optimized feature cache at code level
+  * now can prune low-frequent labels, words, etc.
 
 =========
 
-#### About
+#### About and Contact
 
-This project is developed at Natural Language Processing group in MIT. The project contains a Java implementation of a syntactic dependency parser with tensor decomposition, described in [1,2,3].
+This project is developed at Natural Language Processing group in MIT. It contains a Java implementation of a syntactic dependency parser with tensor decomposition and greedy decoding, described in [1,2,3].
 
 This project is implemented by Tao Lei (taolei [at] csail.mit.edu) and Yuan Zhang (yuanzh [at] csail.mit.edu).
 
 =========
 
 #### Usage
-
-<br>
 
 ##### 1. Compilation
 
