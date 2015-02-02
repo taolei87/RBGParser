@@ -29,7 +29,7 @@ To compile the project, first do a "make" in directory lib/SVDLIBC to compile th
 
 ##### 2. Data Format
 
-The data format of this parser is the one used in CoNLL-X shared task, which describes a collection of annotated sentences (and the corresponding gold dependency structures). See more details of the format at [here](http://nextens.uvt.nl/depparse-wiki/DataFormat) and [here](https://code.google.com/p/clearparser/wiki/DataFormat#CoNLL-X_format_%28conll%29)
+The data format of this parser is the one used in CoNLL-X shared task, which describes a collection of annotated sentences (and the corresponding gold dependency structures). See more details of the format at [here](http://ilk.uvt.nl/conll/#dataformat) and [here](https://code.google.com/p/clearparser/wiki/DataFormat#CoNLL-X_format_%28conll%29). We use annotated <b>non-projective</b> dependency trees provided in the data.
 
 
 <br>
