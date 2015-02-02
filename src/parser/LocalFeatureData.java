@@ -19,11 +19,11 @@ public class LocalFeatureData {
 	DependencyParser pruner;
 	DependencyDecoder prunerDecoder;
 	
-	int len;						// sentence length
-	int ntypes;						// number of label types
-	int size, sizeL;						
-	int rank;								
-	double gamma, gammaLabel;
+	final int len;						// sentence length
+	final int ntypes;						// number of label types
+	final int size, sizeL;						
+	final int rank;								
+	final double gamma, gammaLabel;
 	
 	int nuparcs;					// number of un-pruned arcs
 	int[] arc2id;					// map (h->m) arc to an id in [0, nuparcs-1]
@@ -270,7 +270,7 @@ public class LocalFeatureData {
 //			if (vis[y] && !isPruned(x, y)) traverse(y, vis);
 //	}
 	
-	public boolean isPruned(int h, int m) 
+	public final boolean isPruned(int h, int m) 
 	{
 		return isPruned[m*len+h];
 	}
@@ -285,7 +285,7 @@ public class LocalFeatureData {
         return arcNtScores[h*len+m];
     }
 	
-	public double getTripsScore(int h, int m, int s) 
+	private final double getTripsScore(int h, int m, int s) 
 	{
 		int id = arc2id[m*len+h];
 		
@@ -298,7 +298,7 @@ public class LocalFeatureData {
 		return trips[pos];
 	}
 	
-	public double getSibScore(int m, int s)
+	private final double getSibScore(int m, int s)
 	{
 		int pos = m*len+s;
 		if (sib[pos] == NULL)
@@ -308,7 +308,7 @@ public class LocalFeatureData {
 	}
 	
 	
-	public double getGPCScore(int gp, int h, int m) {
+	private final double getGPCScore(int gp, int h, int m) {
 		int id = arc2id[h*len+gp];
 		
 		Utils.Assert(id >= 0 && arc2id[m*len+h] >= 0);
@@ -320,7 +320,7 @@ public class LocalFeatureData {
 		return gpc[pos];
 	}
 	
-	public double getHeadBiScore(int h, int m, int h2) {
+	private final double getHeadBiScore(int h, int m, int h2) {
 		int id = arc2id[m*len+h];
 		
 		Utils.Assert(id >= 0 && m + 1 < len 
@@ -333,7 +333,7 @@ public class LocalFeatureData {
 		return headbi[pos];
 	}
 	
-	public double getGPSibScore(int gp, int h, int m, int s) {
+	private final double getGPSibScore(int gp, int h, int m, int s) {
 		// m < s
 		int id = arc2id[h*len+gp];
 		
@@ -346,7 +346,7 @@ public class LocalFeatureData {
 		return gpsib[pos];
 	}
 	
-	public double getTriSibScore(int h, int s1, int m, int s2) {
+	private final double getTriSibScore(int h, int s1, int m, int s2) {
 		// s1 < m < s2
 		int id = arc2id[m*len+h];
 		
@@ -359,7 +359,7 @@ public class LocalFeatureData {
 		return trisib[pos];
 	}
 	
-	public double getGGPCScore(int ggp, int gp, int h, int m) {
+	private final double getGGPCScore(int ggp, int gp, int h, int m) {
 		int id1 = arc2id[gp * len + ggp];
 		int id2 = arc2id[m * len + h];
 		
@@ -372,7 +372,7 @@ public class LocalFeatureData {
 		return ggpc[pos];
 	}
 	
-	public double getPSCScore(int h, int m, int c, int sib) {
+	private final double getPSCScore(int h, int m, int c, int sib) {
 		int id1 = arc2id[sib * len + h];
 		int id2 = arc2id[c * len + m];
 		
