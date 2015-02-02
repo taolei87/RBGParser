@@ -354,7 +354,7 @@ public class FeatureTemplate {
 	    
 	    FEATURE_TEMPLATE_END;
 		
-		public static int numArcFeatBits = Utils.log2(FEATURE_TEMPLATE_END.ordinal());
+		public final static int numArcFeatBits = Utils.log2(FEATURE_TEMPLATE_END.ordinal());
 	}
 
 	public enum Word {
@@ -387,7 +387,7 @@ public class FeatureTemplate {
 	    
 	    FEATURE_TEMPLATE_END;
 	    
-		public static int numWordFeatBits = Utils.log2(FEATURE_TEMPLATE_END.ordinal());
+		public final static int numWordFeatBits = Utils.log2(FEATURE_TEMPLATE_END.ordinal());
 	}
 }
 
