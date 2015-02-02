@@ -16,7 +16,7 @@ public class DependencyArcList {
 		if (useHO) {
 			left = new int[n];
 			right = new int[n];
-			nonproj = new int[n];
+			//nonproj = new int[n];
 		}
 	}
 	
@@ -29,9 +29,9 @@ public class DependencyArcList {
 		if (useHO) {
 			left = new int[n];
 			right = new int[n];
-			nonproj = new int[n];
+			//nonproj = new int[n];
 			constructSpan();
-			constructNonproj(heads);
+			//constructNonproj(heads);
 		}
 	}
 	
@@ -43,10 +43,12 @@ public class DependencyArcList {
 			if (useHO) {
 				left = new int[n];
 				right = new int[n];
-				nonproj = new int[n];
+				//nonproj = new int[n];
 			}
 		}
 		this.n = n;
+		
+		edges[n - 1] = 0;
 	}
 	
 	public int startIndex(int i)
@@ -106,15 +108,15 @@ public class DependencyArcList {
 	}
 	
 	public void update(int m, int oldH, int newH, int[] heads) {
+		//System.out.println("m: " + m + " oldH: " + oldH + " newH: " + newH);
 		updateDepTreeArcList(m, oldH, newH);
 		if (left != null && right != null)
-			constructSpan();
+			updateDepSpan(m, oldH, newH, heads);
 		if (nonproj != null)
 			constructNonproj(heads);
 	}
 	
 	public void updateDepTreeArcList(int m, int oldH, int newH) {
-		//System.out.println("m: " + m + " oldH: " + oldH + " newH: " + newH);
 		if (oldH == newH)
 			return;
 		// update the head of m from oldH to newH
@@ -169,6 +171,38 @@ public class DependencyArcList {
 				--pos;
 			}
 			edges[pos] = m;
+		}
+	}
+	
+	public void updateDepSpan(int m, int oldH, int newH, int[] heads) {
+		if (oldH == newH)
+			return;
+		
+		int tmpH = newH;
+		while (tmpH != -1) {
+			left[tmpH] = Math.min(left[tmpH], left[m]);
+			right[tmpH] = Math.max(right[tmpH], right[m]);
+			tmpH = heads[tmpH];
+		}
+
+		// assume that child list is updated
+		tmpH = oldH;
+		while (tmpH != -1) {
+			if (left[tmpH] == left[m]) {
+				left[tmpH] = tmpH;
+				int start = startIndex(tmpH);
+				int end = endIndex(tmpH);
+				for (int i = start; i < end; ++i)
+					left[tmpH] = Math.min(left[tmpH], left[edges[i]]);
+			}
+			if (right[tmpH] == right[m]) {
+				right[tmpH] = tmpH + 1;
+				int start = startIndex(tmpH);
+				int end = endIndex(tmpH);
+				for (int i = start; i < end; ++i)
+					right[tmpH] = Math.max(right[tmpH], right[edges[i]]);
+			}
+			tmpH = heads[tmpH];
 		}
 	}
 	

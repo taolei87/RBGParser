@@ -193,12 +193,12 @@ public class SyntacticFeatureFactory implements Serializable {
 				FeatureVector fv = new FeatureVector(numArcFeats);
 				
 				// non-proj
-				for (int i = 0; i < n; ++i) {
-					if (heads[i] == -1)
-						continue;
-					int num = getBinnedDistance(arcLis.nonproj[i]);
-					createNonprojFeatureVector(inst, num, heads[i], i);
-				}
+				//for (int i = 0; i < n; ++i) {
+				//	if (heads[i] == -1)
+				//		continue;
+				//	int num = getBinnedDistance(arcLis.nonproj[i]);
+				//	createNonprojFeatureVector(inst, num, heads[i], i);
+				//}
 
 				int[] toks = inst.formids;
 				int[] pos = inst.postagids;

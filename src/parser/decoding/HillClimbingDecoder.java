@@ -95,6 +95,53 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		int n, size;
 		int[] dfslis;
 		DependencyArcList arcLis;
+		
+		public void checkUpdateCorrect(int[] heads, DependencyArcList arcLis) {
+			DependencyArcList tmp = new DependencyArcList(heads, options.useHO);
+			
+			boolean success = true;
+			
+			/*
+			for (int i = 0; i < tmp.left.length; ++i)
+				Utils.Assert(tmp.left[i] == arcLis.left[i]);
+			for (int i = 0; i < tmp.right.length; ++i)
+				Utils.Assert(tmp.right[i] == arcLis.right[i]);
+			for (int i = 0; i < tmp.st.length; ++i)
+				Utils.Assert(tmp.st[i] == arcLis.st[i]);
+			for (int i = 0; i < tmp.edges.length; ++i)
+				Utils.Assert(tmp.edges[i] == arcLis.edges[i]);
+				*/
+			for (int i = 0; i < tmp.left.length; ++i) {
+				success &= tmp.left[i] == arcLis.left[i];
+			}
+			for (int i = 0; i < tmp.right.length; ++i){
+				success &= tmp.right[i] == arcLis.right[i];
+			}
+			for (int i = 0; i < tmp.st.length; ++i){
+				success &= tmp.st[i] == arcLis.st[i];
+			}
+			for (int i = 0; i < tmp.edges.length; ++i){
+				success &= tmp.edges[i] == arcLis.edges[i];
+			}
+			if (!success) {
+				for (int i = 0; i < heads.length; ++i)
+					System.out.print(heads[i] + " ");
+				System.out.println();
+				for (int i = 0; i < tmp.left.length; ++i)
+					System.out.print(tmp.left[i] + "/" + arcLis.left[i] + " ");
+				System.out.println();
+				for (int i = 0; i < tmp.right.length; ++i)
+					System.out.print(tmp.right[i] + "/" + arcLis.right[i] + " ");
+				System.out.println();
+				for (int i = 0; i < tmp.st.length; ++i)
+					System.out.print(tmp.st[i] + "/" + arcLis.st[i] + " ");
+				System.out.println();
+				for (int i = 0; i < tmp.edges.length; ++i)
+					System.out.print(tmp.edges[i] + "/" + arcLis.edges[i] + " ");
+				System.out.println();
+				System.exit(0);
+			}
+		}
 				
 		@Override
 		public void run() {
@@ -119,6 +166,12 @@ public class HillClimbingDecoder extends DependencyDecoder {
 				int[] heads = now.heads;
 				int[] deplbids = now.deplbids;
 			    
+				arcLis.constructDepTreeArcList(heads);
+				if (arcLis.left != null && arcLis.right != null)
+					arcLis.constructSpan();
+				if (arcLis.nonproj != null)
+					arcLis.constructNonproj(heads);
+
                 int cnt = 0;
 				boolean more;
 				for (;;) {
@@ -138,6 +191,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 								&& !isAncestorOf(heads, m, h)) {
 								heads[m] = h;
 								arcLis.update(m, lastHead, h, heads);
+								//checkUpdateCorrect(heads, arcLis);
 								lastHead = h;
 								double score = calcScore(heads, m, arcLis);
 								//double score = calcScore(now);
@@ -149,6 +203,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 							}
 						heads[m] = bestHead;
 						arcLis.update(m, lastHead, bestHead, heads);
+						//checkUpdateCorrect(heads, arcLis);
 					}
 					if (!more) break;					
 
@@ -202,7 +257,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		private double calcScore(int[] heads, int m, DependencyArcList arcLis)
 		{
 			double score = lfd.getPartialScore2(heads, m, arcLis)
-						 + gfd.getScore(heads);
+						 + gfd.getScore(heads, arcLis);
 //			if (options.learnLabel) {
 //				int t = staticTypes[heads[m]][m];
 //				score += lfd.getLabeledArcScore(heads[m], m, t);
@@ -239,19 +294,21 @@ public class HillClimbingDecoder extends DependencyDecoder {
 //					}
 //				} else 
 				  if (addLoss && heads[m] != inst.heads[m])
-					score += 1.0;			 
-			score += lfd.getScore(now);
-			score += gfd.getScore(now);	
+					score += 1.0;	
+			DependencyArcList arcLis = new DependencyArcList(heads, options.useHO);
+			
+			score += lfd.getScore(now, arcLis);
+			score += gfd.getScore(now, arcLis);	
 			return score;
 		}
 		
 		private void depthFirstSearch(int[] heads)
 		{
-			arcLis.constructDepTreeArcList(heads);
-			if (arcLis.left != null && arcLis.right != null)
-				arcLis.constructSpan();
-			if (arcLis.nonproj != null)
-				arcLis.constructNonproj(heads);
+			//arcLis.constructDepTreeArcList(heads);
+			//if (arcLis.left != null && arcLis.right != null)
+			//	arcLis.constructSpan();
+			//if (arcLis.nonproj != null)
+			//	arcLis.constructNonproj(heads);
 			size = 0;
             //dfscnt = 0;
 			dfs(0);

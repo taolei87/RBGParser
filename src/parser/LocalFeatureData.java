@@ -632,7 +632,7 @@ public class LocalFeatureData {
 		return score;
 	}
 	
-	public double getScore(DependencyInstance now)
+	public double getScore(DependencyInstance now, DependencyArcList arcLis)
 	{
 		double score = 0;		
 		int[] heads = now.heads;
@@ -643,7 +643,7 @@ public class LocalFeatureData {
 		
 		if (options.learningMode != LearningMode.Basic) {
 			
-			DependencyArcList arcLis = new DependencyArcList(heads, options.useHO);
+			//DependencyArcList arcLis = new DependencyArcList(heads, options.useHO);
 			
 			// 2nd order (h,m,s) & (m,s)
 			for (int h = 0; h < len; ++h) {
