@@ -1,11 +1,11 @@
 
 ### RBGParser v1.1
 
-This version improves parsing speed using hash kernel (see [4]) and by optimizing the code. We also improves the unlabeled attachment score (UAS) slightly and labeled attachment score (LAS) significantly. 
-  * feature index lookup: use hash kernel (i.e. ignoring collisions) instead of look-up table
+This version improves parsing speed using the hash kernel (see [4]) and by optimizing the code. We also improved the unlabeled attachment score (UAS) slightly and labeled attachment score (LAS) significantly. 
+  * feature index lookup: use hash kernel (i.e. ignoring collisions) instead of a look-up table
   * dependency labels: now use a complete set of first-order features; will consider adding rich features later
   * online update method: a slightly modified version
-  * optimized feature cache
+  * optimized feature cache at code level
   * now can prune low-frequent labels, words, etc.
 
 =========
