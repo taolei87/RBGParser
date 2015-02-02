@@ -10,6 +10,8 @@ This version improves parsing speed using hash kernel (see [4]) and by optimizin
 
 =========
 
+#### About
+
 This project is developed at Natural Language Processing group in MIT. The project contains a Java implementation of a syntactic dependency parser with tensor decomposition, described in [1,2,3].
 
 This project is implemented by Tao Lei (taolei [at] csail.mit.edu) and Yuan Zhang (yuanzh [at] csail.mit.edu).
