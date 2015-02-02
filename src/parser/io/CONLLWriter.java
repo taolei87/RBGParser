@@ -17,10 +17,10 @@ public class CONLLWriter extends DependencyWriter {
 	@Override
 	public void writeInstance(DependencyInstance inst) throws IOException {
 		
-		if (first) 
-			first = false;
-		else
-			writer.write("\n");
+		//if (first) 
+		//	first = false;
+		//else
+		//	writer.write("\n");
 		
 		String[] forms = inst.forms;
 		String[] lemmas = inst.lemmas;
@@ -42,6 +42,8 @@ public class CONLLWriter extends DependencyWriter {
 			writer.write((isLabeled ? labels[labelids[i]] : "_") + "\t_\t_");
 			writer.write("\n");
 		}
+		
+		writer.write("\n");
 	}
 
 }

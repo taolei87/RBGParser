@@ -35,11 +35,6 @@ public abstract class DependencyReader {
 	}
 	
 	public void close() throws IOException { if (reader != null) reader.close(); }
-	
-    public String normalize(String s) {
-		if(s.matches("[0-9]+|[0-9]+\\.[0-9]+|[0-9]+[0-9,]+"))
-		    return "<num>";
-		return s;
-    }
+
     
 }

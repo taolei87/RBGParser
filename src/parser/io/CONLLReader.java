@@ -48,9 +48,9 @@ public class CONLLReader extends DependencyReader {
 	    // ID FORM LEMMA COURSE-POS FINE-POS FEATURES HEAD DEPREL PHEAD PDEPREL
 	    for (int i = 1; i < length + 1; ++i) {
 	    	String[] parts = lstLines.get(i-1);
-	    	forms[i] = normalize(parts[1]);
+	    	forms[i] = parts[1];
 	    	if (!parts[2].equals("_")) { 
-	    		lemmas[i] = normalize(parts[2]);
+	    		lemmas[i] = parts[2];
 	    		hasLemma = true;
 	    	} //else lemmas[i] = forms[i];
 	    	cpos[i] = parts[3];

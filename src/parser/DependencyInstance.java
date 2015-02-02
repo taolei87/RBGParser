@@ -121,7 +121,7 @@ public class DependencyInstance implements Serializable {
 		cpostagids = new int[length];
 		
     	for (int i = 0; i < length; ++i) {
-    		formids[i] = dicts.lookupIndex(WORD, "form="+forms[i]);
+    		formids[i] = dicts.lookupIndex(WORD, "form="+normalize(forms[i]));
 			postagids[i] = dicts.lookupIndex(POS, "pos="+postags[i]);
 			cpostagids[i] = dicts.lookupIndex(POS, "cpos="+cpostags[i]);
 			deplbids[i] = dicts.lookupIndex(DEPLABEL, deprels[i]) - 1;	// zero-based
@@ -130,7 +130,7 @@ public class DependencyInstance implements Serializable {
     	if (lemmas != null) {
     		lemmaids = new int[length];
     		for (int i = 0; i < length; ++i)
-    			lemmaids[i] = dicts.lookupIndex(WORD, "lemma="+lemmas[i]);
+    			lemmaids[i] = dicts.lookupIndex(WORD, "lemma="+normalize(lemmas[i]));
     	}
 
 		featids = new int[length][];
@@ -155,7 +155,7 @@ public class DependencyInstance implements Serializable {
 			if (coarseMap.containsKey(postags[i])) {
 				String cpos = coarseMap.get(postags[i]);
 				if ((cpos.equals("CONJ")
-						|| PossibleLang.Japanese == lang) && conjWord.contains(forms[i])) {
+						|| PossibleLang.Japanese == lang) && conjWord.contains(normalize(forms[i]))) {
 					specialPos[i] = SpecialPos.C;
 				}
 				else if (cpos.equals("ADP"))
@@ -174,4 +174,10 @@ public class DependencyInstance implements Serializable {
 		}
     }
 
+	
+    private String normalize(String s) {
+		if(s.matches("[0-9]+|[0-9]+\\.[0-9]+|[0-9]+[0-9,]+"))
+		    return "<num>";
+		return s;
+    }
 }
