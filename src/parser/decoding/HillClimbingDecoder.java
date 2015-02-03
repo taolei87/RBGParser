@@ -159,7 +159,9 @@ public class HillClimbingDecoder extends DependencyDecoder {
 			
 			while (!stopped) {
 				
-				DependencyInstance now = sampler.randomWalkSampling(
+				//DependencyInstance now = sampler.randomWalkSampling(
+				//		inst, lfd, addLoss);
+				DependencyInstance now = sampler.uniformRandomWalkSampling(
 						inst, lfd, addLoss);
 				
 				// hill climb
