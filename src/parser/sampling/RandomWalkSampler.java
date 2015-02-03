@@ -40,8 +40,8 @@ public class RandomWalkSampler {
 		predInst.deplbids = new int[len];
         
         //double[] score = new double[len];
-        int[] depList = new int[len];
-        int size = 0;
+        //int[] depList = new int[len];
+        //int size = 0;
 
     	boolean[] inTree = new boolean[len];
     	inTree[0] = true;
@@ -53,26 +53,29 @@ public class RandomWalkSampler {
     		int curr = i;
     		while (!inTree[curr]) {
     			// sample new head 
-                size = 0;
+                //size = 0;
 
-    			for (int candH = 0; candH < len; candH++) {
-    				if (candH == curr || lfd.isPruned(candH, curr))
-    					continue;
-    				
-    				//double s = lfd.getArcScore(candH, curr);
-    				
-    				//if (addLoss) {
-    				//	  if (candH != inst.heads[curr])
-    				//		s += 1.0;
-    				//}
-                    //score[size] = s;
-                    depList[size] = candH;
-                    ++size;
-    			}
+    			//for (int candH = 0; candH < len; candH++) {
+    			//	if (candH == curr || lfd.isPruned(candH, curr))
+    			//		continue;
+    			//	
+    			//	//double s = lfd.getArcScore(candH, curr);
+    			//	
+    			//	//if (addLoss) {
+    			//	//	  if (candH != inst.heads[curr])
+    			//	//		s += 1.0;
+    			//	//}
+                //    //score[size] = s;
+                //    depList[size] = candH;
+                //    ++size;
+    			//}
 
     			//int sample = samplePoint(score, size, r);
+    			int st = lfd.startIndex(curr);
+    			int size = lfd.endIndex(curr) - st;
     			int sample = r.nextInt(size);
-    			predInst.heads[curr] = depList[sample];
+    			predInst.heads[curr] = lfd.getHead(st+sample);
+    			//predInst.heads[curr] = depList[sample];
     			curr = predInst.heads[curr];
     		}
     		curr = i;

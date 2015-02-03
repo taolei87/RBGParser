@@ -19,15 +19,17 @@ public class LocalFeatureData {
 	DependencyParser pruner;
 	DependencyDecoder prunerDecoder;
 	
-	final int len;						// sentence length
-	final int ntypes;						// number of label types
+	final int len;					// sentence length
+	final int ntypes;				// number of label types
 	final int size, sizeL;						
 	final int rank;								
 	final double gamma, gammaLabel;
 	
 	int nuparcs;					// number of un-pruned arcs
 	int[] arc2id;					// map (h->m) arc to an id in [0, nuparcs-1]
-	boolean[] isPruned;				// whether a (h->m) arc is pruned								
+	boolean[] isPruned;				// whether a (h->m) arc is pruned
+	int[] edges, st;
+	
 	
 	FeatureVector[] wordFvs;		// word feature vectors
 	double[][] wpU, wpV;			// word projections U\phi and V\phi
@@ -212,13 +214,24 @@ public class LocalFeatureData {
 		
 		arc2id = new int[len*len];
 		isPruned = new boolean[len*len];
+		edges = new int[len*len];
+		st = new int[len];
 		
 		if (pruner == null || !options.pruning) {
 			for (int i = 0, L = arc2id.length; i < L; ++i) {
 				arc2id[i] = i;
 				isPruned[i] = false;
 			}
-			nuparcs = len*len;
+			//nuparcs = len*len; -> (len-1)*(len-1) actually
+			nuparcs = 0;
+			st[0] = 0;
+			for (int m = 1; m < len; ++m) {
+				st[m] = nuparcs;
+				for (int h = 0; h < len; ++h) if (h!=m) {
+					edges[nuparcs] = h;
+					++nuparcs;
+				}
+			}
 		} else {	
 			if (includeGoldArcs) pruner.pruningTotGold += len-1;
 			pruner.pruningTotArcs += (len-1)*(len-1);
@@ -235,7 +248,9 @@ public class LocalFeatureData {
 			DependencyInstance pred = prunerDecoder.decode(inst, lfd2, gfd2, false);
 							
 			nuparcs = 0;
-			for (int m = 1; m < len; ++m) {								
+			st[0] = 0;
+			for (int m = 1; m < len; ++m) {
+				st[m] = nuparcs;
 				double maxv = Double.NEGATIVE_INFINITY;
 				for (int h = 0; h < len; ++h)
 					if (h != m) {
@@ -251,6 +266,7 @@ public class LocalFeatureData {
 						 (v >= maxv + threshold || h == pred.heads[m])) {
 							isPruned[m*len+h] = !(v >= maxv + threshold || h == pred.heads[m]);
 							arc2id[m*len+h] = nuparcs;
+							edges[nuparcs] = h;
 							nuparcs++;							
 						}
 					}
@@ -271,7 +287,22 @@ public class LocalFeatureData {
 //			if (vis[y] && !isPruned(x, y)) traverse(y, vis);
 //	}
 	
-	public final boolean isPruned(int h, int m) 
+	public int startIndex(int i)
+	{
+		return st[i];
+	}
+	
+	public int endIndex(int i) 
+	{
+		return (i >= len-1) ? nuparcs : st[i+1];
+	}
+	
+	public int getHead(int id)
+	{
+		return edges[id];
+	}
+	
+	public boolean isPruned(int h, int m) 
 	{
 		return isPruned[m*len+h];
 	}
@@ -396,12 +427,14 @@ public class LocalFeatureData {
 			//DependencyArcList arcLis = new DependencyArcList(heads);
 			
 			// 2nd order (h,m,s) & (m,s)
-			for (int h = 0; h < len; ++h) /*if (!isPruned(h, x)) (h != x)*/ {
-				
+			//for (int h = 0; h < len; ++h) /*if (!isPruned(h, x)) (h != x)*/ {
+			int headst = startIndex(x), headed = endIndex(x);
+			for (int hid = headst; hid < headed; ++hid) {
+				int h = getHead(hid);
 				int st = arcLis.startIndex(h);
 				int ed = arcLis.endIndex(h);
 				
-				if (st >= ed || x < arcLis.get(st) || x > arcLis.get(ed-1) || isPruned(h, x)) continue;
+				if (st >= ed || x < arcLis.get(st) || x > arcLis.get(ed-1) /*|| isPruned(h, x)*/) continue;
 				
 				int gp = heads[h];
 				

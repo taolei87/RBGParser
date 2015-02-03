@@ -188,8 +188,11 @@ public class HillClimbingDecoder extends DependencyDecoder {
 						//double maxScore = calcScore(now);
 						
 						int lastHead = heads[m];
-						for (int h = 0; h < n; ++h)
-							if (h != m && h != bestHead && !lfd.isPruned(h, m)
+						int hst = lfd.startIndex(m), hed = lfd.endIndex(m);
+						//for (int h = 0; h < n; ++h)
+						for (int hid = hst; hid < hed; ++hid) {
+							int h = lfd.getHead(hid);
+							if (/*h != m &&*/ h != bestHead /*&& !lfd.isPruned(h, m)*/
 								&& !isAncestorOf(heads, m, h)) {
 								heads[m] = h;
 								arcLis.update(m, lastHead, h, heads);
@@ -203,6 +206,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 									maxScore = score;									
 								}
 							}
+						}
 						heads[m] = bestHead;
 						arcLis.update(m, lastHead, bestHead, heads);
 						//checkUpdateCorrect(heads, arcLis);
