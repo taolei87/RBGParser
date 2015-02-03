@@ -22,11 +22,13 @@ public class HillClimbingDecoder extends DependencyDecoder {
 	final int labelLossType;
 	
 	//int[][] staticTypes;
-	
+    	
 	double bestScore;	
 	int unchangedRuns, totRuns;
 	volatile boolean stopped;
     
+    long time1 = 0, time2 = 0, time3 = 0, time4 = 0;
+
     ExecutorService executorService;
 	ExecutorCompletionService<Object> decodingService;
 	HillClimbingTask[] tasks;
@@ -49,6 +51,11 @@ public class HillClimbingDecoder extends DependencyDecoder {
     {
         //System.out.println("shutdown");
         executorService.shutdownNow();
+
+        System.out.printf("sample=%d\tarclis=%d\tscore=%d\tloop=%d%n",
+            time1, time2, time3, time4);
+        System.out.printf("new=%d\troll=%d\tloop=%d%n",
+            RandomWalkSampler.time1, RandomWalkSampler.time2, RandomWalkSampler.time3);
     }
 
 	@Override
@@ -158,19 +165,26 @@ public class HillClimbingDecoder extends DependencyDecoder {
 				arcLis.resize(n, options.useHO);
 			
 			while (!stopped) {
-				
+                
+                long start = System.currentTimeMillis();
+
 				DependencyInstance now = sampler.randomWalkSampling(
 						inst, lfd, addLoss);
 				
 				// hill climb
 				int[] heads = now.heads;
 				int[] deplbids = now.deplbids;
-			    
+
+			    long mid1 = System.currentTimeMillis();
+                long scoretime = 0, temptime = 0;
+ 
 				arcLis.constructDepTreeArcList(heads);
 				if (arcLis.left != null && arcLis.right != null)
 					arcLis.constructSpan();
 				if (arcLis.nonproj != null)
 					arcLis.constructNonproj(heads);
+
+                long mid2 = System.currentTimeMillis();
 
                 int cnt = 0;
 				boolean more;
@@ -182,7 +196,9 @@ public class HillClimbingDecoder extends DependencyDecoder {
 						int m = dfslis[i];
 						
 						int bestHead = heads[m];
+                        temptime = System.currentTimeMillis();
 						double maxScore = calcScore(heads, m, arcLis);
+                        scoretime += System.currentTimeMillis() - temptime;
 						//double maxScore = calcScore(now);
 						
 						int lastHead = heads[m];
@@ -193,7 +209,9 @@ public class HillClimbingDecoder extends DependencyDecoder {
 								arcLis.update(m, lastHead, h, heads);
 								//checkUpdateCorrect(heads, arcLis);
 								lastHead = h;
+                                temptime = System.currentTimeMillis();
 								double score = calcScore(heads, m, arcLis);
+                                scoretime += System.currentTimeMillis() - temptime;
 								//double score = calcScore(now);
 								if (score > maxScore) {
 									more = true;
@@ -212,6 +230,12 @@ public class HillClimbingDecoder extends DependencyDecoder {
                     //if (cnt % 100 == 0) {
                         //System.out.println(cnt);
                     //}
+                    
+                    time1 += mid1 - start;
+                    time2 += mid2 - mid1;
+                    time3 += scoretime;
+                    time4 += System.currentTimeMillis()-mid2-scoretime;
+
 				}
 				
 				//if (options.learnLabel) {
@@ -224,7 +248,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 					++totRuns;
 					if (score > bestScore) {
 						bestScore = score;
-						unchangedRuns = 0;
+						//unchangedRuns = 0;
 						pred.heads = heads;
 						pred.deplbids = deplbids;
 					} else {

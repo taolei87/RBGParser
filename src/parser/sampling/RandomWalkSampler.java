@@ -6,7 +6,8 @@ import parser.*;
 import utils.Utils;
 
 public class RandomWalkSampler {
-	
+    
+    public static long time1 = 0, time2 = 0, time3 = 0;
 	Random r;
 	Options options;
 	final int labelLossType;
@@ -33,6 +34,9 @@ public class RandomWalkSampler {
     public DependencyInstance randomWalkSampling(DependencyInstance inst,
     		LocalFeatureData lfd, boolean addLoss)
     {
+        
+        long start = System.currentTimeMillis();
+
         //int cnt = 0;
     	int len = inst.length;
     	
@@ -49,7 +53,10 @@ public class RandomWalkSampler {
     	for (int i = 0; i < len; i++) {
     		predInst.heads[i] = -1;
     	}
-    	
+        
+        long mid = System.currentTimeMillis();
+        long rolltime = 0, temptime = 0;
+
     	for (int i = 1; i < len; i++) {
     		int curr = i;
     		while (!inTree[curr]) {
@@ -81,8 +88,11 @@ public class RandomWalkSampler {
                     depList[size] = candH;
                     ++size;
     			}
-
-    			int sample = samplePoint(score, size, r);
+                
+                temptime = System.currentTimeMillis();
+    			//int sample = samplePoint(score, size, r);
+                int sample = r.nextInt(size);
+                rolltime += System.currentTimeMillis()-temptime;
     			predInst.heads[curr] = depList[sample];
     			//predInst.deplbids[curr] = 
                 //    options.learnLabel ? staticTypes[predInst.heads[curr]][curr] : 0;
@@ -104,7 +114,11 @@ public class RandomWalkSampler {
     			curr = predInst.heads[curr]; 
     		}
     	}
-    	
+        
+        time1 += mid - start;
+        time2 += rolltime;
+        time3 += System.currentTimeMillis()-mid-rolltime;
+
     	return predInst;
     }
 
