@@ -185,6 +185,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 						
 						int bestHead = heads[m];
 						double maxScore = calcScore(heads, m, arcLis);
+                        double maxScore2 = calcScore(now);
 						//double maxScore = calcScore(now);
 						
 						int lastHead = heads[m];
@@ -199,11 +200,18 @@ public class HillClimbingDecoder extends DependencyDecoder {
 								//checkUpdateCorrect(heads, arcLis);
 								lastHead = h;
 								double score = calcScore(heads, m, arcLis);
+                                double score2 = calcScore(now);
+                                if (Math.abs(score-maxScore - (score2-maxScore2)) > 1e-6) {
+                                    System.out.println(score + " " + maxScore + " " + (score-maxScore));
+                                    System.out.println(score2 + " " + maxScore2 + " " + (score2-maxScore2));
+                                    System.exit(0);
+                                }
 								//double score = calcScore(now);
 								if (score > maxScore) {
 									more = true;
 									bestHead = h;
-									maxScore = score;									
+									maxScore = score;
+									maxScore2 = score2;
 								}
 							}
 						}
