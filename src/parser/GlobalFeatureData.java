@@ -56,7 +56,7 @@ public class GlobalFeatureData {
 			Arrays.fill(span, NULL);
 
 			//nb = new FeatureDataItem[lfd.nuparcs * pipe.dictionaries.size(POS) * pipe.dictionaries.size(POS)];
-			nb = new double[lfd.nuparcs * pipe.dictionaries.size(POS) * pipe.dictionaries.size(POS)];
+			nb = new double[lfd.numarcs * pipe.dictionaries.size(POS) * pipe.dictionaries.size(POS)];
 			Arrays.fill(nb, NULL);
 
 			//ppcc1 = new FeatureDataItem[lfd.len * lfd.len * lfd.len];	// pp attachment, punc head and part of conjunction

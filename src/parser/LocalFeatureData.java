@@ -25,10 +25,11 @@ public class LocalFeatureData {
 	final int rank;								
 	final double gamma, gammaLabel;
 	
-	int nuparcs;					// number of un-pruned arcs
-	int[] arc2id;					// map (h->m) arc to an id in [0, nuparcs-1]
+	int numarcs;					// number of un-pruned arcs and gold arcs (if indexGoldArcs == true)
+	int[] arc2id;					// map (h->m) arc to an id in [0, numarcs-1]
 	boolean[] isPruned;				// whether a (h->m) arc is pruned
 	int[] edges, st;
+	int numedges;						// number of un-pruned arcs
 	
 	
 	FeatureVector[] wordFvs;		// word feature vectors
@@ -158,7 +159,7 @@ public class LocalFeatureData {
 		if (options.useCS) {
 			// 2nd order (head, mod, mod_sib) features
 			//trips = new FeatureDataItem[nuparcs*len];
-			trips = new double[nuparcs*len];
+			trips = new double[numarcs*len];
 			Arrays.fill(trips, NULL);
 			
 			// 2nd order (mod, mod_sib) features
@@ -170,42 +171,42 @@ public class LocalFeatureData {
 		if (options.useGP) {
 			// 2nd order (head, mod, child) features
 			//gpc = new FeatureDataItem[nuparcs*len];
-			gpc = new double[nuparcs*len];
+			gpc = new double[numarcs*len];
 			Arrays.fill(gpc, NULL);
 		}
 		
 		if (options.useHB) {
 			// 2nd order (head, mod, head2) features
 			//headbi = new FeatureDataItem[nuparcs*len];
-			headbi = new double[nuparcs*len];
+			headbi = new double[numarcs*len];
 			Arrays.fill(headbi, NULL);
 		}
 		
 		if (options.useGS) {
 			// 3rd order (grand, head, sib, mod) features
 			//gpsib = new FeatureDataItem[nuparcs*len*len];
-			gpsib = new double[nuparcs*len*len];
+			gpsib = new double[numarcs*len*len];
 			Arrays.fill(gpsib, NULL);
 		}
 		
 		if (options.useTS) {
 			// 3rd order (head, sib1, mod, sib2) features
 			//trisib = new FeatureDataItem[nuparcs*len*len];
-			trisib = new double[nuparcs*len*len];
+			trisib = new double[numarcs*len*len];
 			Arrays.fill(trisib, NULL);
 		}
 		
 		if (options.useGGP) {
 			// 3rd order (great-grand, grand, head, mod) features
 			//ggpc = new FeatureDataItem[nuparcs*nuparcs];
-			ggpc = new double[nuparcs*nuparcs];
+			ggpc = new double[numarcs*numarcs];
 			Arrays.fill(ggpc, NULL);
 		}
 
 		if (options.usePSC) {
 			// 3rd order (head, mod, sib, child) features
 			//psc = new FeatureDataItem[nuparcs*nuparcs];
-			psc = new double[nuparcs*nuparcs];
+			psc = new double[numarcs*numarcs];
 			Arrays.fill(psc, NULL);
 		}
 	}
@@ -223,15 +224,16 @@ public class LocalFeatureData {
 				isPruned[i] = false;
 			}
 			//nuparcs = len*len; -> (len-1)*(len-1) actually
-			nuparcs = 0;
+			numarcs = 0;
 			st[0] = 0;
 			for (int m = 1; m < len; ++m) {
-				st[m] = nuparcs;
+				st[m] = numarcs;
 				for (int h = 0; h < len; ++h) if (h!=m) {
-					edges[nuparcs] = h;
-					++nuparcs;
+					edges[numarcs] = h;
+					++numarcs;
 				}
 			}
+			numedges = numarcs;
 		} else {	
 			if (includeGoldArcs) pruner.pruningTotGold += len-1;
 			pruner.pruningTotArcs += (len-1)*(len-1);
@@ -247,10 +249,11 @@ public class LocalFeatureData {
 			GlobalFeatureData gfd2 = null;
 			DependencyInstance pred = prunerDecoder.decode(inst, lfd2, gfd2, false);
 							
-			nuparcs = 0;
+			numarcs = 0;
+			numedges = 0;
 			st[0] = 0;
 			for (int m = 1; m < len; ++m) {
-				st[m] = nuparcs;
+				st[m] = numedges;
 				double maxv = Double.NEGATIVE_INFINITY;
 				for (int h = 0; h < len; ++h)
 					if (h != m) {
@@ -261,13 +264,12 @@ public class LocalFeatureData {
 				for (int h = 0; h < len; ++h)
 					if (h != m) {
 						double v = lfd2.getArcScore(h, m);
-						
-						if ((includeGoldArcs && h == inst.heads[m]) ||
-						 (v >= maxv + threshold || h == pred.heads[m])) {
-							isPruned[m*len+h] = !(v >= maxv + threshold || h == pred.heads[m]);
-							arc2id[m*len+h] = nuparcs;
-							edges[nuparcs] = h;
-							nuparcs++;							
+						boolean keep = (v >= maxv + threshold || h == pred.heads[m]);
+						if ((includeGoldArcs && h == inst.heads[m]) || keep) {
+							isPruned[m*len+h] = !keep;
+							if (keep) edges[numarcs++] = h;
+							arc2id[m*len+h] = numarcs;
+							numarcs++;							
 						}
 					}
 			}
@@ -276,7 +278,7 @@ public class LocalFeatureData {
 				for (int m = 1; m < len; ++m)
 					if (!isPruned[m*len+inst.heads[m]])
 						pruner.pruningGoldHits++;
-			pruner.pruningTotUparcs += nuparcs;
+			pruner.pruningTotUparcs += numarcs;
 		}
 	}
 	
@@ -294,7 +296,7 @@ public class LocalFeatureData {
 	
 	public int endIndex(int i) 
 	{
-		return (i >= len-1) ? nuparcs : st[i+1];
+		return (i >= len-1) ? numedges : st[i+1];
 	}
 	
 	public int getHead(int id)
@@ -397,7 +399,7 @@ public class LocalFeatureData {
 		
 		Utils.Assert(id1 >= 0 && id2 >= 0 && arc2id[h * len + gp] >= 0);
 		
-		int pos = id1 * nuparcs + id2;
+		int pos = id1 * numarcs + id2;
 		if (ggpc[pos] == NULL)
 			getGGPCFeatureVector(ggp, gp, h, m);
 
@@ -410,7 +412,7 @@ public class LocalFeatureData {
 		
 		Utils.Assert(id1 >= 0 && id2 >= 0 && arc2id[m * len + h] >= 0);
 		
-		int pos = id1 * nuparcs + id2;
+		int pos = id1 * numarcs + id2;
 		if (psc[pos] == NULL)
 			getPSCFeatureVector(h, m, c, sib);
 
@@ -437,6 +439,8 @@ public class LocalFeatureData {
 				if (st >= ed || x < arcLis.get(st) || x > arcLis.get(ed-1) /*|| isPruned(h, x)*/) continue;
 				
 				int gp = heads[h];
+				
+				Utils.Assert(isPruned(h,x)==false && h!=x);
 				
 				for (int p = st; p+1 < ed; ++p) {
 					// mod and sib
@@ -471,6 +475,7 @@ public class LocalFeatureData {
 						for (int mp = mst; mp < med; ++mp) {
 							int c = arcLis.get(mp);
 							//if ((m <= x && x <= s) || x == c)
+							if (x != c)
 							score += getPSCScore(h, m, c, s);
 						}
 						
@@ -481,6 +486,7 @@ public class LocalFeatureData {
 						for (int sp = sst; sp < sed; ++sp) {
 							int c = arcLis.get(sp);
 							//if ((m <= x && x <= s) || x == c)
+							if (x != c)
 							score += getPSCScore(h, s, c, m);
 						}
 					}
@@ -935,7 +941,7 @@ public class LocalFeatureData {
 		
 		Utils.Assert(id1 >= 0 && id2 >= 0 && arc2id[h * len + gp] >= 0);
 		
-		int pos = id1 * nuparcs + id2;
+		int pos = id1 * numarcs + id2;
 		FeatureVector fv = pipe.synFactory.createGGPCFeatureVector(inst, ggp, gp, h, m);
 		ggpc[pos] = parameters.dotProduct(fv) * gamma;
 		return fv;
@@ -947,7 +953,7 @@ public class LocalFeatureData {
 		
 		Utils.Assert(id1 >= 0 && id2 >= 0 && arc2id[m * len + h] >= 0);
 		
-		int pos = id1 * nuparcs + id2;
+		int pos = id1 * numarcs + id2;
 		FeatureVector fv = pipe.synFactory.createPSCFeatureVector(inst, h, m, c, sib);
 		psc[pos] = parameters.dotProduct(fv) * gamma;
 		return fv;
