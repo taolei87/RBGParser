@@ -186,10 +186,6 @@ public class HillClimbingDecoder extends DependencyDecoder {
 						int bestHead = heads[m];
                         int oldHead = bestHead;
 						double maxScore = calcScore(heads, m, arcLis);
-                        //double temp = maxScore, temp2 = calcScore(now);
-                        //double temp3 = lfd.getPartialScore(heads, m, arcLis);
-                        //double temp4 = lfd.getPartialScore2(heads, m, arcLis);
-						//double maxScore = calcScore(now);
 						
 						int lastHead = heads[m];
 						int hst = lfd.startIndex(m), hed = lfd.endIndex(m);
@@ -203,19 +199,6 @@ public class HillClimbingDecoder extends DependencyDecoder {
 								//checkUpdateCorrect(heads, arcLis);
 								lastHead = h;
 								double score = calcScore(heads, m, arcLis);
-                                //double score2 = calcScore(now);
-                                //double score3 = lfd.getPartialScore(heads, m, arcLis);
-                                //double score4 = lfd.getPartialScore2(heads, m, arcLis);
-                                //if (Math.abs(score3-temp3 - (score4-temp4)) > 1e-6 ||
-                                //    Math.abs(score-temp - (score2-temp2)) > 1e-6) {
-                                //    System.out.println("mod: " + m + " heads: " + oldHead + " " + h);
-                                //    System.out.println(score3 + " " + temp3 + " " + (score3-temp3));
-                                //    System.out.println(score4 + " " + temp4 + " " + (score4-temp4));
-                                //    System.out.println(score + " " + temp + " " + (score-temp));
-                                //    System.out.println(score2 + " " + temp2 + " " + (score2-temp2));
-                                //    System.exit(0);
-                                //}
-								//double score = calcScore(now);
 								if (score > maxScore) {
 									more = true;
 									bestHead = h;
@@ -230,10 +213,10 @@ public class HillClimbingDecoder extends DependencyDecoder {
 					if (!more) break;					
 
                     //DEBUG
-                    ++cnt;
-                    if (cnt % 100 == 0) {
-                        System.out.println(cnt);
-                    }
+                    //++cnt;
+                    //if (cnt % 100 == 0) {
+                    //    System.out.println(cnt);
+                    //}
 				}
 				
 				//if (options.learnLabel) {
