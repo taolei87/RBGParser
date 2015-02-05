@@ -107,9 +107,6 @@ public class LocalFeatureData {
 		//lbFvs = new FeatureVector[len][ntypes][2][2];
 		//lbScores = new double[len][ntypes][2][2];
 
-		// calculate 1st order feature vectors and scores
-		initFirstOrderTables();
-		
 		if (options.learningMode != LearningMode.Basic) {
 			// construct unpruned arc list. All arcs are kept if there is no pruner.
 			initArcPruningMap(indexGoldArcs);
@@ -117,7 +114,9 @@ public class LocalFeatureData {
 			// allocate memory for tables of high order features 
 			initHighOrderFeatureTables();
 		}
-				
+		
+		// calculate 1st order feature vectors and scores
+		initFirstOrderTables();
 	}
 	
 	private void initFirstOrderTables() 
@@ -129,10 +128,12 @@ public class LocalFeatureData {
 			parameters.projectU(wordFvs[i], wpU[i]);
 			parameters.projectV(wordFvs[i], wpV[i]);
 		}
-				
+		
+		boolean nopruning = !options.pruning || pruner == null || options.learningMode == LearningMode.Basic;
+		
 		for (int i = 0; i < len; ++i)
 			for (int j = 0; j < len; ++j) 
-				if (i != j) {
+				if (i != j && (nopruning || !isPruned(i,j))) {
 					//FeatureVector fv = pipe.synFactory.createArcFeatures(inst, i, j);
 					arcFvs[i*len+j] = pipe.synFactory.createArcFeatures(inst, i, j);
                     //arcNtScores[i*len+j] = parameters.dotProduct(arcFvs[i*len+j]) * gamma;
@@ -217,18 +218,22 @@ public class LocalFeatureData {
 		isPruned = new boolean[len*len];
 		edges = new int[len*len];
 		st = new int[len];
+				
+		for (int i = 0, L = arc2id.length; i < L; ++i) {
+			arc2id[i] = -1;
+			isPruned[i] = true;
+		}
 		
 		if (pruner == null || !options.pruning) {
-			for (int i = 0, L = arc2id.length; i < L; ++i) {
-				arc2id[i] = i;
-				isPruned[i] = false;
-			}
+
 			//nuparcs = len*len; -> (len-1)*(len-1) actually
 			numarcs = 0;
 			st[0] = 0;
 			for (int m = 1; m < len; ++m) {
 				st[m] = numarcs;
 				for (int h = 0; h < len; ++h) if (h!=m) {
+					isPruned[m*len+h] = false;
+					arc2id[m*len+h] = numarcs;
 					edges[numarcs] = h;
 					++numarcs;
 				}
@@ -237,11 +242,6 @@ public class LocalFeatureData {
 		} else {	
 			if (includeGoldArcs) pruner.pruningTotGold += len-1;
 			pruner.pruningTotArcs += (len-1)*(len-1);
-			
-			for (int i = 0, L = arc2id.length; i < L; ++i) {
-				arc2id[i] = -1;
-				isPruned[i] = true;
-			}
 			
 			// Use the threshold to prune arcs. 
 			double threshold = Math.log(options.pruningCoeff);

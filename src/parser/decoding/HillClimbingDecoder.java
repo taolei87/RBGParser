@@ -183,8 +183,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 					for (int i = 0; i < size; ++i) {
 						int m = dfslis[i];
 						
-						int bestHead = heads[m];
-                        int oldHead = bestHead;
+						int bestHead = heads[m];                        
 						double maxScore = calcScore(heads, m, arcLis);
 						
 						int lastHead = heads[m];
