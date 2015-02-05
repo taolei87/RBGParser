@@ -267,7 +267,7 @@ public class LocalFeatureData {
 						boolean keep = (v >= maxv + threshold || h == pred.heads[m]);
 						if ((includeGoldArcs && h == inst.heads[m]) || keep) {
 							isPruned[m*len+h] = !keep;
-							if (keep) edges[numarcs++] = h;
+							if (keep) edges[numedges++] = h;
 							arc2id[m*len+h] = numarcs;
 							numarcs++;							
 						}
