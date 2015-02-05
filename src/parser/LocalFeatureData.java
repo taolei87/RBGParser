@@ -133,7 +133,7 @@ public class LocalFeatureData {
 		
 		for (int i = 0; i < len; ++i)
 			for (int j = 0; j < len; ++j) 
-				if (i != j && (nopruning || !isPruned(i,j))) {
+				if (i != j && (nopruning || arc2id[j*len+i] != -1)) {
 					//FeatureVector fv = pipe.synFactory.createArcFeatures(inst, i, j);
 					arcFvs[i*len+j] = pipe.synFactory.createArcFeatures(inst, i, j);
                     //arcNtScores[i*len+j] = parameters.dotProduct(arcFvs[i*len+j]) * gamma;
