@@ -56,7 +56,7 @@ public class GlobalFeatureData {
 			Arrays.fill(span, NULL);
 
 			//nb = new FeatureDataItem[lfd.nuparcs * pipe.dictionaries.size(POS) * pipe.dictionaries.size(POS)];
-			nb = new double[lfd.numarcs * pipe.dictionaries.size(POS) * pipe.dictionaries.size(POS)];
+			nb = new double[lfd.numarcs * (pipe.dictionaries.size(POS)+1) * (pipe.dictionaries.size(POS)+1)];
 			Arrays.fill(nb, NULL);
 
 			//ppcc1 = new FeatureDataItem[lfd.len * lfd.len * lfd.len];	// pp attachment, punc head and part of conjunction
@@ -120,9 +120,9 @@ public class GlobalFeatureData {
 	
 	public FeatureVector getNeighborFeatureVector(int par, int h, int left, int right) {
 		int id = lfd.arc2id[h * lfd.len + par];
-		int size = pipe.dictionaries.size(POS);
-		
-		Utils.Assert(id >= 0 && left < size && right < size);
+		int size = pipe.dictionaries.size(POS)+1;
+	    
+		Utils.Assert(id >= 0);
 		
 		int pos = (id * size + left) * size + right;		
 		FeatureVector fv = synFactory.createNeighborFeatureVector(lfd.inst, par, h, left, right);
@@ -205,9 +205,9 @@ public class GlobalFeatureData {
 	
 	public double getNeighborScore(int par, int h, int left, int right) {
 		int id = lfd.arc2id[h * lfd.len + par];
-		int size = pipe.dictionaries.size(POS);
+		int size = pipe.dictionaries.size(POS)+1;
 		
-		Utils.Assert(id >= 0 && left < size && right < size);
+		Utils.Assert(id >= 0);
 		
 		int pos = (id * size + left) * size + right;		
 		if (nb[pos] == NULL)
