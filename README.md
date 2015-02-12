@@ -38,10 +38,14 @@ The data format of this parser is the one used in CoNLL-X shared task, which des
 
 ###### 3.1 Basic Usage
 
-Take a look at *run.sh* as an example of running the parser. You could also run the parser for example as follows:
-
+Take a look at *run.sh* as an example of running the parser. You could also run the parser as follows. The first thing is to add the RBGParser directory to the library path such that the parser can find the compiled jni library for SVD tensor intialization. Assuming the directory is "/path/to/rbg", this can be done by:
 ```
-java -classpath "bin:lib/trove.jar" -Xmx20000m parser.DependencyParser \
+export LD_LIBRARY_PATH="/path/to/rbg:${LD_LIBRARY_PATH}"
+```
+
+After this, we can run the parser:
+```
+java -classpath "bin:lib/trove.jar" -Xmx32000m parser.DependencyParser \
   model-file:example.model \
   train train-file:example.train \
   test test-file:example.test \
@@ -55,7 +59,7 @@ This will train a parser from the training data *example.train*, save the depend
 
 The parser will train a 3rd-order parser by default. To train a 1st-order (arc-based) model, run the parser like this:
 ```
-java -classpath "bin:lib/trove.jar" -Xmx20000m parser.DependencyParser \
+java -classpath "bin:lib/trove.jar" -Xmx32000m parser.DependencyParser \
   model-file:example.model \
   train train-file:example.train \
   test test-file:example.test \
@@ -65,21 +69,22 @@ The argument ``model:MODEL-TYPE'' specifies the model type (basic: 1st-order fea
 
 There are many other possible running options. Here is a more complicated example:
 ```
-java -classpath "bin:lib/trove.jar" -Xmx20000m parser.DependencyParser \
+java -classpath "bin:lib/trove.jar" -Xmx32000m parser.DependencyParser \
   model-file:example.model \
   train train-file:example.train \
   test test-file:example.test \
   output-file:example.out \
-  model:standard  C:1.0  iters:5  pruning:false R:20 gamma:0.3 thread:4
+  model:standard  C:1.0  iters:5  pruning:false \
+  R:20 gamma:0.3 thread:4 converge-test:50
 ```
-This will run a standard model with regularization *C=1.0*, number of training iteration *iters=5*, rank of the tensor *R=20*, number of threads in parallel *thread=4*, weight of the tensor component *gamma=0.3*, and no dependency arc pruning *pruning=false*. You may take a look at RBGParser/src/parser/Options.java to see a full list of possible options.
+This will run a standard model with regularization *C=1.0*, number of training iteration *iters=5*, rank of the tensor *R=20*, number of threads in parallel *thread=4*, weight of the tensor component *gamma=0.3*, the number of adaptive hill-climbing restarts during testing *converge-test=50*, and no dependency arc pruning *pruning=false*. You may take a look at RBGParser/src/parser/Options.java to see a full list of possible options.
 
 
 ###### 3.3 Using Word Embeddings
 
 To add unsupervised word embeddings (word vectors) as auxiliary features to the parser. Use option "word-vector:WORD-VECTOR-FILE":
 ```
-java -classpath "bin:lib/trove.jar" -Xmx20000m parser.DependencyParser \
+java -classpath "bin:lib/trove.jar" -Xmx32000m parser.DependencyParser \
   model-file:example.model \
   train train-file:example.train \
   test test-file:example.test \
