@@ -836,7 +836,7 @@ public class SyntacticFeatureFactory implements Serializable {
      ************************************************************************/
     
     public FeatureVector createLabelFeatures(DependencyInstance inst,
-    		DependencyArcList arcLis, int mod, int type)
+    		DependencyArcList arcLis, int[] heads, int mod, int type)
     {
     	FeatureVector fv = new FeatureVector(numLabeledArcFeats);
     	if (!options.learnLabel) return fv;
@@ -844,7 +844,7 @@ public class SyntacticFeatureFactory implements Serializable {
     	// label type to start from 1 in hashcode
     	type = type+1;
     	
-    	int[] heads = inst.heads;
+    	//int[] heads = inst.heads;
     	int head = heads[mod];
     	    	
     	fv.addEntries(createLabeledArcFeatures(inst, head, mod, type+1));

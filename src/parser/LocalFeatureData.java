@@ -987,14 +987,14 @@ public class LocalFeatureData {
     	return dfv;
 	}
 	
-	private FeatureVector getLabelFeature(DependencyArcList arcLis, int head, int mod, int type)
+	private FeatureVector getLabelFeature(DependencyArcList arcLis, int[] heads, int mod, int type)
 	{
-		return pipe.synFactory.createLabelFeatures(inst, arcLis, mod, type);
+		return pipe.synFactory.createLabelFeatures(inst, arcLis, int[] heads, mod, type);
 	}
 	
-	private double getLabelScore(DependencyArcList arcLis, int head, int mod, int type)
+	private double getLabelScore(DependencyArcList arcLis, int[] heads, int mod, int type)
 	{
-		return parameters.dotProductL(getLabelFeature(arcLis, head, mod, type)) * gammaLabel;
+		return parameters.dotProductL(getLabelFeature(arcLis, heads, mod, type)) * gammaLabel;
 	}
 	
 	public void predictLabels(int[] heads, int[] deplbids, boolean addLoss)
@@ -1005,10 +1005,10 @@ public class LocalFeatureData {
 		for (int mod = 1; mod < len; ++mod) {
 			int head = heads[mod];
 			int type = addLoss ? 0 : 1;
-			double best = getLabelScore(arcLis, head, mod, type) +
+			double best = getLabelScore(arcLis, heads, mod, type) +
 				(addLoss && inst.deplbids[mod] != 0 ? 1.0 : 0.0);
 			for (int t = type+1; t < T; ++t) {
-				double va = getLabelScore(arcLis, head, mod, t) +
+				double va = getLabelScore(arcLis, heads, mod, t) +
 					(addLoss && inst.deplbids[mod] != t ? 1.0 : 0.0);
 				if (va > best) {
 					best = va;
