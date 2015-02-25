@@ -103,7 +103,7 @@ public class SyntacticFeatureFactory implements Serializable {
     			//createLabelFeatures(inst, parent, type, toRight, false);
     			//createLabelFeatures(inst, i, type, toRight, true);
     			//createLabelFeatures(inst, heads[i], i, type);
-    			createLabelFeatures(inst, arcLis, i, type);
+    			createLabelFeatures(inst, arcLis, heads, i, type);
     		}
     	}
     	

@@ -989,7 +989,7 @@ public class LocalFeatureData {
 	
 	private FeatureVector getLabelFeature(DependencyArcList arcLis, int[] heads, int mod, int type)
 	{
-		return pipe.synFactory.createLabelFeatures(inst, arcLis, int[] heads, mod, type);
+		return pipe.synFactory.createLabelFeatures(inst, arcLis, heads, mod, type);
 	}
 	
 	private double getLabelScore(DependencyArcList arcLis, int[] heads, int mod, int type)
@@ -1043,8 +1043,8 @@ public class LocalFeatureData {
     		if (head != head2 || type != type2) {
     			int toR = head < mod ? 1 : 0;        		
     			int toR2 = head2 < mod ? 1 : 0;   
-    			dlfv.addEntries(getLabelFeature(arcLis, head, mod, type));
-    			dlfv.addEntries(getLabelFeature(arcLis, head2, mod, type2), -1.0);
+    			dlfv.addEntries(getLabelFeature(arcLis, actDeps, mod, type));
+    			dlfv.addEntries(getLabelFeature(arcLis, predDeps, mod, type2), -1.0);
     			
     			//dlfv.addEntries(lbFvs[head][type][toR][0]);
     			//dlfv.addEntries(lbFvs[mod][type][toR][1]);
