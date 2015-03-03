@@ -994,7 +994,8 @@ public class LocalFeatureData {
 	
 	private double getLabelScore(DependencyArcList arcLis, int[] heads, int mod, int type)
 	{
-		return parameters.dotProductL(getLabelFeature(arcLis, heads, mod, type)) * gammaLabel;
+		//return parameters.dotProductL(getLabelFeature(arcLis, heads, mod, type)) * gammaLabel;
+		return parameters.dotProduct(getLabelFeature(arcLis, heads, mod, type)); //* gammaLabel;
 	}
 	
 	public void predictLabels(int[] heads, int[] deplbids, boolean addLoss)
