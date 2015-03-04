@@ -2939,13 +2939,13 @@ public class SyntacticFeatureFactory implements Serializable {
     
     private final int hashcode2int(long code)
     {
-    	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
+    	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)* 0x6e8ab8b;  //31;
     	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	return id;
     }
     
     public final void addArcFeature(long code, FeatureVector mat) {
-    	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
+    	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)* 0x6e8ab8b;  //31;
     	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;
     	mat.addEntry(id, 1.0);
@@ -2954,7 +2954,7 @@ public class SyntacticFeatureFactory implements Serializable {
     }
     
     public final void addArcFeature(long code, double value, FeatureVector mat) {
-    	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
+    	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)* 0x6e8ab8b;  //31;
     	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;
     	mat.addEntry(id, value);
@@ -2963,14 +2963,14 @@ public class SyntacticFeatureFactory implements Serializable {
     }
     
     public final void addLabeledArcFeature(long code, FeatureVector mat) {
-    	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
+    	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)* 0x6e8ab8b;  //31;
     	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;
     	mat.addEntry(id, 1.0);
     }
     
     public final void addLabeledArcFeature(long code, double value, FeatureVector mat) {
-    	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
+    	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)* 0x6e8ab8b;  //31;
     	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;
     	mat.addEntry(id, value);
