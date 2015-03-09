@@ -104,7 +104,9 @@ public class FeatureVector {
 	private static double[] l2Vec;
 	public double Squaredl2NormUnsafe() {
 
-		if (l2Vec == null || l2Vec.length < nRows) l2Vec = new double[nRows];
+		if (l2Vec == null || l2Vec.length < nRows) {
+            l2Vec = new double[nRows];
+        }
 		
 		double sum = 0;
 		for (int i = 0; i < size; ++i) l2Vec[x[i]] += va[i];

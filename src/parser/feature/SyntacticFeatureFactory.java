@@ -52,7 +52,7 @@ public class SyntacticFeatureFactory implements Serializable {
 	public int numWordFeats;			// number of word features
 	
 	private boolean stoppedGrowth;
-	private TLongHashSet featureHashSet;
+	private transient TLongHashSet featureHashSet;
 	private Alphabet wordAlphabet;		// the alphabet of word features (e.g. \phi_h, \phi_m)
 	//private Alphabet arcAlphabet;		// the alphabet of 1st order arc features (e.g. \phi_{h->m})
 	
@@ -2944,6 +2944,21 @@ public class SyntacticFeatureFactory implements Serializable {
     	return id;
     }
     
+    //private final int hashcode2int(long l) {
+    //    long r= l;// 27
+    //    l = (l>>13)&0xffffffffffffe000L;
+    //    r ^= l;   // 40
+    //    l = (l>>11)&0xffffffffffff0000L;
+    //    r ^= l;   // 51
+    //    l = (l>>9)& 0xfffffffffffc0000L; //53
+    //    r ^= l;  // 60
+    //    l = (l>>7)& 0xfffffffffff00000L; //62
+    //    r ^=l;    //67
+    //    int x = ((int)r) % 115911564;
+    //
+    //    return x >= 0 ? x : -x ; 
+    //}
+    
     public final void addArcFeature(long code, FeatureVector mat) {
     	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
     	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
@@ -2956,7 +2971,7 @@ public class SyntacticFeatureFactory implements Serializable {
     public final void addArcFeature(long code, double value, FeatureVector mat) {
     	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
     	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
-    	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;
+    	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;    	
     	mat.addEntry(id, value);
     	if (!stoppedGrowth)
     		featureHashSet.add(code);
@@ -2965,14 +2980,14 @@ public class SyntacticFeatureFactory implements Serializable {
     public final void addLabeledArcFeature(long code, FeatureVector mat) {
     	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
     	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
-    	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;
+    	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;    	
     	mat.addEntry(id, 1.0);
     }
     
     public final void addLabeledArcFeature(long code, double value, FeatureVector mat) {
     	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
     	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
-    	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;
+    	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;    	
     	mat.addEntry(id, value);
     }
     

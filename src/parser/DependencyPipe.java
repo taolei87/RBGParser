@@ -105,7 +105,7 @@ public class DependencyPipe implements Serializable {
 		} else if (lang == PossibleLang.Bulgarian || lang == PossibleLang.German
 				|| lang == PossibleLang.Portuguese || lang == PossibleLang.Spanish) {
 			ccDepType = 1;
-		} else if (lang == PossibleLang.Danish || lang == PossibleLang.English08) {
+		} else if (lang == PossibleLang.Danish || lang == PossibleLang.English) {
 			ccDepType = 2;
 		} else if (lang == PossibleLang.Japanese) {
 			ccDepType = 3;
@@ -152,7 +152,7 @@ public class DependencyPipe implements Serializable {
 			conjWord.add("en");
 			conjWord.add("of");
 			break;
-		case English08:
+		case English:
 			conjWord.add("and");
 			conjWord.add("or");
 			break;

@@ -24,7 +24,7 @@ public class Options implements Cloneable, Serializable {
 	public boolean test = false;	
 	public String wordVectorFile = null;
 	public String modelFile = "model.out";
-    public String format = "CONLL";
+    public String format = "CONLL-X";
     
 	public int maxNumSent = -1;
     public int numPretrainIters = 1;
@@ -45,7 +45,7 @@ public class Options implements Cloneable, Serializable {
 	// Training requires more restarts because of cost-augmented decoding
 	// Testing is easier therefore needs less restarts
 	public int numTrainConverge = 300;	
-	public int numTestConverge = 20;	
+	public int numTestConverge = 30;	
 	
 	public boolean average = true;
 	public double C = 0.01;
@@ -71,7 +71,7 @@ public class Options implements Cloneable, Serializable {
 		Czech,
 		Danish,
 		Dutch,
-		English08,
+		English,
 		German,
 		Japanese,
 		Portuguese,
@@ -84,7 +84,7 @@ public class Options implements Cloneable, Serializable {
 	PossibleLang lang;
 	
 	final static String langString[] = {"arabic", "bulgarian", "chinese", "czech", "danish", "dutch",
-			"english08", "german", "japanese", "portuguese", "slovene", "spanish",
+			"english", "german", "japanese", "portuguese", "slovene", "spanish",
 			"swedish", "turkish"};
 	
 	
@@ -184,7 +184,9 @@ public class Options implements Cloneable, Serializable {
             	else if (str.equals("full"))
             		learningMode = LearningMode.Full;
             }
-
+            else if (arg.startsWith("format:")) {
+            	format = arg.split(":")[1];
+            }
     	}    	
         
         //gammaLabel = 1.0;
@@ -235,6 +237,7 @@ public class Options implements Cloneable, Serializable {
         System.out.println("hill-climbing converge (train): " + numTrainConverge);
         System.out.println("hill-climbing converge (test): " + numTestConverge);
         System.out.println("thread: " + numHcThreads);
+        System.out.println("file format: " + format);
         
         System.out.println();
         System.out.println("use consecutive siblings: " + useCS);
