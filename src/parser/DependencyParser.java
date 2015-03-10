@@ -91,6 +91,8 @@ public class DependencyParser implements Serializable {
 			parser.parameters = parameters;
 			
 			parser.train(lstTrain);
+			if (options.dev && options.learningMode != LearningMode.Basic) 
+				parser.tuneSpeed();
 			parser.saveModel();
 		}
 		
@@ -101,11 +103,35 @@ public class DependencyParser implements Serializable {
 			parser.loadModel();
 			parser.options.processArguments(args);
 			if (!options.train) parser.options.printOptions(); 
+			if (options.dev && options.learningMode != LearningMode.Basic) {
+				parser.tuneSpeed();
+				parser.saveModel();
+			}
 			
 			System.out.printf(" Evaluating: %s%n", options.testFile);
 			parser.evaluateSet(true, false);
 		}
 		
+	}
+	
+	public void tuneSpeed() throws IOException, CloneNotSupportedException
+	{
+		if (options.numTestConverge < 10) return;
+		System.out.println("Tuning hill-climbing converge number on eval set...");
+		double maxUAS = evaluateWithConvergeNum(options.numTestConverge);
+		int max = options.numTrainConverge / 5;
+		int min = 2;
+		while (min < max) {
+			int mid = (min+max)/2;
+			double uas = evaluateWithConvergeNum(mid*5);
+			System.out.printf("\tconverge=%d\tUAS=%f%n", mid*5, uas);
+			if (uas + 0.001 < maxUAS)
+				min = mid+1;
+			else
+				max = mid;
+		}
+		options.numTestConverge = min * 5;
+		options.dev = false;	// set dev=false because already tuned
 	}
 	
     public void saveModel() throws IOException 
@@ -429,6 +455,39 @@ public class DependencyParser implements Serializable {
     					options.pruningCoeff);
     		}
     	}
+    	
+        decoder.shutdown();
+
+        return eval.UAS();
+    }
+    
+    public double evaluateWithConvergeNum(int converge) throws IOException, CloneNotSupportedException 
+    {
+    	
+    	if (pruner != null) pruner.resetPruningStats();
+    	
+    	Options options = (Options) this.options.clone();
+    	options.numTestConverge = converge;
+    	DependencyReader reader = DependencyReader.createDependencyReader(options);
+    	reader.startReading(options.testFile);
+
+    	DependencyDecoder decoder = DependencyDecoder.createDependencyDecoder(options);   	
+    	
+    	Evaluator eval = new Evaluator(options, pipe);
+    	
+    	DependencyInstance inst = pipe.createInstance(reader);    	
+    	while (inst != null) {
+    		LocalFeatureData lfd = new LocalFeatureData(inst, this, true);
+    		GlobalFeatureData gfd = new GlobalFeatureData(lfd); 
+    		
+            DependencyInstance predInst = decoder.decode(inst, lfd, gfd, false);
+            
+            eval.add(inst, predInst, false);
+    		
+    		inst = pipe.createInstance(reader);
+    	}
+    	
+    	reader.close();
     	
         decoder.shutdown();
 

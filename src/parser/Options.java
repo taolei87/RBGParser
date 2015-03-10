@@ -21,7 +21,8 @@ public class Options implements Cloneable, Serializable {
 	public String unimapFile = null;
 	public String outFile = null;
 	public boolean train = false;
-	public boolean test = false;	
+	public boolean test = false;
+	public boolean dev = false;
 	public String wordVectorFile = null;
 	public String modelFile = "model.out";
     public String format = "CONLL-X";
@@ -106,6 +107,10 @@ public class Options implements Cloneable, Serializable {
     		}
     		else if (arg.equals("test")) {
     			test = true;
+    		}
+    		else if (arg.equals("dev")) {
+    			test = true;
+    			dev = true;
     		}
     		else if (arg.startsWith("label")) {
     			learnLabel = Boolean.parseBoolean(arg.split(":")[1]);
