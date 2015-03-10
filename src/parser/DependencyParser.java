@@ -117,7 +117,7 @@ public class DependencyParser implements Serializable {
 	public void tuneSpeed() throws IOException, CloneNotSupportedException
 	{
 		if (options.numTestConverge < 10) return;
-		System.out.println("Tuning hill-climbing converge number on eval set...");
+		System.out.println(" Tuning hill-climbing converge number on eval set...");
 		double maxUAS = evaluateWithConvergeNum(options.numTrainConverge);
 		System.out.printf("\tconverge=%d\tUAS=%f%n", options.numTrainConverge, maxUAS);
 		int max = options.numTrainConverge / 5;
@@ -133,6 +133,7 @@ public class DependencyParser implements Serializable {
 		}
 		options.numTestConverge = min * 5;
 		options.dev = false;	// set dev=false because already tuned
+		System.out.printf(" final converge=%d%n%n", options.numTestConverge);
 	}
 	
     public void saveModel() throws IOException 
