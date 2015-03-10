@@ -118,7 +118,8 @@ public class DependencyParser implements Serializable {
 	{
 		if (options.numTestConverge < 10) return;
 		System.out.println("Tuning hill-climbing converge number on eval set...");
-		double maxUAS = evaluateWithConvergeNum(options.numTestConverge);
+		double maxUAS = evaluateWithConvergeNum(options.numTrainConverge);
+		System.out.printf("\tconverge=%d\tUAS=%f%n", options.numTrainConverge, maxUAS);
 		int max = options.numTrainConverge / 5;
 		int min = 2;
 		while (min < max) {
