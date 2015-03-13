@@ -3,6 +3,7 @@ package parser;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 import gnu.trove.map.hash.TIntIntHashMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
@@ -15,6 +16,8 @@ public class Evaluator
 	
 	boolean learnLabel;
 	String[] labels;
+	
+	Pattern puncRegex = Pattern.compile("[\\p{Punct}]+", Pattern.UNICODE_CHARACTER_CLASS);
 	
 	public Evaluator(Options options, DependencyPipe pipe)
 	{
@@ -54,7 +57,8 @@ public class Evaluator
     	for (int i = 1, N = gold.length; i < N; ++i) {
 
             if (!evalWithPunc)
-            	if (gold.forms[i].matches("[-!\"%&'()*,./:;?@\\[\\]_{}、]+")) continue;
+            	if (puncRegex.matcher(gold.forms[i]).matches()) continue;
+            	//if (gold.forms[i].matches("[-!\"%&'()*,./:;?@\\[\\]_{}、]+")) continue;
 
             ++tt;
     		if (gold.heads[i] == pred.heads[i]) {
