@@ -29,6 +29,9 @@ public class FeatureTemplate {
 	    // posL posIn posR
 	    HP_BP_MP,			//CORE_POS_PC,	    
 	    					//CORE_POS_XPC,
+	    HP_BCC_MP,
+	    HP_BPN_MP,
+	    HP_BVB_MP,
 	    
 	    // posL-1 posL posR posR+1
 	    HPp_HP_MP_MPn,		//CORE_POS_PT0,

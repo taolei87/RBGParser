@@ -18,6 +18,7 @@ public class Evaluator
 	String[] labels;
 	
 	public static Pattern puncRegex = Pattern.compile("[\\p{Punct}]+", Pattern.UNICODE_CHARACTER_CLASS);
+	//public static Pattern puncRegex = Pattern.compile("[-!\"%&'()*,./:;?@\\[\\]_{}、，。！]+");
 	
 	public Evaluator(Options options, DependencyPipe pipe)
 	{
