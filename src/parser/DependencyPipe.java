@@ -244,7 +244,7 @@ public class DependencyPipe implements Serializable {
 				
 		synFactory.wordNumBits = Utils.log2(dictionaries.size(WORD) + 1);
 		synFactory.tagNumBits = Utils.log2(dictionaries.size(POS) + 1);
-		synFactory.depNumBits = Utils.log2(dictionaries.size(DEPLABEL)*2 + 1);
+		synFactory.depNumBits = Utils.log2(dictionaries.size(DEPLABEL) + 1);
 		if (options.learnLabel)
 			synFactory.flagBits = synFactory.depNumBits + 4;
 		else

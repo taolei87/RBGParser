@@ -887,7 +887,7 @@ public class SyntacticFeatureFactory implements Serializable {
     	//int[] heads = inst.heads;
     	int head = heads[mod];
     	    	
-    	fv.addEntries(createLabeledArcFeatures(inst, head, mod, type+1));
+    	fv.addEntries(createLabeledArcFeatures(inst, head, mod, type));
     	
     	//int ghead = heads[head];
     	//if (ghead != -1) {
@@ -1117,15 +1117,55 @@ public class SyntacticFeatureFactory implements Serializable {
     	// feature posR posMid posL
     	int small = h < c ? h : c;
     	int large = h > c ? h : c;
+    	
+    	SpecialPos[] spos = inst.specialPos;
+    	int num_verb = 0, num_conj = 0, num_punc = 0;
+    	for(int i = small+1; i < large; ++i)
+    		if (spos[i] == SpecialPos.C)
+    			++num_conj;
+    		else if (spos[i] == SpecialPos.V)
+    			++num_verb;
+    		else if (spos[i] == SpecialPos.PNX)
+    			++num_punc;
+    	int max_num = 15 < (1 << tagNumBits) ? 15 : (1 << tagNumBits)-1;
+    	num_verb = num_verb > max_num ? max_num : num_verb;
+    	num_conj = num_conj > max_num ? max_num : num_conj;
+    	num_punc = num_punc > max_num ? max_num : num_punc;
+    	
     	for(int i = small+1; i < large; i++) {    		
     		code = createArcCodePPP(HP_BP_MP, pHead, pos[i], pMod) | tid;
-    		addLabeledArcFeature(code, fv);
-    		addLabeledArcFeature(code | attDist, fv);
+    		addArcFeature(code, fv);
+    		addArcFeature(code | attDist, fv);
     		
     		code = createArcCodePPP(HP_BP_MP, pHeadA, posA[i], pModA) | tid;
-    		addLabeledArcFeature(code, fv);
-    		addLabeledArcFeature(code | attDist, fv);
+    		addArcFeature(code, fv);
+    		addArcFeature(code | attDist, fv);
     	}
+    	
+		code = createArcCodePPP(HP_BCC_MP, pHeadA, num_conj, pModA) | tid;
+		addArcFeature(code, fv);
+		addArcFeature(code | attDist, fv);
+		
+		code = createArcCodePPP(HP_BVB_MP, pHeadA, num_verb, pModA) | tid;
+		addArcFeature(code, fv);
+		addArcFeature(code | attDist, fv);
+		
+		code = createArcCodePPP(HP_BPN_MP, pHeadA, num_punc, pModA) | tid;
+		addArcFeature(code, fv);
+		addArcFeature(code | attDist, fv);
+		
+		code = createArcCodePPP(HP_BCC_MP, 0, num_conj, 0) | tid;
+		addArcFeature(code, fv);
+		addArcFeature(code | attDist, fv);
+		
+		code = createArcCodePPP(HP_BVB_MP, 0, num_verb, 0) | tid;
+		addArcFeature(code, fv);
+		addArcFeature(code | attDist, fv);
+		
+		code = createArcCodePPP(HP_BPN_MP, 0, num_punc, 0) | tid;
+		addArcFeature(code, fv);
+		addArcFeature(code | attDist, fv);
+		
     	
     	// feature posL-1 posL posR posR+1
     	code = createArcCodePPPP(HPp_HP_MP_MPn, pHeadLeft, pHead, pMod, pModRight) | tid;
@@ -2827,7 +2867,7 @@ public class SyntacticFeatureFactory implements Serializable {
     	int HC = s.cpostagids[id];
     	int HL = s.lemmaids != null ? s.lemmaids[id] : s.formids[id];
     	int GC = s.cpostagids[par];
-    	int GL = s.lemmaids != null ? s.lemmaids[par] : s.formids[id];
+    	int GL = s.lemmaids != null ? s.lemmaids[par] : s.formids[par];
 
     	long code = 0;
 
