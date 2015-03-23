@@ -20,21 +20,6 @@ This project is implemented by Tao Lei (taolei [at] csail.mit.edu) and Yuan Zhan
 
 #### Usage
 
-##### 1. Compilation
-
-To compile the project, first do a "make" in directory lib/SVDLIBC to compile the [SVD library](http://tedlab.mit.edu/~dr/SVDLIBC/). Next, make sure you have Java JDK installed on your machine and find the directory path of Java JNI include files. The directory should contains header files *jni.h* and *jni_md.h*. Take a look or directly use the shell script *make.sh* to compile the rest of the Java code. You have to replace the "jni_path" variable in *make.sh* with the correct JNI include path. Also, create a "bin" directory in the project directory before running *make.sh* script. 
-
-
-<br> 
-
-##### 2. Data Format
-
-The data format of this parser is the one used in CoNLL-X shared task, which describes a collection of annotated sentences (and the corresponding gold dependency structures). See more details of the format at [here](http://ilk.uvt.nl/conll/#dataformat) and [here](https://code.google.com/p/clearparser/wiki/DataFormat#CoNLL-X_format_%28conll%29). We use annotated <b>non-projective</b> dependency trees provided in the data.
-
-
-<br>
-
-##### 3. Usage
 [Quick Start](https://github.com/taolei87/RBGParser/wiki/Quick-Start)
 
 
