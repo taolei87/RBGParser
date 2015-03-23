@@ -18,9 +18,7 @@ This project is implemented by Tao Lei (taolei [at] csail.mit.edu) and Yuan Zhan
 
 =========
 
-#### Usage
-
-[Quick Start](https://github.com/taolei87/RBGParser/wiki/Quick-Start)
+#### [Quick Start](https://github.com/taolei87/RBGParser/wiki/Quick-Start)
 
 
 ======
