@@ -6,6 +6,7 @@ This version improves parsing speed using the hash kernel (see [4]) and by optim
 <br>
 #### [Quick Start](https://github.com/taolei87/RBGParser/wiki/Quick-Start)
 
+<br>
 #### [FAQs](https://github.com/taolei87/RBGParser/wiki/FAQs)
 
 ======
