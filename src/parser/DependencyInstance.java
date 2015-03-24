@@ -169,11 +169,40 @@ public class DependencyInstance implements Serializable {
 			}
 			else {
 				//System.out.println("Can't find coarse map: " + postags[i]);
-				coarseMap.put(postags[i], "X");
+				//coarseMap.put(postags[i], "X");
+				specialPos[i] = getSpecialPos(forms[i], postags[i]);
 			}
 		}
     }
 
+    // Heuristic rules to "guess" POS type based on the POS tag string 
+    // This is an extended version of the rules in EGSTRA code
+    // 	(http://groups.csail.mit.edu/nlp/egstra/).
+    //
+    private SpecialPos getSpecialPos(String form, String tag) {
+    	if (tag.charAt(0) == 'v' || tag.charAt(0) == 'V')
+    		return SpecialPos.V;
+    	else if (tag.charAt(0) == 'n' || tag.charAt(0) == 'N')
+    		return SpecialPos.N;
+    	else if (tag.equalsIgnoreCase("cc") ||
+    		tag.equalsIgnoreCase("conj") ||
+    		tag.equalsIgnoreCase("kon") ||
+    		tag.equalsIgnoreCase("conjunction"))
+    		return SpecialPos.C;
+    	else if (tag.equalsIgnoreCase("prep") ||
+    			 tag.equalsIgnoreCase("preposition") ||
+    			 tag.equals("IN"))
+    		return SpecialPos.P;
+    	else if (tag.equalsIgnoreCase("punc") ||
+    			 tag.equals("$,") ||
+    			 tag.equals("$.") ||
+    			 tag.equals(",") ||
+    			 tag.equals(";") ||
+    			 Evaluator.puncRegex.matcher(form).matches())
+    		return SpecialPos.PNX;
+    	else
+    		return SpecialPos.OTHER;
+    }
 	
     private String normalize(String s) {
 		if(s!=null && s.matches("[0-9]+|[0-9]+\\.[0-9]+|[0-9]+[0-9,]+"))

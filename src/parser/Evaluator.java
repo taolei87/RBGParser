@@ -17,7 +17,12 @@ public class Evaluator
 	boolean learnLabel;
 	String[] labels;
 	
-	Pattern puncRegex = Pattern.compile("[\\p{Punct}]+", Pattern.UNICODE_CHARACTER_CLASS);
+	// Note: this requires jdk version >= 1.7
+	public static Pattern puncRegex = Pattern.compile("[\\p{Punct}]+", Pattern.UNICODE_CHARACTER_CLASS);
+	
+	// Note: use this regex if jdk version < 1.7
+	//public static Pattern puncRegex = Pattern.compile("[-!\"%&'()*,./:;?@\\[\\]_{}、，。！]+");
+	
 	
 	public Evaluator(Options options, DependencyPipe pipe)
 	{

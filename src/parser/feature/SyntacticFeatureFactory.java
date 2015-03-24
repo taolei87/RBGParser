@@ -2787,7 +2787,7 @@ public class SyntacticFeatureFactory implements Serializable {
     	int HC = s.cpostagids[id];
     	int HL = s.lemmaids != null ? s.lemmaids[id] : s.formids[id];
     	int GC = s.cpostagids[par];
-    	int GL = s.lemmaids != null ? s.lemmaids[par] : s.formids[id];
+    	int GL = s.lemmaids != null ? s.lemmaids[par] : s.formids[par];
 
     	long code = 0;
 
