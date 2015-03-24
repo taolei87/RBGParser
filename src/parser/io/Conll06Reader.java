@@ -55,6 +55,13 @@ public class Conll06Reader extends DependencyReader {
 	    	} //else lemmas[i] = forms[i];
 	    	cpos[i] = parts[3];
 	    	pos[i] = parts[4];
+	    	
+	    	// handle the case when one type of POS is not given
+	    	if (pos[i].equals("_")) 
+	    		pos[i] = cpos[i];
+	    	else if (cpos[i].equals("_"))
+	    		cpos[i] = pos[i];
+	    	
 	    	if (!parts[5].equals("_")) feats[i] = parts[5].split("\\|");
 	    	heads[i] = Integer.parseInt(parts[6]);
 	    	deprels[i] = (/*options.learnLabel &&*/ isLabeled) ? parts[7] : "<no-type>";
