@@ -37,7 +37,7 @@ public class Options implements Cloneable, Serializable {
 	public boolean projective = false;
 	public boolean learnLabel = false;
 	public boolean pruning = true;
-	public double pruningCoeff = 0.2;
+	public double pruningCoeff = 0.1;
 	public int labelLossType = 0;
 	
 	public int numHcThreads = 4;		// hill climbing: number of threads
@@ -46,7 +46,7 @@ public class Options implements Cloneable, Serializable {
 	// Training requires more restarts because of cost-augmented decoding
 	// Testing is easier therefore needs less restarts
 	public int numTrainConverge = 300;	
-	public int numTestConverge = 30;	
+	public int numTestConverge = 100;	
 	
 	public boolean average = true;
 	public double C = 0.01;
