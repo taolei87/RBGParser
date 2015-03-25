@@ -103,7 +103,7 @@ public class DependencyParser implements Serializable {
 			parser.loadModel();
 			parser.options.processArguments(args);
 			if (!options.train) parser.options.printOptions(); 
-			if (options.dev && options.learningMode != LearningMode.Basic) {
+			if (options.dev && parser.options.learningMode != LearningMode.Basic) {
 				parser.tuneSpeed();
 				parser.saveModel();
 			}
@@ -126,7 +126,7 @@ public class DependencyParser implements Serializable {
 			int mid = (min+max)/2;
 			double uas = evaluateWithConvergeNum(mid*5);
 			System.out.printf("\tconverge=%d\tUAS=%f%n", mid*5, uas);
-			if (uas + 0.001 < maxUAS)
+			if (uas + 0.0005 <= maxUAS)
 				min = mid+1;
 			else
 				max = mid;
