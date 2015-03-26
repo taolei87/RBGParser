@@ -3017,11 +3017,36 @@ public class SyntacticFeatureFactory implements Serializable {
      *  
      ************************************************************************/
     
+    static final int C1 = 0xcc9e2d51;
+    static final int C2 = 0x1b873593;
     private final int hashcode2int(long code)
     {
-    	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
-    	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
-    	return id;
+    	int k1 = (int) (code & 0xffffffff);
+    	int k2 = (int) (code >>> 32);
+    	int h = 0;
+    	
+    	k1 *= C1;
+    	k1 = (k1 << 15) | (k1 >>> 17); // ROTL32(k1,15);
+    	k1 *= C2;
+    	h ^= k1;
+    	h = (h << 13) | (h >>> 19); // ROTL32(h1,13);
+    	h = h * 5 + 0xe6546b64;
+    	
+    	k2 *= C1;
+    	k2 = (k2 << 15) | (k2 >>> 17); // ROTL32(k1,15);
+    	k2 *= C2;
+    	h ^= k2;
+    	h = (h << 13) | (h >>> 19); // ROTL32(h1,13);
+    	h = h * 5 + 0xe6546b64;
+    	
+    	// finalizer
+    	h ^= h >> 16;
+    	h *= 0x85ebca6b;
+    	h ^= h >> 13;
+    	h *= 0xc2b2ae35;
+    	h ^= h >> 16;
+        		
+        return (int) (0xFFFFFFFFL & h) % 115911564;
     }
     
     //private final int hashcode2int(long l) {
@@ -3040,8 +3065,9 @@ public class SyntacticFeatureFactory implements Serializable {
     //}
     
     public final void addArcFeature(long code, FeatureVector mat) {
-    	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
-    	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
+    	int id = hashcode2int(code);
+    	//long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
+    	//int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;
     	mat.addEntry(id, 1.0);
     	if (!stoppedGrowth)
@@ -3049,8 +3075,9 @@ public class SyntacticFeatureFactory implements Serializable {
     }
     
     public final void addArcFeature(long code, double value, FeatureVector mat) {
-    	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
-    	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
+    	int id = hashcode2int(code);
+    	//long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
+    	//int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;    	
     	mat.addEntry(id, value);
     	if (!stoppedGrowth)
@@ -3058,15 +3085,17 @@ public class SyntacticFeatureFactory implements Serializable {
     }
     
     public final void addLabeledArcFeature(long code, FeatureVector mat) {
-    	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
-    	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
+    	int id = hashcode2int(code);
+    	//long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
+    	//int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;    	
     	mat.addEntry(id, 1.0);
     }
     
     public final void addLabeledArcFeature(long code, double value, FeatureVector mat) {
-    	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
-    	int id = (int)((hash < 0 ? -hash : hash) % 115911564);
+    	int id = hashcode2int(code);
+    	//long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
+    	//int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;    	
     	mat.addEntry(id, value);
     }
