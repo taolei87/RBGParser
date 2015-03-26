@@ -1134,37 +1134,37 @@ public class SyntacticFeatureFactory implements Serializable {
     	
     	for(int i = small+1; i < large; i++) {    		
     		code = createArcCodePPP(HP_BP_MP, pHead, pos[i], pMod) | tid;
-    		addArcFeature(code, fv);
-    		addArcFeature(code | attDist, fv);
+    		addLabeledArcFeature(code, fv);
+    		addLabeledArcFeature(code | attDist, fv);
     		
     		code = createArcCodePPP(HP_BP_MP, pHeadA, posA[i], pModA) | tid;
-    		addArcFeature(code, fv);
-    		addArcFeature(code | attDist, fv);
+    		addLabeledArcFeature(code, fv);
+    		addLabeledArcFeature(code | attDist, fv);
     	}
     	
 		code = createArcCodePPP(HP_BCC_MP, pHeadA, num_conj, pModA) | tid;
-		addArcFeature(code, fv);
-		addArcFeature(code | attDist, fv);
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
 		
 		code = createArcCodePPP(HP_BVB_MP, pHeadA, num_verb, pModA) | tid;
-		addArcFeature(code, fv);
-		addArcFeature(code | attDist, fv);
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
 		
 		code = createArcCodePPP(HP_BPN_MP, pHeadA, num_punc, pModA) | tid;
-		addArcFeature(code, fv);
-		addArcFeature(code | attDist, fv);
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
 		
 		code = createArcCodePPP(HP_BCC_MP, 0, num_conj, 0) | tid;
-		addArcFeature(code, fv);
-		addArcFeature(code | attDist, fv);
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
 		
 		code = createArcCodePPP(HP_BVB_MP, 0, num_verb, 0) | tid;
-		addArcFeature(code, fv);
-		addArcFeature(code | attDist, fv);
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
 		
 		code = createArcCodePPP(HP_BPN_MP, 0, num_punc, 0) | tid;
-		addArcFeature(code, fv);
-		addArcFeature(code | attDist, fv);
+		addLabeledArcFeature(code, fv);
+		addLabeledArcFeature(code | attDist, fv);
 		
     	
     	// feature posL-1 posL posR posR+1
