@@ -1,6 +1,7 @@
 package parser;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import utils.FeatureVector;
 import utils.Utils;
@@ -17,13 +18,13 @@ public class Parameters implements Serializable {
 	public transient Options options;
 	public final int labelLossType;
 	public double C, gamma, gammaLabel;
-	public int size, sizeL;
+	public int size;//, sizeL;
 	public int rank;
 	public int N, M, T, D;
 	
-	public float[] params, paramsL;
+	public float[] params;//, paramsL;
 	public double[][] U, V, W;
-	public transient float[] backup, total, backupL, totalL;
+	public transient float[] backup, total;//, backupL, totalL;
 	public transient double[][] totalU, totalV, totalW;
 	public transient double[][] backupU, backupV, backupW;
 	
@@ -37,11 +38,11 @@ public class Parameters implements Serializable {
 		params = new float[size];
 		total = new float[size];
 		
-		if (options.learnLabel) {
-			sizeL = pipe.synFactory.numLabeledArcFeats;
-			paramsL = new float[sizeL];
-			totalL = new float[sizeL];
-		}
+		//if (options.learnLabel) {
+		//	sizeL = pipe.synFactory.numLabeledArcFeats;
+		//	paramsL = new float[sizeL];
+		//	totalL = new float[sizeL];
+		//}
 		
 		this.options = options;
 		this.labelLossType = options.labelLossType;
@@ -78,68 +79,94 @@ public class Parameters implements Serializable {
 	
 	public void averageParameters(int T) 
 	{
-		backup = params;
-		float[] avgParams = new float[size];
+		//backup = params;
+		//float[] avgParams = new float[size];
 		for (int i = 0; i < size; ++i) {
-			avgParams[i] = (params[i] * (T+1) - total[i])/T;			
+			//avgParams[i] = (params[i] * (T+1) - total[i])/T;
+			params[i] = (params[i] * (T+1) - total[i])/T;
 		}		
-		params = avgParams;
+		//params = avgParams;
 		
-		backupL = paramsL;
-		float[] avgParamsL = new float[sizeL];
-		for (int i = 0; i < sizeL; ++i) {
-			avgParamsL[i] = (paramsL[i] * (T+1) - totalL[i])/T;			
-		}		
-		paramsL = avgParamsL;
+//		backupL = paramsL;
+//		float[] avgParamsL = new float[sizeL];
+//		for (int i = 0; i < sizeL; ++i) {
+//			avgParamsL[i] = (paramsL[i] * (T+1) - totalL[i])/T;			
+//		}		
+//		paramsL = avgParamsL;
 		
-		backupU = U;
-		double[][] avgU = new double[rank][N];
+		//backupU = U;
+		//double[][] avgU = new double[rank][N];
 		for (int i = 0; i < rank; ++i)
 			for (int j = 0; j < N; ++j) {
-				avgU[i][j] = (U[i][j] * (T+1) - totalU[i][j])/T;
+				//avgU[i][j] = (U[i][j] * (T+1) - totalU[i][j])/T;
+				U[i][j] = (U[i][j] * (T+1) - totalU[i][j])/T;
 			}
-		U = avgU;
+		//U = avgU;
 		
-		backupV = V;
-		double[][] avgV = new double[rank][M];
+		//backupV = V;
+		//double[][] avgV = new double[rank][M];
 		for (int i = 0; i < rank; ++i)
 			for (int j = 0; j < M; ++j) {
-				avgV[i][j] = (V[i][j] * (T+1) - totalV[i][j])/T;
+				//avgV[i][j] = (V[i][j] * (T+1) - totalV[i][j])/T;
+				V[i][j] = (V[i][j] * (T+1) - totalV[i][j])/T;
 			}
-		V = avgV;
+		//V = avgV;
 		
-		backupW = W;
-		double[][] avgW = new double[rank][D];
+		//backupW = W;
+		//double[][] avgW = new double[rank][D];
 		for (int i = 0; i < rank; ++i)
 			for (int j = 0; j < D; ++j) {
-				avgW[i][j] = (W[i][j] * (T+1) - totalW[i][j])/T;
+				//avgW[i][j] = (W[i][j] * (T+1) - totalW[i][j])/T;
+				W[i][j] = (W[i][j] * (T+1) - totalW[i][j])/T;
 			}
-		W = avgW;
+		//W = avgW;
 	}
 	
-	public void unaverageParameters() 
+	public void unaverageParameters(int T) 
 	{
-		params = backup;
-		paramsL = backupL;
-		U = backupU;
-		V = backupV;
-		W = backupW;
+		//params = backup;
+		//paramsL = backupL;
+		//U = backupU;
+		//V = backupV;
+		//W = backupW;
+		
+		for (int i = 0; i < size; ++i) {
+			params[i] = (params[i] * T + total[i])/(T+1);
+		}	
+		
+		for (int i = 0; i < rank; ++i)
+			for (int j = 0; j < N; ++j) {
+				U[i][j] = (U[i][j] * T + totalU[i][j])/(T+1);
+			}
+		
+		for (int i = 0; i < rank; ++i)
+			for (int j = 0; j < M; ++j) {
+				V[i][j] = (V[i][j] * T + totalV[i][j])/(T+1);
+			}
+		
+		for (int i = 0; i < rank; ++i)
+			for (int j = 0; j < D; ++j) {
+				W[i][j] = (W[i][j] * T + totalW[i][j])/(T+1);
+			}
 	}
 	
 	public void clearUVW() 
 	{
-		U = new double[rank][N];
-		V = new double[rank][M];
-		W = new double[rank][D];
-		totalU = new double[rank][N];
-		totalV = new double[rank][M];
-		totalW = new double[rank][D];
+		for (int i = 0; i < rank; ++i) {
+			Arrays.fill(U[i], 0);
+			Arrays.fill(V[i], 0);
+			Arrays.fill(W[i], 0);
+			Arrays.fill(totalU[i], 0);
+			Arrays.fill(totalV[i], 0);
+			Arrays.fill(totalW[i], 0);
+			
+		}
 	}
 	
 	public void clearTheta() 
 	{
-		params = new float[size];
-		total = new float[size];
+		Arrays.fill(params, 0);
+		Arrays.fill(total, 0);
 	}
 	
 	public void printUStat() 
@@ -203,10 +230,10 @@ public class Parameters implements Serializable {
 		return fv.dotProduct(params);
 	}
 	
-	public double dotProductL(FeatureVector fv)
-	{
-		return fv.dotProduct(paramsL);
-	}
+//	public double dotProductL(FeatureVector fv)
+//	{
+//		return fv.dotProduct(paramsL);
+//	}
 	
 	public double dotProduct(double[] proju, double[] projv, int dist)
 	{
@@ -230,7 +257,8 @@ public class Parameters implements Serializable {
     	double Fi = getLabelDis(actDeps, actLabs, predDeps, predLabs);
         	
     	FeatureVector dtl = lfd.getLabeledFeatureDifference(gold, pred);
-    	double loss = - dtl.dotProduct(paramsL) + Fi;
+    	//double loss = - dtl.dotProduct(paramsL) + Fi;
+    	double loss = - dtl.dotProduct(params) + Fi;
         double l2norm = dtl.Squaredl2NormUnsafe();
     	
         double alpha = loss/l2norm;
@@ -241,8 +269,10 @@ public class Parameters implements Serializable {
     		for (int i = 0, K = dtl.size(); i < K; ++i) {
 	    		int x = dtl.x(i);
 	    		double z = dtl.value(i);
-	    		paramsL[x] += coeff * z;
-	    		totalL[x] += coeff2 * z;
+	    		//paramsL[x] += coeff * z;
+	    		//totalL[x] += coeff2 * z;
+	    		params[x] += coeff * z;
+	    		total[x] += coeff2 * z;
     		}
     	}
     	

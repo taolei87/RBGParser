@@ -340,7 +340,7 @@ public class DependencyParser implements Serializable {
 	  			System.out.println("_____________________________________________");
 	  			System.out.println();
                 if (options.average) 
-                	parameters.unaverageParameters();
+                	parameters.unaverageParameters((iIter+1)*N);
     		} 
     	}
     	

@@ -318,7 +318,8 @@ public class DependencyPipe implements Serializable {
 		
 		closeAlphabets();
 		reader.close();
-
+		
+		synFactory.checkCollisions();
 		System.out.printf("Num of CONLL fine POS tags: %d%n", posTagSet.size());
 		System.out.printf("Num of CONLL coarse POS tags: %d%n", cposTagSet.size());
 		System.out.printf("Num of labels: %d%n", types.length);

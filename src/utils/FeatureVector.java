@@ -1,6 +1,7 @@
 package utils;
 
 
+import gnu.trove.map.hash.TIntDoubleHashMap;
 import gnu.trove.map.hash.TLongObjectHashMap;
 
 import java.util.HashMap;
@@ -101,21 +102,32 @@ public class FeatureVector {
 		return Math.sqrt(sum);
 	}
 	
-	private static double[] l2Vec;
-	public double Squaredl2NormUnsafe() {
-
-		if (l2Vec == null || l2Vec.length < nRows) {
-            l2Vec = new double[nRows];
-        }
-		
+//	private static float[] l2Vec;
+//	public double Squaredl2NormUnsafe() {
+//
+//		if (l2Vec == null || l2Vec.length < nRows) {
+//            l2Vec = new float[nRows];
+//        }
+//		
+//		double sum = 0;
+//		for (int i = 0; i < size; ++i) l2Vec[x[i]] += va[i];
+//		for (int i = 0; i < size; ++i) {
+//			sum += l2Vec[x[i]] * l2Vec[x[i]];
+//			l2Vec[x[i]] = 0;
+//		}
+//		return sum;
+//		
+//	}
+	
+	public double Squaredl2NormUnsafe()
+	{
+		TIntDoubleHashMap vec = new TIntDoubleHashMap(size);
+		for (int i = 0; i < size; ++i)
+			vec.adjustOrPutValue(x[i], va[i], va[i]);
 		double sum = 0;
-		for (int i = 0; i < size; ++i) l2Vec[x[i]] += va[i];
-		for (int i = 0; i < size; ++i) {
-			sum += l2Vec[x[i]] * l2Vec[x[i]];
-			l2Vec[x[i]] = 0;
-		}
+		for (double v : vec.values())
+			sum += v*v;
 		return sum;
-		
 	}
 	
     public double min() {
@@ -189,9 +201,9 @@ public class FeatureVector {
 		return true;
 	}
 	
-    public double dotProduct(FeatureVector _y) {
-        return dotProduct(this, _y);
-    }
+//    public double dotProduct(FeatureVector _y) {
+//        return dotProduct(this, _y);
+//    }
         
 	public double dotProduct(float[] _y) {
 		return dotProduct(this, _y);
@@ -209,25 +221,25 @@ public class FeatureVector {
 		return dotProduct(this, _y, offset);
 	}
 	
-	private static double[] dpVec;			 //non-sparse vector repr for vector dot product
-	public static double dotProduct(FeatureVector _x, FeatureVector _y) {
-		
-		assert(_x.nRows == _y.nRows);		
-		
-		if (dpVec == null || dpVec.length < _y.nRows) dpVec = new double[_y.nRows];
-		
-		for (int i = 0; i < _y.size; ++i)
-			dpVec[_y.x[i]] += _y.va[i];
-		
-		double sum = 0;
-		for (int i = 0; i < _x.size; ++i)
-			sum += _x.va[i] * dpVec[_x.x[i]];
-
-		for (int i = 0; i < _y.size; ++i)
-			dpVec[_y.x[i]] = 0;
-		
-		return sum;
-	}
+//	private static float[] dpVec;			 //non-sparse vector repr for vector dot product
+//	public static double dotProduct(FeatureVector _x, FeatureVector _y) {
+//		
+//		assert(_x.nRows == _y.nRows);		
+//		
+//		if (dpVec == null || dpVec.length < _y.nRows) dpVec = new float[_y.nRows];
+//		
+//		for (int i = 0; i < _y.size; ++i)
+//			dpVec[_y.x[i]] += _y.va[i];
+//		
+//		double sum = 0;
+//		for (int i = 0; i < _x.size; ++i)
+//			sum += _x.va[i] * dpVec[_x.x[i]];
+//
+//		for (int i = 0; i < _y.size; ++i)
+//			dpVec[_y.x[i]] = 0;
+//		
+//		return sum;
+//	}
 	
 	public static double dotProduct(FeatureVector _x, float[] _y) {
 		
