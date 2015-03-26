@@ -49,6 +49,14 @@ public final class Utils {
 		return vec;
 	}
 	
+	public static double squaredSum(float[] vec) 
+	{
+		double sum = 0;
+		for (int i = 0, N = vec.length; i < N; ++i)
+			sum += vec[i] * vec[i];
+		return sum;
+	}
+	
 	public static double squaredSum(double[] vec) 
 	{
 		double sum = 0;
@@ -62,6 +70,22 @@ public final class Utils {
 		double coeff = 1.0 / Math.sqrt(squaredSum(vec));
 		for (int i = 0, N = vec.length; i < N; ++i)
 			vec[i] *= coeff;
+	}
+	
+	public static double max(float[] vec) 
+	{
+		double max = Double.NEGATIVE_INFINITY;
+		for (int i = 0, N = vec.length; i < N; ++i)
+			max = Math.max(max, vec[i]);
+		return max;
+	}
+	
+	public static double min(float[] vec) 
+	{
+		double min = Double.POSITIVE_INFINITY;
+		for (int i = 0, N = vec.length; i < N; ++i)
+			min = Math.min(min, vec[i]);
+		return min;
 	}
 	
 	public static double max(double[] vec) 

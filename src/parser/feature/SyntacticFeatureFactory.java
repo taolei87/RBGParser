@@ -3,6 +3,7 @@ package parser.feature;
 
 import static parser.feature.FeatureTemplate.Arc.*;
 import static parser.feature.FeatureTemplate.Word.*;
+import gnu.trove.set.hash.TIntHashSet;
 import gnu.trove.set.hash.TLongHashSet;
 
 import java.io.Serializable;
@@ -47,8 +48,8 @@ public class SyntacticFeatureFactory implements Serializable {
 	
 	public int ccDepType;
 	
-	public final int numArcFeats = 115911564;	// number of arc structure features
-	public final int numLabeledArcFeats = 115911564;
+	public static final int numArcFeats = 115911564;	// number of arc structure features
+	public static final int numLabeledArcFeats = 115911564;
 	public int numWordFeats;			// number of word features
 	
 	private boolean stoppedGrowth;
@@ -76,7 +77,31 @@ public class SyntacticFeatureFactory implements Serializable {
 		//arcAlphabet.stopGrowth();
 		
 		stoppedGrowth = true;
+		
+		checkCollisions();
 	}
+	
+	private void checkCollisions()
+	{
+		long[] codes = featureHashSet.toArray();
+		int nfeats = codes.length;
+		int ncols = 0;
+		TIntHashSet idhash = new TIntHashSet();
+		for (long code : codes) {
+			int id = hashcode2int(code);
+			if (idhash.contains(id))
+				++ncols;
+			else
+				idhash.add(id);
+		}
+		System.out.printf("Hash collision: %.4f%% (%d / %d)%n",
+				ncols / (nfeats + 1e-30) * 100,
+				ncols,
+				nfeats
+			);
+		featureHashSet = null;		
+	}
+	
     public void initFeatureAlphabets(DependencyInstance inst) 
     {
         int n = inst.length;
@@ -3017,52 +3042,67 @@ public class SyntacticFeatureFactory implements Serializable {
      *  
      ************************************************************************/
     
-    static final int C1 = 0xcc9e2d51;
-    static final int C2 = 0x1b873593;
+//    static final int C1 = 0xcc9e2d51;
+//    static final int C2 = 0x1b873593;
+//    private final int hashcode2int(long code)
+//    {
+//    	int k1 = (int) (code & 0xffffffff);
+//    	int k2 = (int) (code >>> 32);
+//    	int h = 0;
+//    	
+//    	k1 *= C1;
+//    	k1 = (k1 << 15) | (k1 >>> 17); // ROTL32(k1,15);
+//    	k1 *= C2;
+//    	h ^= k1;
+//    	h = (h << 13) | (h >>> 19); // ROTL32(h1,13);
+//    	h = h * 5 + 0xe6546b64;
+//    	
+//    	k2 *= C1;
+//    	k2 = (k2 << 15) | (k2 >>> 17); // ROTL32(k1,15);
+//    	k2 *= C2;
+//    	h ^= k2;
+//    	h = (h << 13) | (h >>> 19); // ROTL32(h1,13);
+//    	h = h * 5 + 0xe6546b64;
+//    	
+//    	// finalizer
+//    	h ^= h >> 16;
+//    	h *= 0x85ebca6b;
+//    	h ^= h >> 13;
+//    	h *= 0xc2b2ae35;
+//    	h ^= h >> 16;
+//        		
+//        return (int) (0xFFFFFFFFL & h) % 115911564;
+//    }
+    
     private final int hashcode2int(long code)
     {
-    	int k1 = (int) (code & 0xffffffff);
-    	int k2 = (int) (code >>> 32);
-    	int h = 0;
-    	
-    	k1 *= C1;
-    	k1 = (k1 << 15) | (k1 >>> 17); // ROTL32(k1,15);
-    	k1 *= C2;
-    	h ^= k1;
-    	h = (h << 13) | (h >>> 19); // ROTL32(h1,13);
-    	h = h * 5 + 0xe6546b64;
-    	
-    	k2 *= C1;
-    	k2 = (k2 << 15) | (k2 >>> 17); // ROTL32(k1,15);
-    	k2 *= C2;
-    	h ^= k2;
-    	h = (h << 13) | (h >>> 19); // ROTL32(h1,13);
-    	h = h * 5 + 0xe6546b64;
-    	
-    	// finalizer
-    	h ^= h >> 16;
-    	h *= 0x85ebca6b;
-    	h ^= h >> 13;
-    	h *= 0xc2b2ae35;
-    	h ^= h >> 16;
-        		
-        return (int) (0xFFFFFFFFL & h) % 115911564;
+    	long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
+    	int id = (int)((hash < 0 ? -hash : hash) % numArcFeats);
+    	return id;
     }
     
-    //private final int hashcode2int(long l) {
-    //    long r= l;// 27
-    //    l = (l>>13)&0xffffffffffffe000L;
-    //    r ^= l;   // 40
-    //    l = (l>>11)&0xffffffffffff0000L;
-    //    r ^= l;   // 51
-    //    l = (l>>9)& 0xfffffffffffc0000L; //53
-    //    r ^= l;  // 60
-    //    l = (l>>7)& 0xfffffffffff00000L; //62
-    //    r ^=l;    //67
-    //    int x = ((int)r) % 115911564;
-    //
-    //    return x >= 0 ? x : -x ; 
-    //}
+//    private final int hashcode2int(long code)
+//    {
+//    	int id = (int)((code < 0 ? -code : code) % 115911563);
+//    	return id;
+//    }
+    
+    
+//    private final int hashcode2int(long l) {
+//        long r= l;// 27
+//        l = (l>>13)&0xffffffffffffe000L;
+//        r ^= l;   // 40
+//        l = (l>>11)&0xffffffffffff0000L;
+//        r ^= l;   // 51
+//        l = (l>>9)& 0xfffffffffffc0000L; //53
+//        r ^= l;  // 60
+//        l = (l>>7)& 0xfffffffffff00000L; //62
+//        r ^=l;    //67
+//        //int x = ((int)r) % 115911563;
+//        int x = (int) (r % 115911563);
+//    
+//        return x >= 0 ? x : -x ; 
+//    }
     
     public final void addArcFeature(long code, FeatureVector mat) {
     	int id = hashcode2int(code);
@@ -3090,6 +3130,8 @@ public class SyntacticFeatureFactory implements Serializable {
     	//int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;    	
     	mat.addEntry(id, 1.0);
+    	//if (!stoppedGrowth)
+    	//	featureHashSet.add(code);
     }
     
     public final void addLabeledArcFeature(long code, double value, FeatureVector mat) {
@@ -3098,6 +3140,8 @@ public class SyntacticFeatureFactory implements Serializable {
     	//int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;    	
     	mat.addEntry(id, value);
+    	//if (!stoppedGrowth)
+    	//	featureHashSet.add(code);
     }
     
     public final void addWordFeature(long code, FeatureVector mat) {

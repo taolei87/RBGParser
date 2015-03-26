@@ -21,9 +21,9 @@ public class Parameters implements Serializable {
 	public int rank;
 	public int N, M, T, D;
 	
-	public double[] params, paramsL;
+	public float[] params, paramsL;
 	public double[][] U, V, W;
-	public transient double[] backup, total, backupL, totalL;
+	public transient float[] backup, total, backupL, totalL;
 	public transient double[][] totalU, totalV, totalW;
 	public transient double[][] backupU, backupV, backupW;
 	
@@ -34,13 +34,13 @@ public class Parameters implements Serializable {
 		 //T = pipe.types.length;
         D = d * 2 + 1;
 		size = pipe.synFactory.numArcFeats;		
-		params = new double[size];
-		total = new double[size];
+		params = new float[size];
+		total = new float[size];
 		
 		if (options.learnLabel) {
 			sizeL = pipe.synFactory.numLabeledArcFeats;
-			paramsL = new double[sizeL];
-			totalL = new double[sizeL];
+			paramsL = new float[sizeL];
+			totalL = new float[sizeL];
 		}
 		
 		this.options = options;
@@ -79,14 +79,14 @@ public class Parameters implements Serializable {
 	public void averageParameters(int T) 
 	{
 		backup = params;
-		double[] avgParams = new double[size];
+		float[] avgParams = new float[size];
 		for (int i = 0; i < size; ++i) {
 			avgParams[i] = (params[i] * (T+1) - total[i])/T;			
 		}		
 		params = avgParams;
 		
 		backupL = paramsL;
-		double[] avgParamsL = new double[sizeL];
+		float[] avgParamsL = new float[sizeL];
 		for (int i = 0; i < sizeL; ++i) {
 			avgParamsL[i] = (paramsL[i] * (T+1) - totalL[i])/T;			
 		}		
@@ -138,8 +138,8 @@ public class Parameters implements Serializable {
 	
 	public void clearTheta() 
 	{
-		params = new double[size];
-		total = new double[size];
+		params = new float[size];
+		total = new float[size];
 	}
 	
 	public void printUStat() 

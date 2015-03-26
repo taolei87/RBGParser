@@ -193,6 +193,14 @@ public class FeatureVector {
         return dotProduct(this, _y);
     }
         
+	public double dotProduct(float[] _y) {
+		return dotProduct(this, _y);
+	}
+	
+	public double dotProduct(float[] _y, int offset) {
+		return dotProduct(this, _y, offset);
+	}
+	
 	public double dotProduct(double[] _y) {
 		return dotProduct(this, _y);
 	}
@@ -218,6 +226,22 @@ public class FeatureVector {
 		for (int i = 0; i < _y.size; ++i)
 			dpVec[_y.x[i]] = 0;
 		
+		return sum;
+	}
+	
+	public static double dotProduct(FeatureVector _x, float[] _y) {
+		
+		double sum = 0;
+		for (int i = 0; i < _x.size; ++i)
+			sum += _x.va[i] * _y[_x.x[i]];
+		return sum;
+	}
+	
+	public static double dotProduct(FeatureVector _x, float[] _y, int offset) {
+		
+		double sum = 0;
+		for (int i = 0; i < _x.size; ++i)
+			sum += _x.va[i] * _y[offset + _x.x[i]];
 		return sum;
 	}
 	
