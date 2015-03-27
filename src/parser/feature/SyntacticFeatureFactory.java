@@ -48,8 +48,8 @@ public class SyntacticFeatureFactory implements Serializable {
 	
 	public int ccDepType;
 	
-	public static final int numArcFeats = 1 << 29;	// number of arc structure features
-	public static final int numLabeledArcFeats = 1 << 29;
+	public final int numArcFeats;	// number of arc structure features
+	public final int numLabeledArcFeats;
 	public int numWordFeats;			// number of word features
 	
 	private boolean stoppedGrowth;
@@ -69,6 +69,9 @@ public class SyntacticFeatureFactory implements Serializable {
 		
 		//numArcFeats = 0;
 		numWordFeats = 0;
+		numArcFeats = (int) ((1L << options.bits)-1);
+		numLabeledArcFeats = (int ) ((1L << (options.bits-2))-1);
+		Utils.Assert(numArcFeats > 0);
 	}
 	
 	public void closeAlphabets()
@@ -3071,7 +3074,8 @@ public class SyntacticFeatureFactory implements Serializable {
     	h ^= h >> 16;
         		
         //return (int) (0xFFFFFFFFL & h) % 115911564;
-        return (int) ((numArcFeats-1) & h);
+        //return (int) ((numArcFeats-1) & h);
+        return h;
     }
     
 //    private final int hashcode2int(long code)
@@ -3083,7 +3087,7 @@ public class SyntacticFeatureFactory implements Serializable {
     
 //    private final int hashcode2int(long code)
 //    {
-//    	int id = (int)((code < 0 ? -code : code) % 115911563);
+//    	int id = (int)((code < 0 ? -code : code) % 536870909);
 //    	return id;
 //    }
     
@@ -3105,7 +3109,7 @@ public class SyntacticFeatureFactory implements Serializable {
 //    }
     
     public final void addArcFeature(long code, FeatureVector mat) {
-    	int id = hashcode2int(code);
+    	int id = hashcode2int(code) & numArcFeats;
     	//long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
     	//int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;
@@ -3115,7 +3119,7 @@ public class SyntacticFeatureFactory implements Serializable {
     }
     
     public final void addArcFeature(long code, double value, FeatureVector mat) {
-    	int id = hashcode2int(code);
+    	int id = hashcode2int(code) & numArcFeats;
     	//long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
     	//int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;    	
@@ -3125,7 +3129,7 @@ public class SyntacticFeatureFactory implements Serializable {
     }
     
     public final void addLabeledArcFeature(long code, FeatureVector mat) {
-    	int id = hashcode2int(code);
+    	int id = hashcode2int(code) & numLabeledArcFeats;
     	//long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
     	//int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;    	
@@ -3135,7 +3139,7 @@ public class SyntacticFeatureFactory implements Serializable {
     }
     
     public final void addLabeledArcFeature(long code, double value, FeatureVector mat) {
-    	int id = hashcode2int(code);
+    	int id = hashcode2int(code) & numLabeledArcFeats;
     	//long hash = (code ^ (code&0xffffffff00000000L) >>> 32)*31;
     	//int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;    	
@@ -3359,11 +3363,16 @@ public class SyntacticFeatureFactory implements Serializable {
      *  Region end #
      ************************************************************************/
     
+    public void clearFeatureHashSet()
+    {
+    	featureHashSet = null;
+    }
+    
     public void fillParameters(LowRankParam tensor, Parameters params) {
         //System.out.println(arcAlphabet.size());	
     	long[] codes = //arcAlphabet.toArray();
     					featureHashSet.toArray();
-    	featureHashSet = null;
+    	clearFeatureHashSet();
     	int[] x = new int[4];
     	
     	for (long code : codes) {

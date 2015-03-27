@@ -57,12 +57,14 @@ public class DependencyParser implements Serializable {
 			prunerOptions.gamma = 1.0;
 			prunerOptions.gammaLabel = 1.0;
 			prunerOptions.R = 0;
+			prunerOptions.bits = options.bits - 2;
 			
 			//pruner = new DependencyParser();
 			pruner = new BasicArcPruner();
 			pruner.options = prunerOptions;
 			
 			DependencyPipe pipe = new DependencyPipe(prunerOptions);
+			pipe.synFactory.clearFeatureHashSet();
 			pruner.pipe = pipe;
 			
 			pipe.createAlphabets(prunerOptions.trainFile);

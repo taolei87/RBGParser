@@ -91,8 +91,8 @@ public class LocalFeatureData {
 		len = inst.length;
 		ntypes = pipe.types.length;
 		rank = options.R;
-		size = pipe.synFactory.numArcFeats;
-		sizeL = pipe.synFactory.numLabeledArcFeats;
+		size = pipe.synFactory.numArcFeats+1;
+		sizeL = pipe.synFactory.numLabeledArcFeats+1;
 		gamma = options.gamma;
 		//gammaLabel = options.gammaLabel;
 		

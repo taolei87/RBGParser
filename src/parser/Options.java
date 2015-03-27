@@ -46,7 +46,7 @@ public class Options implements Cloneable, Serializable {
 	// Training requires more restarts because of cost-augmented decoding
 	// Testing is easier therefore needs less restarts
 	public int numTrainConverge = 300;	
-	public int numTestConverge = 30;	
+	public int numTestConverge = 100;	
 	
 	public boolean average = true;
 	public double C = 0.01;
@@ -54,6 +54,7 @@ public class Options implements Cloneable, Serializable {
 	public int R = 50;
 	
 	// feature set
+	public int bits = 30;
 	public boolean useCS = true;		// use consecutive siblings
 	public boolean useGP = true;		// use grandparent
 	public boolean useHB = true;		// use head bigram
@@ -170,6 +171,11 @@ public class Options implements Cloneable, Serializable {
             else if (arg.startsWith("thread:")) {
             	numHcThreads = Integer.parseInt(arg.split(":")[1]);
             }
+            else if (arg.startsWith("bits:")) {
+            	bits = Integer.parseInt(arg.split(":")[1]);
+            	if (bits < 20) bits = 20;
+            	if (bits > 31) bits = 31;
+            }
             else if (arg.startsWith("converge:")) {
             	numTrainConverge = Integer.parseInt(arg.split(":")[1]);
             	numTestConverge = numTrainConverge;
@@ -243,6 +249,7 @@ public class Options implements Cloneable, Serializable {
         System.out.println("hill-climbing converge (test): " + numTestConverge);
         System.out.println("thread: " + numHcThreads);
         System.out.println("file format: " + format);
+        System.out.println("feature hash bits: " + bits);
         
         System.out.println();
         System.out.println("use consecutive siblings: " + useCS);

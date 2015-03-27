@@ -33,12 +33,12 @@ public class Parameters implements Serializable {
 	{
 		 //T = pipe.types.length;
         D = d * 2 + 1;
-		size = pipe.synFactory.numArcFeats;		
+		size = pipe.synFactory.numArcFeats+1;		
 		params = new float[size];
 		total = new float[size];
 		
 		if (options.learnLabel) {
-			sizeL = pipe.synFactory.numLabeledArcFeats;
+			sizeL = pipe.synFactory.numLabeledArcFeats+1;
 			paramsL = new float[sizeL];
 			totalL = new float[sizeL];
 		}
