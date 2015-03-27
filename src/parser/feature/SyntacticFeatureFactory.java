@@ -89,7 +89,7 @@ public class SyntacticFeatureFactory implements Serializable {
 		int ncols = 0;
 		TIntHashSet idhash = new TIntHashSet();
 		for (long code : codes) {
-			int id = hashcode2int(code);
+			int id = hashcode2int(code) & numArcFeats;
 			if (idhash.contains(id))
 				++ncols;
 			else
