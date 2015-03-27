@@ -3378,7 +3378,7 @@ public class SyntacticFeatureFactory implements Serializable {
     	for (long code : codes) {
     		
     		//int id = arcAlphabet.lookupIndex(code);
-    		int id = hashcode2int(code);
+    		int id = hashcode2int(code) & numArcFeats;
     		if (id < 0) continue;
     		
     		int dist = (int) extractDistanceCode(code);

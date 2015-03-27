@@ -64,10 +64,10 @@ public class DependencyParser implements Serializable {
 			pruner.options = prunerOptions;
 			
 			DependencyPipe pipe = new DependencyPipe(prunerOptions);
-			pipe.synFactory.clearFeatureHashSet();
 			pruner.pipe = pipe;
 			
 			pipe.createAlphabets(prunerOptions.trainFile);
+			pipe.synFactory.clearFeatureHashSet();
 			DependencyInstance[] lstTrain = pipe.createInstances(prunerOptions.trainFile);
 			
 			Parameters parameters = new Parameters(pipe, prunerOptions);
