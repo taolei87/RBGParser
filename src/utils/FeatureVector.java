@@ -121,7 +121,7 @@ public class FeatureVector {
 	
 	public double Squaredl2NormUnsafe()
 	{
-		TIntDoubleHashMap vec = new TIntDoubleHashMap(size);
+		TIntDoubleHashMap vec = new TIntDoubleHashMap(size<<1);
 		for (int i = 0; i < size; ++i)
 			vec.adjustOrPutValue(x[i], va[i], va[i]);
 		double sum = 0;

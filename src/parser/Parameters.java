@@ -18,15 +18,14 @@ public class Parameters implements Serializable {
 	public transient Options options;
 	public final int labelLossType;
 	public double C, gamma, gammaLabel;
-	public int size;//, sizeL;
+	public int size, sizeL;
 	public int rank;
 	public int N, M, T, D;
 	
-	public float[] params;//, paramsL;
+	public float[] params, paramsL;
 	public double[][] U, V, W;
-	public transient float[] backup, total;//, backupL, totalL;
+	public transient float[] total, totalL;
 	public transient double[][] totalU, totalV, totalW;
-	public transient double[][] backupU, backupV, backupW;
 	
 	public transient FeatureVector[] dU, dV, dW;
 	
@@ -38,11 +37,11 @@ public class Parameters implements Serializable {
 		params = new float[size];
 		total = new float[size];
 		
-		//if (options.learnLabel) {
-		//	sizeL = pipe.synFactory.numLabeledArcFeats;
-		//	paramsL = new float[sizeL];
-		//	totalL = new float[sizeL];
-		//}
+		if (options.learnLabel) {
+			sizeL = pipe.synFactory.numLabeledArcFeats;
+			paramsL = new float[sizeL];
+			totalL = new float[sizeL];
+		}
 		
 		this.options = options;
 		this.labelLossType = options.labelLossType;
@@ -87,12 +86,13 @@ public class Parameters implements Serializable {
 		}		
 		//params = avgParams;
 		
-//		backupL = paramsL;
-//		float[] avgParamsL = new float[sizeL];
-//		for (int i = 0; i < sizeL; ++i) {
-//			avgParamsL[i] = (paramsL[i] * (T+1) - totalL[i])/T;			
-//		}		
-//		paramsL = avgParamsL;
+		//backupL = paramsL;
+		//float[] avgParamsL = new float[sizeL];
+		for (int i = 0; i < sizeL; ++i) {
+			//avgParamsL[i] = (paramsL[i] * (T+1) - totalL[i])/T;
+			paramsL[i] = (paramsL[i] * (T+1) - totalL[i])/T;
+		}		
+		//paramsL = avgParamsL;
 		
 		//backupU = U;
 		//double[][] avgU = new double[rank][N];
@@ -134,6 +134,10 @@ public class Parameters implements Serializable {
 			params[i] = (params[i] * T + total[i])/(T+1);
 		}	
 		
+		for (int i = 0; i < sizeL; ++i) {
+			paramsL[i] = (paramsL[i] * T + totalL[i])/(T+1);
+		}	
+		
 		for (int i = 0; i < rank; ++i)
 			for (int j = 0; j < N; ++j) {
 				U[i][j] = (U[i][j] * T + totalU[i][j])/(T+1);
@@ -167,6 +171,8 @@ public class Parameters implements Serializable {
 	{
 		Arrays.fill(params, 0);
 		Arrays.fill(total, 0);
+		Arrays.fill(paramsL, 0);
+		Arrays.fill(totalL, 0);
 	}
 	
 	public void printUStat() 
@@ -230,10 +236,10 @@ public class Parameters implements Serializable {
 		return fv.dotProduct(params);
 	}
 	
-//	public double dotProductL(FeatureVector fv)
-//	{
-//		return fv.dotProduct(paramsL);
-//	}
+	public double dotProductL(FeatureVector fv)
+	{
+		return fv.dotProduct(paramsL);
+	}
 	
 	public double dotProduct(double[] proju, double[] projv, int dist)
 	{
@@ -257,8 +263,7 @@ public class Parameters implements Serializable {
     	double Fi = getLabelDis(actDeps, actLabs, predDeps, predLabs);
         	
     	FeatureVector dtl = lfd.getLabeledFeatureDifference(gold, pred);
-    	//double loss = - dtl.dotProduct(paramsL) + Fi;
-    	double loss = - dtl.dotProduct(params) + Fi;
+    	double loss = - dtl.dotProduct(paramsL) + Fi;
         double l2norm = dtl.Squaredl2NormUnsafe();
     	
         double alpha = loss/l2norm;
@@ -269,10 +274,8 @@ public class Parameters implements Serializable {
     		for (int i = 0, K = dtl.size(); i < K; ++i) {
 	    		int x = dtl.x(i);
 	    		double z = dtl.value(i);
-	    		//paramsL[x] += coeff * z;
-	    		//totalL[x] += coeff2 * z;
-	    		params[x] += coeff * z;
-	    		total[x] += coeff2 * z;
+	    		paramsL[x] += coeff * z;
+	    		totalL[x] += coeff2 * z;
     		}
     	}
     	

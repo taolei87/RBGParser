@@ -48,8 +48,8 @@ public class SyntacticFeatureFactory implements Serializable {
 	
 	public int ccDepType;
 	
-	public static final int numArcFeats = 1 << 30;	// number of arc structure features
-	//public static final int numLabeledArcFeats = 1 << 30;
+	public static final int numArcFeats = 1 << 29;	// number of arc structure features
+	public static final int numLabeledArcFeats = 1 << 29;
 	public int numWordFeats;			// number of word features
 	
 	private boolean stoppedGrowth;
@@ -3130,8 +3130,8 @@ public class SyntacticFeatureFactory implements Serializable {
     	//int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;    	
     	mat.addEntry(id, 1.0);
-    	if (!stoppedGrowth)
-    		featureHashSet.add(code);
+    	//if (!stoppedGrowth)
+    	//	featureHashSet.add(code);
     }
     
     public final void addLabeledArcFeature(long code, double value, FeatureVector mat) {
@@ -3140,8 +3140,8 @@ public class SyntacticFeatureFactory implements Serializable {
     	//int id = (int)((hash < 0 ? -hash : hash) % 115911564);
     	//int id = ((hash ^ (hash >> 31)) - (hash >> 31)) % 115911564;    	
     	mat.addEntry(id, value);
-    	if (!stoppedGrowth)
-    		featureHashSet.add(code);
+    	//if (!stoppedGrowth)
+    	//	featureHashSet.add(code);
     }
     
     public final void addWordFeature(long code, FeatureVector mat) {
