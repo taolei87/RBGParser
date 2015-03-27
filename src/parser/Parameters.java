@@ -78,79 +78,55 @@ public class Parameters implements Serializable {
 	
 	public void averageParameters(int T) 
 	{
-		//backup = params;
-		//float[] avgParams = new float[size];
+		
 		for (int i = 0; i < size; ++i) {
-			//avgParams[i] = (params[i] * (T+1) - total[i])/T;
-			params[i] = (params[i] * (T+1) - total[i])/T;
+			params[i] += total[i]/T;
 		}		
-		//params = avgParams;
-		
-		//backupL = paramsL;
-		//float[] avgParamsL = new float[sizeL];
+
 		for (int i = 0; i < sizeL; ++i) {
-			//avgParamsL[i] = (paramsL[i] * (T+1) - totalL[i])/T;
-			paramsL[i] = (paramsL[i] * (T+1) - totalL[i])/T;
+			paramsL[i] += totalL[i]/T;
 		}		
-		//paramsL = avgParamsL;
-		
-		//backupU = U;
-		//double[][] avgU = new double[rank][N];
+
 		for (int i = 0; i < rank; ++i)
 			for (int j = 0; j < N; ++j) {
-				//avgU[i][j] = (U[i][j] * (T+1) - totalU[i][j])/T;
-				U[i][j] = (U[i][j] * (T+1) - totalU[i][j])/T;
+				U[i][j] += totalU[i][j]/T;
 			}
-		//U = avgU;
-		
-		//backupV = V;
-		//double[][] avgV = new double[rank][M];
+
 		for (int i = 0; i < rank; ++i)
 			for (int j = 0; j < M; ++j) {
-				//avgV[i][j] = (V[i][j] * (T+1) - totalV[i][j])/T;
-				V[i][j] = (V[i][j] * (T+1) - totalV[i][j])/T;
+				V[i][j] += totalV[i][j]/T;
 			}
-		//V = avgV;
-		
-		//backupW = W;
-		//double[][] avgW = new double[rank][D];
+
 		for (int i = 0; i < rank; ++i)
 			for (int j = 0; j < D; ++j) {
-				//avgW[i][j] = (W[i][j] * (T+1) - totalW[i][j])/T;
-				W[i][j] = (W[i][j] * (T+1) - totalW[i][j])/T;
+				W[i][j] += totalW[i][j]/T;
 			}
-		//W = avgW;
 	}
 	
 	public void unaverageParameters(int T) 
 	{
-		//params = backup;
-		//paramsL = backupL;
-		//U = backupU;
-		//V = backupV;
-		//W = backupW;
 		
 		for (int i = 0; i < size; ++i) {
-			params[i] = (params[i] * T + total[i])/(T+1);
+			params[i] -= total[i]/T;
 		}	
 		
 		for (int i = 0; i < sizeL; ++i) {
-			paramsL[i] = (paramsL[i] * T + totalL[i])/(T+1);
+			paramsL[i] -= totalL[i]/T;
 		}	
 		
 		for (int i = 0; i < rank; ++i)
 			for (int j = 0; j < N; ++j) {
-				U[i][j] = (U[i][j] * T + totalU[i][j])/(T+1);
+				U[i][j] -= totalU[i][j]/T;
 			}
 		
 		for (int i = 0; i < rank; ++i)
 			for (int j = 0; j < M; ++j) {
-				V[i][j] = (V[i][j] * T + totalV[i][j])/(T+1);
+				V[i][j] -= totalV[i][j]/T;
 			}
 		
 		for (int i = 0; i < rank; ++i)
-			for (int j = 0; j < D; ++j) {
-				W[i][j] = (W[i][j] * T + totalW[i][j])/(T+1);
+			for (int j = 0; j < D; ++j) {				
+				W[i][j] -= totalW[i][j]/T;
 			}
 	}
 	
@@ -171,8 +147,10 @@ public class Parameters implements Serializable {
 	{
 		Arrays.fill(params, 0);
 		Arrays.fill(total, 0);
-		Arrays.fill(paramsL, 0);
-		Arrays.fill(totalL, 0);
+		if (options.learnLabel) {
+			Arrays.fill(paramsL, 0);
+			Arrays.fill(totalL, 0);
+		}
 	}
 	
 	public void printUStat() 
@@ -270,7 +248,7 @@ public class Parameters implements Serializable {
     	alpha = Math.min(C, alpha);
     	if (alpha > 0) {
     		double coeff = alpha;
-    		double coeff2 = coeff * updCnt;
+    		double coeff2 = coeff * (1-updCnt);
     		for (int i = 0, K = dtl.size(); i < K; ++i) {
 	    		int x = dtl.x(i);
 	    		double z = dtl.value(i);
@@ -334,7 +312,8 @@ public class Parameters implements Serializable {
     		
     		{
     			// update theta
-	    		double coeff = alpha * gamma, coeff2 = coeff * updCnt;
+	    		double coeff = alpha * gamma;
+	    		double coeff2 = coeff * (1-updCnt);
 	    		for (int i = 0, K = dt.size(); i < K; ++i) {
 		    		int x = dt.x(i);
 		    		double z = dt.value(i);
@@ -346,7 +325,8 @@ public class Parameters implements Serializable {
     		//if ( updId == 1 ) 
     		{
     			// update U
-    			double coeff = alpha * (1-gamma), coeff2 = coeff * updCnt;
+    			double coeff = alpha * (1-gamma);
+    			double coeff2 = coeff * (1-updCnt);
             	for (int k = 0; k < rank; ++k) {
             		FeatureVector dUk = dU[k];
             		for (int i = 0, K = dUk.size(); i < K; ++i) {
@@ -360,7 +340,8 @@ public class Parameters implements Serializable {
     		//else if ( updId == 2 ) 
     		{
     			// update V
-    			double coeff = alpha * (1-gamma), coeff2 = coeff * updCnt;
+    			double coeff = alpha * (1-gamma);
+    			double coeff2 = coeff * (1-updCnt);
             	for (int k = 0; k < rank; ++k) {
             		FeatureVector dVk = dV[k];
             		for (int i = 0, K = dVk.size(); i < K; ++i) {
@@ -374,7 +355,8 @@ public class Parameters implements Serializable {
             //else 
     		{
     			// update W
-    			double coeff = alpha * (1-gamma), coeff2 = coeff * updCnt;
+    			double coeff = alpha * (1-gamma);
+    			double coeff2 = coeff * (1-updCnt);
             	for (int k = 0; k < rank; ++k) {
             		FeatureVector dWk = dW[k];
             		for (int i = 0, K = dWk.size(); i < K; ++i) {
@@ -402,7 +384,8 @@ public class Parameters implements Serializable {
 	    alpha = Math.min(C, alpha);
 	    if (alpha > 0) {
 			// update theta
-    		double coeff = alpha, coeff2 = coeff * updCnt;
+    		double coeff = alpha;
+    		double coeff2 = coeff * (1-updCnt);
     		for (int i = 0, K = fv.size(); i < K; ++i) {
 	    		int x = fv.x(i);
 	    		double z = fv.value(i);

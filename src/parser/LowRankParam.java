@@ -120,11 +120,11 @@ public class LowRankParam implements Comparator<Integer> {
 			}
 		}
 		
-		for (int i = 0; i < maxRank; ++i) {
-			params.totalU[i] = params.U[i].clone();
-			params.totalV[i] = params.V[i].clone();
-			params.totalW[i] = params.W[i].clone();
-		}
+//		for (int i = 0; i < maxRank; ++i) {
+//			params.totalU[i] = params.U[i].clone();
+//			params.totalV[i] = params.V[i].clone();
+//			params.totalW[i] = params.W[i].clone();
+//		}
 	}
 
 	@Override
