@@ -3071,128 +3071,28 @@ public class SyntacticFeatureFactory implements Serializable {
 //    }
     
     public final void addArcFeature(long code, Collector mat) {
-    	int k1 = (int) (code & 0xffffffff);
-    	int k2 = (int) (code >>> 32);
-    	int h = 0;
-    	
-    	k1 *= C1;
-    	k1 = (k1 << 15) | (k1 >>> 17); // ROTL32(k1,15);
-    	k1 *= C2;
-    	h ^= k1;
-    	h = (h << 13) | (h >>> 19); // ROTL32(h1,13);
-    	h = h * 5 + 0xe6546b64;
-    	
-    	k2 *= C1;
-    	k2 = (k2 << 15) | (k2 >>> 17); // ROTL32(k1,15);
-    	k2 *= C2;
-    	h ^= k2;
-    	h = (h << 13) | (h >>> 19); // ROTL32(h1,13);
-    	h = h * 5 + 0xe6546b64;
-    	
-    	// finalizer
-    	h ^= h >> 16;
-    	h *= 0x85ebca6b;
-    	h ^= h >> 13;
-    	h *= 0xc2b2ae35;
-    	h ^= h >> 16;
-    	//int id = hashcode2int(code) & numArcFeats;
-    	int id = h & numArcFeats;
+    	int id = hashcode2int(code) & numArcFeats;
     	mat.addEntry(id);
     	if (!stoppedGrowth)
     		featureHashSet.add(code);
     }
     
     public final void addArcFeature(long code, double value, Collector mat) {
-    	int k1 = (int) (code & 0xffffffff);
-    	int k2 = (int) (code >>> 32);
-    	int h = 0;
-    	
-    	k1 *= C1;
-    	k1 = (k1 << 15) | (k1 >>> 17); // ROTL32(k1,15);
-    	k1 *= C2;
-    	h ^= k1;
-    	h = (h << 13) | (h >>> 19); // ROTL32(h1,13);
-    	h = h * 5 + 0xe6546b64;
-    	
-    	k2 *= C1;
-    	k2 = (k2 << 15) | (k2 >>> 17); // ROTL32(k1,15);
-    	k2 *= C2;
-    	h ^= k2;
-    	h = (h << 13) | (h >>> 19); // ROTL32(h1,13);
-    	h = h * 5 + 0xe6546b64;
-    	
-    	// finalizer
-    	h ^= h >> 16;
-    	h *= 0x85ebca6b;
-    	h ^= h >> 13;
-    	h *= 0xc2b2ae35;
-    	h ^= h >> 16;
-    	//int id = hashcode2int(code) & numArcFeats;
-    	int id = h & numArcFeats;
+    	int id = hashcode2int(code) & numArcFeats;	
     	mat.addEntry(id, value);
     	if (!stoppedGrowth)
     		featureHashSet.add(code);
     }
     
     public final void addLabeledArcFeature(long code, Collector mat) {
-    	int k1 = (int) (code & 0xffffffff);
-    	int k2 = (int) (code >>> 32);
-    	int h = 0;
-    	
-    	k1 *= C1;
-    	k1 = (k1 << 15) | (k1 >>> 17); // ROTL32(k1,15);
-    	k1 *= C2;
-    	h ^= k1;
-    	h = (h << 13) | (h >>> 19); // ROTL32(h1,13);
-    	h = h * 5 + 0xe6546b64;
-    	
-    	k2 *= C1;
-    	k2 = (k2 << 15) | (k2 >>> 17); // ROTL32(k1,15);
-    	k2 *= C2;
-    	h ^= k2;
-    	h = (h << 13) | (h >>> 19); // ROTL32(h1,13);
-    	h = h * 5 + 0xe6546b64;
-    	
-    	// finalizer
-    	h ^= h >> 16;
-    	h *= 0x85ebca6b;
-    	h ^= h >> 13;
-    	h *= 0xc2b2ae35;
-    	h ^= h >> 16;
-    	//int id = hashcode2int(code) & numArcFeats;
-    	int id = h & numLabeledArcFeats;
+    	int id = hashcode2int(code) & numLabeledArcFeats;	
     	mat.addEntry(id);
     	//if (!stoppedGrowth)
     	//	featureHashSet.add(code);
     }
     
     public final void addLabeledArcFeature(long code, double value, Collector mat) {
-    	int k1 = (int) (code & 0xffffffff);
-    	int k2 = (int) (code >>> 32);
-    	int h = 0;
-    	
-    	k1 *= C1;
-    	k1 = (k1 << 15) | (k1 >>> 17); // ROTL32(k1,15);
-    	k1 *= C2;
-    	h ^= k1;
-    	h = (h << 13) | (h >>> 19); // ROTL32(h1,13);
-    	h = h * 5 + 0xe6546b64;
-    	
-    	k2 *= C1;
-    	k2 = (k2 << 15) | (k2 >>> 17); // ROTL32(k1,15);
-    	k2 *= C2;
-    	h ^= k2;
-    	h = (h << 13) | (h >>> 19); // ROTL32(h1,13);
-    	h = h * 5 + 0xe6546b64;
-    	
-    	// finalizer
-    	h ^= h >> 16;
-    	h *= 0x85ebca6b;
-    	h ^= h >> 13;
-    	h *= 0xc2b2ae35;
-    	h ^= h >> 16;
-    	//int id = hashcode2int(code) & numArcFeats;
-    	int id = h & numLabeledArcFeats;	
+    	int id = hashcode2int(code) & numLabeledArcFeats; 	
     	mat.addEntry(id, value);
     	//if (!stoppedGrowth)
     	//	featureHashSet.add(code);
