@@ -33,7 +33,6 @@ public class LocalFeatureData {
 	boolean[] isPruned;				// whether a (h->m) arc is pruned
 	int[] edges, st;
 	int numedges;						// number of un-pruned arcs
-	final boolean isTest;
 	
 	FeatureVector[] wordFvs;		// word feature vectors
 	double[][] wpU, wpV;			// word projections U\phi and V\phi
@@ -51,9 +50,8 @@ public class LocalFeatureData {
 	double[] psc;			// parent-sib-mod-child, [dep id (p, sib)][dep id (mod, child)]
 	
 	public LocalFeatureData(DependencyInstance inst,
-			DependencyParser parser, boolean indexGoldArcs, boolean isTest) 
+			DependencyParser parser, boolean indexGoldArcs) 
 	{
-		this.isTest = isTest;
 		this.inst = inst;
 		pipe = parser.pipe;
 		synFactory = pipe.synFactory;
@@ -111,19 +109,13 @@ public class LocalFeatureData {
 		for (int i = 0; i < len; ++i)
 			for (int j = 0; j < len; ++j) 
 				if (i != j && (nopruning || arc2id[j*len+i] != -1)) {
-					
-					if (!isTest) {
+
 						arcFvs[i*len+j] = new FeatureVector(size);
 						pipe.synFactory.createArcFeatures(arcFvs[i*len+j], inst, i, j);
 	
 						arcScores[i*len+j] = parameters.dotProduct(arcFvs[i*len+j]) * gamma
 										+ parameters.dotProduct(wpU[i], wpV[j], i-j) * (1-gamma);
-					} else {
-						ScoreCollector col = new ScoreCollector(parameters);
-						pipe.synFactory.createArcFeatures(col, inst, i, j);
-						arcScores[i*len+j] = col.score * gamma
-								+ parameters.dotProduct(wpU[i], wpV[j], i-j) * (1-gamma);
-					}
+
 				}
 		
 //		if (options.learnLabel) {
@@ -230,7 +222,7 @@ public class LocalFeatureData {
 			
 			// Use the threshold to prune arcs. 
 			double threshold = Math.log(options.pruningCoeff);
-			LocalFeatureData lfd2 = new LocalFeatureData(inst, pruner, false, true);
+			LocalFeatureData lfd2 = new LocalFeatureData(inst, pruner, false);
 			GlobalFeatureData gfd2 = null;
 			DependencyInstance pred = prunerDecoder.decode(inst, lfd2, gfd2, false);
 							

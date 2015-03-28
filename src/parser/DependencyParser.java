@@ -291,7 +291,7 @@ public class DependencyParser implements Serializable {
 
     			//DependencyInstance inst = new DependencyInstance(lstTrain[i]);
     			DependencyInstance inst = lstTrain[i];
-    			LocalFeatureData lfd = new LocalFeatureData(inst, this, true, false);
+    			LocalFeatureData lfd = new LocalFeatureData(inst, this, true);
     		    GlobalFeatureData gfd = new GlobalFeatureData(lfd);
     		    
     		    int n = inst.length;
@@ -424,7 +424,7 @@ public class DependencyParser implements Serializable {
     	
     	DependencyInstance inst = pipe.createInstance(reader);    	
     	while (inst != null) {
-    		LocalFeatureData lfd = new LocalFeatureData(inst, this, true, true);
+    		LocalFeatureData lfd = new LocalFeatureData(inst, this, true);
     		GlobalFeatureData gfd = new GlobalFeatureData(lfd); 
 
     		    		
@@ -481,7 +481,7 @@ public class DependencyParser implements Serializable {
     	
     	DependencyInstance inst = pipe.createInstance(reader);    	
     	while (inst != null) {
-    		LocalFeatureData lfd = new LocalFeatureData(inst, this, true, true);
+    		LocalFeatureData lfd = new LocalFeatureData(inst, this, true);
     		GlobalFeatureData gfd = new GlobalFeatureData(lfd); 
     		
             DependencyInstance predInst = decoder.decode(inst, lfd, gfd, false);
