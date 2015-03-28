@@ -4,7 +4,9 @@ import java.util.Arrays;
 
 import parser.Options.LearningMode;
 import parser.decoding.DependencyDecoder;
+import parser.feature.SyntacticFeatureFactory;
 import utils.FeatureVector;
+import utils.ScoreCollector;
 import utils.Utils;
 
 public class LocalFeatureData {
@@ -13,6 +15,7 @@ public class LocalFeatureData {
 	
 	DependencyInstance inst;
 	DependencyPipe pipe;
+	SyntacticFeatureFactory synFactory;
 	Options options;
 	Parameters parameters;
 	
@@ -30,56 +33,30 @@ public class LocalFeatureData {
 	boolean[] isPruned;				// whether a (h->m) arc is pruned
 	int[] edges, st;
 	int numedges;						// number of un-pruned arcs
-	
+	final boolean isTest;
 	
 	FeatureVector[] wordFvs;		// word feature vectors
 	double[][] wpU, wpV;			// word projections U\phi and V\phi
 	
 	FeatureVector[] arcFvs;			// 1st order arc feature vectors
 	double[] arcScores;				// 1st order arc scores (including tensor)
-    //double[] arcNtScores;
-
-	//FeatureVector[][][][] lbFvs;	// labeled-arc feature vectors
-	//double[][][][] lbScores;		// labeled-arc scores
-
-	
-//	FeatureDataItem[] trips;		// [dep id][sib]
-//	
-//	FeatureDataItem[] sib;			// [mod][sib]
-//	
-//	FeatureDataItem[] gpc;			// [dep id][child]
-//
-//	FeatureDataItem[] headbi;		// [dep id][head2]
-//
-//	FeatureDataItem[] gpsib;		// grandparent-parent-child-sibling, gp-p is mapped to id [dep id][sib][mod]
-//
-//	FeatureDataItem[] trisib;		// parent-sibling-child-sibling [dep id][in sib][out sib]
-//	
-//	FeatureDataItem[] ggpc;			// [dep id (ggp, gp)][dep id (p, mod)]
-//	
-//	FeatureDataItem[] psc;			// parent-sib-mod-child, [dep id (p, sib)][dep id (mod, child)]
 	
 	double[] trips;			// [dep id][sib]
-	
 	double[] sib;			// [mod][sib]
-	
 	double[] gpc;			// [dep id][child]
-
 	double[] headbi;		// [dep id][head2]
-
 	double[] gpsib;			// grandparent-parent-child-sibling, gp-p is mapped to id [dep id][sib][mod]
-
 	double[] trisib;		// parent-sibling-child-sibling [dep id][in sib][out sib]
-	
 	double[] ggpc;			// [dep id (ggp, gp)][dep id (p, mod)]
-	
 	double[] psc;			// parent-sib-mod-child, [dep id (p, sib)][dep id (mod, child)]
 	
 	public LocalFeatureData(DependencyInstance inst,
-			DependencyParser parser, boolean indexGoldArcs) 
+			DependencyParser parser, boolean indexGoldArcs, boolean isTest) 
 	{
+		this.isTest = isTest;
 		this.inst = inst;
 		pipe = parser.pipe;
+		synFactory = pipe.synFactory;
 		options = parser.options;
 		parameters = parser.parameters;
 		pruner = parser.pruner;
@@ -134,11 +111,19 @@ public class LocalFeatureData {
 		for (int i = 0; i < len; ++i)
 			for (int j = 0; j < len; ++j) 
 				if (i != j && (nopruning || arc2id[j*len+i] != -1)) {
-					//FeatureVector fv = pipe.synFactory.createArcFeatures(inst, i, j);
-					arcFvs[i*len+j] = pipe.synFactory.createArcFeatures(inst, i, j);
-                    //arcNtScores[i*len+j] = parameters.dotProduct(arcFvs[i*len+j]) * gamma;
-					arcScores[i*len+j] = parameters.dotProduct(arcFvs[i*len+j]) * gamma
-									+ parameters.dotProduct(wpU[i], wpV[j], i-j) * (1-gamma);
+					
+					if (!isTest) {
+						arcFvs[i*len+j] = new FeatureVector(size);
+						pipe.synFactory.createArcFeatures(arcFvs[i*len+j], inst, i, j);
+	
+						arcScores[i*len+j] = parameters.dotProduct(arcFvs[i*len+j]) * gamma
+										+ parameters.dotProduct(wpU[i], wpV[j], i-j) * (1-gamma);
+					} else {
+						ScoreCollector col = new ScoreCollector(parameters);
+						pipe.synFactory.createArcFeatures(col, inst, i, j);
+						arcScores[i*len+j] = col.score * gamma
+								+ parameters.dotProduct(wpU[i], wpV[j], i-j) * (1-gamma);
+					}
 				}
 		
 //		if (options.learnLabel) {
@@ -245,7 +230,7 @@ public class LocalFeatureData {
 			
 			// Use the threshold to prune arcs. 
 			double threshold = Math.log(options.pruningCoeff);
-			LocalFeatureData lfd2 = new LocalFeatureData(inst, pruner, false);
+			LocalFeatureData lfd2 = new LocalFeatureData(inst, pruner, false, true);
 			GlobalFeatureData gfd2 = null;
 			DependencyInstance pred = prunerDecoder.decode(inst, lfd2, gfd2, false);
 							
@@ -326,8 +311,12 @@ public class LocalFeatureData {
 		Utils.Assert(id >= 0 && arc2id[s*len+h] >= 0);
 		
 		int pos = id*len+s;
-		if (trips[pos] == NULL)
-			getTripsFeatureVector(h, m, s);
+		if (trips[pos] == NULL) {
+			ScoreCollector col = new ScoreCollector(parameters);
+			synFactory.createTripsFeatureVector(col, inst, h, m, s);
+			trips[pos] = col.score * gamma;
+			//getTripsFeatureVector(h, m, s);
+		}
 		
 		return trips[pos];
 	}
@@ -335,8 +324,12 @@ public class LocalFeatureData {
 	private final double getSibScore(int m, int s)
 	{
 		int pos = m*len+s;
-		if (sib[pos] == NULL)
-			getSibFeatureVector(m, s);
+		if (sib[pos] == NULL) {
+			ScoreCollector col = new ScoreCollector(parameters);
+			synFactory.createSibFeatureVector(col, inst, m, s);
+			sib[pos] = col.score * gamma;
+			//getSibFeatureVector(m, s);
+		}
 		
 		return sib[pos];
 	}
@@ -348,8 +341,12 @@ public class LocalFeatureData {
 		Utils.Assert(id >= 0 && arc2id[m*len+h] >= 0);
 		
 		int pos = id*len+m;
-		if (gpc[pos] == NULL)
-			getGPCFeatureVector(gp, h, m);
+		if (gpc[pos] == NULL) {
+			ScoreCollector col = new ScoreCollector(parameters);
+			synFactory.createGPCFeatureVector(col, inst, gp, h, m);
+			gpc[pos] = col.score * gamma;
+			//getGPCFeatureVector(gp, h, m);
+		}
 		
 		return gpc[pos];
 	}
@@ -361,8 +358,12 @@ public class LocalFeatureData {
 				&& arc2id[(m + 1)*len+h2] >= 0);
 		
 		int pos = id*len+h2;
-		if (headbi[pos] == NULL)
-			getHeadBiFeatureVector(h, m, h2);
+		if (headbi[pos] == NULL) {
+			ScoreCollector col = new ScoreCollector(parameters);
+			synFactory.createHeadBiFeatureVector(col, inst, m, h, h2);
+			headbi[pos] = col.score * gamma;
+			//getHeadBiFeatureVector(h, m, h2);
+		}
 
 		return headbi[pos];
 	}
@@ -374,8 +375,12 @@ public class LocalFeatureData {
 		Utils.Assert(id >= 0 && arc2id[m*len+h] >= 0 && arc2id[s*len+h] >= 0);
 		
 		int pos = (id*len+m)*len+s;
-		if (gpsib[pos] == NULL)
-			getGPSibFeatureVector(gp, h, m, s);
+		if (gpsib[pos] == NULL) {
+			ScoreCollector col = new ScoreCollector(parameters);
+			synFactory.createGPSibFeatureVector(col, inst, gp, h, m, s);
+			gpsib[pos] = col.score * gamma;
+			//getGPSibFeatureVector(gp, h, m, s);
+		}
 		
 		return gpsib[pos];
 	}
@@ -387,8 +392,12 @@ public class LocalFeatureData {
 		Utils.Assert(id >= 0 && arc2id[s1*len+h] >= 0 && arc2id[s2*len+h] >= 0);
 		
 		int pos = (id*len+s1)*len+s2;
-		if (trisib[pos] == NULL)
-			getTriSibFeatureVector(h, s1, m, s2);
+		if (trisib[pos] == NULL) {
+			ScoreCollector col = new ScoreCollector(parameters);
+			synFactory.createTriSibFeatureVector(col, inst, h, s1, m, s2);
+			trisib[pos] = col.score * gamma;
+			//getTriSibFeatureVector(h, s1, m, s2);
+		}
 		
 		return trisib[pos];
 	}
@@ -400,9 +409,13 @@ public class LocalFeatureData {
 		Utils.Assert(id1 >= 0 && id2 >= 0 && arc2id[h * len + gp] >= 0);
 		
 		int pos = id1 * numarcs + id2;
-		if (ggpc[pos] == NULL)
-			getGGPCFeatureVector(ggp, gp, h, m);
-
+		if (ggpc[pos] == NULL) {
+			ScoreCollector col = new ScoreCollector(parameters);
+			synFactory.createGGPCFeatureVector(col, inst, ggp, gp, h, m);
+			ggpc[pos] = col.score * gamma;
+			//getGGPCFeatureVector(ggp, gp, h, m);
+		}
+		
 		return ggpc[pos];
 	}
 	
@@ -413,8 +426,12 @@ public class LocalFeatureData {
 		Utils.Assert(id1 >= 0 && id2 >= 0 && arc2id[m * len + h] >= 0);
 		
 		int pos = id1 * numarcs + id2;
-		if (psc[pos] == NULL)
-			getPSCFeatureVector(h, m, c, sib);
+		if (psc[pos] == NULL) {
+			ScoreCollector col = new ScoreCollector(parameters);
+			synFactory.createPSCFeatureVector(col, inst, h, m, c, sib);
+			psc[pos] = col.score * gamma;
+			//getPSCFeatureVector(h, m, c, sib);
+		}
 
 		return psc[pos];
 	}
@@ -873,17 +890,19 @@ public class LocalFeatureData {
 		
 		Utils.Assert(id >= 0 && arc2id[s*len+h] >= 0);
 		
-		int pos = id*len+s;
-		FeatureVector fv = pipe.synFactory.createTripsFeatureVector(inst, h, m, s);
-		trips[pos] = parameters.dotProduct(fv) * gamma;			
+		//int pos = id*len+s;
+		FeatureVector fv = new FeatureVector(size);
+		pipe.synFactory.createTripsFeatureVector(fv, inst, h, m, s);
+		//trips[pos] = parameters.dotProduct(fv) * gamma;			
 		return fv;
 	}
 	
 	public FeatureVector getSibFeatureVector(int m, int s)
 	{
-		int pos = m*len+s;				
-		FeatureVector fv = pipe.synFactory.createSibFeatureVector(inst, m, s/*, false*/);
-		sib[pos] = parameters.dotProduct(fv) * gamma;
+		//int pos = m*len+s;				
+		FeatureVector fv = new FeatureVector(size);
+		pipe.synFactory.createSibFeatureVector(fv, inst, m, s/*, false*/);
+		//sib[pos] = parameters.dotProduct(fv) * gamma;
 		return fv;
 	}
 	
@@ -892,9 +911,10 @@ public class LocalFeatureData {
 		
 		Utils.Assert(id >= 0 && arc2id[m*len+h] >= 0);
 		
-		int pos = id*len+m;
-		FeatureVector fv = pipe.synFactory.createGPCFeatureVector(inst, gp, h, m);
-		gpc[pos] = parameters.dotProduct(fv) * gamma;
+		//int pos = id*len+m;
+		FeatureVector fv = new FeatureVector(size);
+		pipe.synFactory.createGPCFeatureVector(fv, inst, gp, h, m);
+		//gpc[pos] = parameters.dotProduct(fv) * gamma;
 		return fv;
 	}
 	
@@ -904,10 +924,11 @@ public class LocalFeatureData {
 		Utils.Assert(id >= 0 && m + 1 < len 
 				&& arc2id[(m + 1)*len+h2] >= 0);
 		
-		int pos = id*len+h2;
+		//int pos = id*len+h2;
 
-		FeatureVector fv = pipe.synFactory.createHeadBiFeatureVector(inst, m, h, h2);
-		headbi[pos] = parameters.dotProduct(fv) * gamma;
+		FeatureVector fv = new FeatureVector(size);
+		pipe.synFactory.createHeadBiFeatureVector(fv, inst, m, h, h2);
+		//headbi[pos] = parameters.dotProduct(fv) * gamma;
 		return fv;
 	}
 	
@@ -917,9 +938,10 @@ public class LocalFeatureData {
 		
 		Utils.Assert(id >= 0 && arc2id[m*len+h] >= 0 && arc2id[s*len+h] >= 0);
 		
-		int pos = (id*len+m)*len+s;
-		FeatureVector fv = pipe.synFactory.createGPSibFeatureVector(inst, gp, h, m, s);
-		gpsib[pos] = parameters.dotProduct(fv) * gamma;
+		//int pos = (id*len+m)*len+s;
+		FeatureVector fv = new FeatureVector(size);
+		pipe.synFactory.createGPSibFeatureVector(fv, inst, gp, h, m, s);
+		//gpsib[pos] = parameters.dotProduct(fv) * gamma;
 		return fv;
 	}
 	
@@ -929,9 +951,10 @@ public class LocalFeatureData {
 		
 		Utils.Assert(id >= 0 && arc2id[s1*len+h] >= 0 && arc2id[s2*len+h] >= 0);
 		
-		int pos = (id*len+s1)*len+s2;
-		FeatureVector fv = pipe.synFactory.createTriSibFeatureVector(inst, h, s1, m, s2);
-		trisib[pos] = parameters.dotProduct(fv) * gamma;
+		//int pos = (id*len+s1)*len+s2;
+		FeatureVector fv = new FeatureVector(size);
+		pipe.synFactory.createTriSibFeatureVector(fv, inst, h, s1, m, s2);
+		//trisib[pos] = parameters.dotProduct(fv) * gamma;
 		return fv;
 	}
 	
@@ -941,9 +964,10 @@ public class LocalFeatureData {
 		
 		Utils.Assert(id1 >= 0 && id2 >= 0 && arc2id[h * len + gp] >= 0);
 		
-		int pos = id1 * numarcs + id2;
-		FeatureVector fv = pipe.synFactory.createGGPCFeatureVector(inst, ggp, gp, h, m);
-		ggpc[pos] = parameters.dotProduct(fv) * gamma;
+		//int pos = id1 * numarcs + id2;
+		FeatureVector fv = new FeatureVector(size);
+		pipe.synFactory.createGGPCFeatureVector(fv, inst, ggp, gp, h, m);
+		//ggpc[pos] = parameters.dotProduct(fv) * gamma;
 		return fv;
 	}
 	
@@ -953,9 +977,10 @@ public class LocalFeatureData {
 		
 		Utils.Assert(id1 >= 0 && id2 >= 0 && arc2id[m * len + h] >= 0);
 		
-		int pos = id1 * numarcs + id2;
-		FeatureVector fv = pipe.synFactory.createPSCFeatureVector(inst, h, m, c, sib);
-		psc[pos] = parameters.dotProduct(fv) * gamma;
+		//int pos = id1 * numarcs + id2;
+		FeatureVector fv = new FeatureVector(size);
+		pipe.synFactory.createPSCFeatureVector(fv, inst, h, m, c, sib);
+		//psc[pos] = parameters.dotProduct(fv) * gamma;
 		return fv;
 	}
 
@@ -989,12 +1014,16 @@ public class LocalFeatureData {
 	
 	private FeatureVector getLabelFeature(DependencyArcList arcLis, int[] heads, int mod, int type)
 	{
-		return pipe.synFactory.createLabelFeatures(inst, arcLis, heads, mod, type);
+		FeatureVector fv = new FeatureVector(sizeL);
+		pipe.synFactory.createLabelFeatures(fv, inst, arcLis, heads, mod, type);
+		return fv;
 	}
 	
 	private double getLabelScore(DependencyArcList arcLis, int[] heads, int mod, int type)
 	{
-		return parameters.dotProductL(getLabelFeature(arcLis, heads, mod, type)); //* gammaLabel;
+		ScoreCollector col = new ScoreCollector(parameters, true);
+		synFactory.createLabelFeatures(col, inst, arcLis, heads, mod, type);
+		return col.score;
 	}
 	
 	public void predictLabels(int[] heads, int[] deplbids, boolean addLoss)

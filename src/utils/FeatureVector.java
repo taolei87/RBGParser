@@ -6,7 +6,7 @@ import gnu.trove.map.hash.TLongObjectHashMap;
 
 import java.util.HashMap;
 
-public class FeatureVector {
+public class FeatureVector implements Collector {
 	
 	int nRows = 1;
 	int size = 0;
@@ -56,6 +56,15 @@ public class FeatureVector {
 		capacity = cap;
 	}
 	
+	@Override
+	public void addEntry(int _x) {
+		if (size == capacity) grow();
+		x[size] = _x;
+		va[size] = 1.0;
+		++size;
+	}
+	
+	@Override
 	public void addEntry(int _x, double _value) {
 		if (_value == 0) return;
 		

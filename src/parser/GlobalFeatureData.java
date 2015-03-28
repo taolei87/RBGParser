@@ -16,7 +16,8 @@ public class GlobalFeatureData {
 	public final static int MAX_CHILD_NUM = 5;
 	public final static int MAX_SPAN_LENGTH = 5;
 	public final static int MAX_FEATURE_NUM = 7;
-
+	
+	int size;
 	LocalFeatureData lfd;
 	DependencyPipe pipe;
 	SyntacticFeatureFactory synFactory;
@@ -44,6 +45,7 @@ public class GlobalFeatureData {
 		this.lfd = lfd;
 		pipe = lfd.pipe;
 		synFactory = pipe.synFactory;
+		size = lfd.size;
 		
 		// init array
 		if (lfd.options.useHO) {
@@ -77,7 +79,8 @@ public class GlobalFeatureData {
 		Utils.Assert(lfd.arc2id[h * lfd.len + gp] >= 0);
 		
 		int pos = (h * lfd.len + gp) * lfd.len + m;		// h is preposition, different from conj/punc
-		FeatureVector fv = synFactory.createPPFeatureVector(lfd.inst, gp, h, m);
+		FeatureVector fv = new FeatureVector(size);
+		synFactory.createPPFeatureVector(fv, lfd.inst, gp, h, m);
 		ppcc1[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
 		return fv;
 	}
@@ -86,7 +89,8 @@ public class GlobalFeatureData {
 		// dependency relation is not known, cannot check
 		
 		int pos = (arg * lfd.len + left) * lfd.len + right;		// arg is conj, different from prep/punc
-		FeatureVector fv = synFactory.createCC1FeatureVector(lfd.inst, left, arg, right);
+		FeatureVector fv = new FeatureVector(size);
+		synFactory.createCC1FeatureVector(fv, lfd.inst, left, arg, right);
 		ppcc1[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
 		return fv;
 	}
@@ -95,7 +99,8 @@ public class GlobalFeatureData {
 		// dependency relation is not known, cannot check
 		
 		int pos = (arg * lfd.len + head) * lfd.len + child;	
-		FeatureVector fv = synFactory.createCC2FeatureVector(lfd.inst, arg, head, child);
+		FeatureVector fv = new FeatureVector(size);
+		synFactory.createCC2FeatureVector(fv, lfd.inst, arg, head, child);
 		cc2[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
 		return fv;
 	}
@@ -104,7 +109,8 @@ public class GlobalFeatureData {
 		// dependency relation is not known, cannot check
 		
 		int pos = (arg * lfd.len + head) * lfd.len + pair;		// arg is punc, different from prep/conj
-		FeatureVector fv = synFactory.createPNXFeatureVector(lfd.inst, head, arg, pair);
+		FeatureVector fv = new FeatureVector(size);
+		synFactory.createPNXFeatureVector(fv, lfd.inst, head, arg, pair);
 		ppcc1[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
 		return fv;
 	}
@@ -113,7 +119,8 @@ public class GlobalFeatureData {
 		Utils.Assert(bin <= MAX_SPAN_LENGTH);
 		
 		int pos = ((h * 2 + end) * 2 + punc) * (MAX_SPAN_LENGTH + 1) + bin;
-		FeatureVector fv = synFactory.createSpanFeatureVector(lfd.inst, h, end, punc, bin);
+		FeatureVector fv = new FeatureVector(size);
+		synFactory.createSpanFeatureVector(fv, lfd.inst, h, end, punc, bin);
 		span[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
 		return fv;
 	}
@@ -125,7 +132,8 @@ public class GlobalFeatureData {
 		Utils.Assert(id >= 0);
 		
 		int pos = (id * size + left) * size + right;		
-		FeatureVector fv = synFactory.createNeighborFeatureVector(lfd.inst, par, h, left, right);
+		FeatureVector fv = new FeatureVector(size);
+		synFactory.createNeighborFeatureVector(fv, lfd.inst, par, h, left, right);
 		nb[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
 		return fv;
 	}
@@ -134,7 +142,8 @@ public class GlobalFeatureData {
 		Utils.Assert(leftNum <= MAX_CHILD_NUM && rightNum <= MAX_CHILD_NUM);
 		
 		int pos = (h * (MAX_CHILD_NUM + 1) + leftNum) * (MAX_CHILD_NUM + 1) + rightNum;		
-		FeatureVector fv = synFactory.createChildNumFeatureVector(lfd.inst, h, leftNum, rightNum);
+		FeatureVector fv = new FeatureVector(size);
+		synFactory.createChildNumFeatureVector(fv, lfd.inst, h, leftNum, rightNum);
 		cn[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
 		return fv;
 	}
@@ -146,7 +155,8 @@ public class GlobalFeatureData {
 		Utils.Assert(id >= 0 && num >= 0 && num < BINNED_BUCKET);
 		
 		int pos = id * BINNED_BUCKET + num;		
-		FeatureVector fv = synFactory.createNonprojFeatureVector(lfd.inst, num, h, m);
+		FeatureVector fv = new FeatureVector(size);
+		synFactory.createNonprojFeatureVector(fv, lfd.inst, num, h, m);
 		nonproj[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
 		return fv;
 	}
