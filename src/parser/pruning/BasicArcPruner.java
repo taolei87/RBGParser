@@ -59,7 +59,7 @@ public class BasicArcPruner extends DependencyParser {
 			for (int i = 0; i < N; ++i) {
     			
 				DependencyInstance inst = lstTrain[i];
-    			LocalFeatureData lfd = new LocalFeatureData(inst, this, true);
+    			LocalFeatureData lfd = new LocalFeatureData(inst, this, true, true);
     		    int n = inst.length;
     		    
     		    for (int m = 1; m < n; ++m) {

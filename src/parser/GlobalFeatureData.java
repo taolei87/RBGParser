@@ -6,6 +6,7 @@ import parser.DependencyInstance.SpecialPos;
 import parser.feature.FeatureTemplate.Arc;
 import parser.feature.SyntacticFeatureFactory;
 import utils.FeatureVector;
+import utils.ScoreCollector;
 import utils.Utils;
 import static utils.DictionarySet.DictionaryTypes.*;
 import static parser.LocalFeatureData.NULL;
@@ -20,7 +21,11 @@ public class GlobalFeatureData {
 	int size;
 	LocalFeatureData lfd;
 	DependencyPipe pipe;
+	Parameters parameters;
 	SyntacticFeatureFactory synFactory;
+	DependencyInstance inst;
+	
+	double gamma;
 
 	//FeatureDataItem[] cn;	// [len][leftNum][rightNum]
 	double[] cn;		// [len][leftNum][rightNum]
@@ -46,6 +51,9 @@ public class GlobalFeatureData {
 		pipe = lfd.pipe;
 		synFactory = pipe.synFactory;
 		size = lfd.size;
+		parameters = lfd.parameters;
+		inst = lfd.inst;
+		gamma = lfd.gamma;
 		
 		// init array
 		if (lfd.options.useHO) {
@@ -78,73 +86,73 @@ public class GlobalFeatureData {
 
 		Utils.Assert(lfd.arc2id[h * lfd.len + gp] >= 0);
 		
-		int pos = (h * lfd.len + gp) * lfd.len + m;		// h is preposition, different from conj/punc
+		//int pos = (h * lfd.len + gp) * lfd.len + m;		// h is preposition, different from conj/punc
 		FeatureVector fv = new FeatureVector(size);
-		synFactory.createPPFeatureVector(fv, lfd.inst, gp, h, m);
-		ppcc1[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
+		synFactory.createPPFeatureVector(fv, inst, gp, h, m);
+		//ppcc1[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
 		return fv;
 	}
 	
 	public FeatureVector getCC1FeatureVector(int left, int arg, int right) {
 		// dependency relation is not known, cannot check
 		
-		int pos = (arg * lfd.len + left) * lfd.len + right;		// arg is conj, different from prep/punc
+		//int pos = (arg * lfd.len + left) * lfd.len + right;		// arg is conj, different from prep/punc
 		FeatureVector fv = new FeatureVector(size);
-		synFactory.createCC1FeatureVector(fv, lfd.inst, left, arg, right);
-		ppcc1[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
+		synFactory.createCC1FeatureVector(fv, inst, left, arg, right);
+		//ppcc1[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
 		return fv;
 	}
 	
 	public FeatureVector getCC2FeatureVector(int arg, int head, int child) {
 		// dependency relation is not known, cannot check
 		
-		int pos = (arg * lfd.len + head) * lfd.len + child;	
+		//int pos = (arg * lfd.len + head) * lfd.len + child;	
 		FeatureVector fv = new FeatureVector(size);
-		synFactory.createCC2FeatureVector(fv, lfd.inst, arg, head, child);
-		cc2[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
+		synFactory.createCC2FeatureVector(fv, inst, arg, head, child);
+		//cc2[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
 		return fv;
 	}
 	
 	public FeatureVector getPNXFeatureVector(int head, int arg, int pair) {
 		// dependency relation is not known, cannot check
 		
-		int pos = (arg * lfd.len + head) * lfd.len + pair;		// arg is punc, different from prep/conj
+		//int pos = (arg * lfd.len + head) * lfd.len + pair;		// arg is punc, different from prep/conj
 		FeatureVector fv = new FeatureVector(size);
-		synFactory.createPNXFeatureVector(fv, lfd.inst, head, arg, pair);
-		ppcc1[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
+		synFactory.createPNXFeatureVector(fv, inst, head, arg, pair);
+		//ppcc1[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
 		return fv;
 	}
 	
 	public FeatureVector getSpanFeatureVector(int h, int end, int punc, int bin) {
 		Utils.Assert(bin <= MAX_SPAN_LENGTH);
 		
-		int pos = ((h * 2 + end) * 2 + punc) * (MAX_SPAN_LENGTH + 1) + bin;
+		//int pos = ((h * 2 + end) * 2 + punc) * (MAX_SPAN_LENGTH + 1) + bin;
 		FeatureVector fv = new FeatureVector(size);
-		synFactory.createSpanFeatureVector(fv, lfd.inst, h, end, punc, bin);
-		span[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
+		synFactory.createSpanFeatureVector(fv, inst, h, end, punc, bin);
+		//span[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
 		return fv;
 	}
 	
 	public FeatureVector getNeighborFeatureVector(int par, int h, int left, int right) {
 		int id = lfd.arc2id[h * lfd.len + par];
-		int size = pipe.dictionaries.size(POS)+1;
+		//int size = pipe.dictionaries.size(POS)+1;
 	    
 		Utils.Assert(id >= 0);
 		
-		int pos = (id * size + left) * size + right;		
+		//int pos = (id * size + left) * size + right;		
 		FeatureVector fv = new FeatureVector(size);
-		synFactory.createNeighborFeatureVector(fv, lfd.inst, par, h, left, right);
-		nb[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
+		synFactory.createNeighborFeatureVector(fv, inst, par, h, left, right);
+		//nb[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
 		return fv;
 	}
 	
 	public FeatureVector getChildNumFeatureVector(int h, int leftNum, int rightNum) {
 		Utils.Assert(leftNum <= MAX_CHILD_NUM && rightNum <= MAX_CHILD_NUM);
 		
-		int pos = (h * (MAX_CHILD_NUM + 1) + leftNum) * (MAX_CHILD_NUM + 1) + rightNum;		
+		//int pos = (h * (MAX_CHILD_NUM + 1) + leftNum) * (MAX_CHILD_NUM + 1) + rightNum;		
 		FeatureVector fv = new FeatureVector(size);
-		synFactory.createChildNumFeatureVector(fv, lfd.inst, h, leftNum, rightNum);
-		cn[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
+		synFactory.createChildNumFeatureVector(fv, inst, h, leftNum, rightNum);
+		//cn[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
 		return fv;
 	}
 	
@@ -154,10 +162,10 @@ public class GlobalFeatureData {
 		
 		Utils.Assert(id >= 0 && num >= 0 && num < BINNED_BUCKET);
 		
-		int pos = id * BINNED_BUCKET + num;		
+		//int pos = id * BINNED_BUCKET + num;		
 		FeatureVector fv = new FeatureVector(size);
-		synFactory.createNonprojFeatureVector(fv, lfd.inst, num, h, m);
-		nonproj[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
+		synFactory.createNonprojFeatureVector(fv, inst, num, h, m);
+		//nonproj[pos] = lfd.parameters.dotProduct(fv) * lfd.gamma;
 		return fv;
 	}
 	
@@ -167,8 +175,12 @@ public class GlobalFeatureData {
 		Utils.Assert(lfd.arc2id[h * lfd.len + gp] >= 0);
 		
 		int pos = (h * lfd.len + gp) * lfd.len + m;		// h is preposition, different from conj/punc
-		if (ppcc1[pos] == NULL)
-			getPPFeatureVector(gp, h, m);
+		if (ppcc1[pos] == NULL) {
+			ScoreCollector col = new ScoreCollector(parameters);
+			synFactory.createPPFeatureVector(col, inst, gp, h, m);
+			ppcc1[pos] = col.score * gamma;
+			//getPPFeatureVector(gp, h, m);
+		}
 
 		return ppcc1[pos];
 	}
@@ -177,9 +189,12 @@ public class GlobalFeatureData {
 		// dependency relation is not known, cannot check
 		
 		int pos = (arg * lfd.len + left) * lfd.len + right;		// arg is conj, different from prep/punc
-		if (ppcc1[pos] == NULL)
-			getCC1FeatureVector(left, arg, right);
-
+		if (ppcc1[pos] == NULL) {
+			ScoreCollector col = new ScoreCollector(parameters);
+			synFactory.createCC1FeatureVector(col, inst, left, arg, right);
+			ppcc1[pos] = col.score * gamma;
+			//getCC1FeatureVector(left, arg, right);
+		}		
 		return ppcc1[pos];
 	}
 	
@@ -187,8 +202,12 @@ public class GlobalFeatureData {
 		// dependency relation is not known, cannot check
 		
 		int pos = (arg * lfd.len + head) * lfd.len + child;	
-		if (cc2[pos] == NULL)
-			getCC2FeatureVector(arg, head, child);
+		if (cc2[pos] == NULL) {
+			ScoreCollector col = new ScoreCollector(parameters);
+			synFactory.createCC2FeatureVector(col, inst, arg, head, child);
+			cc2[pos] = col.score * gamma;
+			//getCC2FeatureVector(arg, head, child);
+		}
 
 		return cc2[pos];
 	}
@@ -197,8 +216,12 @@ public class GlobalFeatureData {
 		// dependency relation is not known, cannot check
 		
 		int pos = (arg * lfd.len + head) * lfd.len + pair;		// arg is punc, different from prep/conj
-		if (ppcc1[pos] == NULL)
-			getPNXFeatureVector(head, arg, pair);
+		if (ppcc1[pos] == NULL) {
+			ScoreCollector col = new ScoreCollector(parameters);
+			synFactory.createPNXFeatureVector(col, inst, head, arg, pair);
+			ppcc1[pos] = col.score * gamma;
+			//getPNXFeatureVector(head, arg, pair);
+		}
 
 		return ppcc1[pos];
 	}
@@ -207,9 +230,12 @@ public class GlobalFeatureData {
 		Utils.Assert(bin <= MAX_SPAN_LENGTH);
 		
 		int pos = ((h * 2 + end) * 2 + punc) * (MAX_SPAN_LENGTH + 1) + bin;	
-		if (span[pos] == NULL)
-			getSpanFeatureVector(h, end, punc, bin);
-
+		if (span[pos] == NULL) {
+			ScoreCollector col = new ScoreCollector(parameters);
+			synFactory.createSpanFeatureVector(col, inst, h, end, punc, bin);
+			span[pos] = col.score * gamma;
+			//getSpanFeatureVector(h, end, punc, bin);
+		}
 		return span[pos];
 	}
 	
@@ -220,8 +246,12 @@ public class GlobalFeatureData {
 		Utils.Assert(id >= 0);
 		
 		int pos = (id * size + left) * size + right;		
-		if (nb[pos] == NULL)
-			getNeighborFeatureVector(par, h, left, right);
+		if (nb[pos] == NULL) {
+			ScoreCollector col = new ScoreCollector(parameters);
+			synFactory.createNeighborFeatureVector(col, inst, par, id, left, right);
+			nb[pos] = col.score * gamma;
+			//getNeighborFeatureVector(par, h, left, right);
+		}
 
 		return nb[pos];
 	}
@@ -231,7 +261,10 @@ public class GlobalFeatureData {
 		
 		int pos = (h * (MAX_CHILD_NUM + 1) + leftNum) * (MAX_CHILD_NUM + 1) + rightNum;		
 		if (cn[pos] == NULL) {
-			getChildNumFeatureVector(h, leftNum, rightNum);
+			ScoreCollector col = new ScoreCollector(parameters);
+			synFactory.createChildNumFeatureVector(col, inst, h, leftNum, rightNum);
+			cn[pos] = col.score * gamma;
+			//getChildNumFeatureVector(h, leftNum, rightNum);
 		}
 		return cn[pos];
 	}
@@ -243,9 +276,13 @@ public class GlobalFeatureData {
 		Utils.Assert(id >= 0 && num >= 0 && num < BINNED_BUCKET);
 		
 		int pos = id * BINNED_BUCKET + num;		
-		if (nonproj[pos] == NULL)
-			getNonprojFeatureVector(arclis, h, m);
-
+		if (nonproj[pos] == NULL) {
+			ScoreCollector col = new ScoreCollector(parameters);
+			synFactory.createNonprojFeatureVector(col, inst, num, h, m);
+			nonproj[pos] = col.score * gamma;
+			//getNonprojFeatureVector(arclis, h, m);
+		}
+		
 		return nonproj[pos];
 	}
 	
@@ -375,7 +412,8 @@ public class GlobalFeatureData {
 		
 		DependencyInstance now = lfd.inst;
 		
-		FeatureVector tmpFv = new FeatureVector(lfd.size);
+		//FeatureVector tmpFv = new FeatureVector(lfd.size);
+		ScoreCollector tmpFv = new ScoreCollector(parameters);
 		double score = 0.0;	
 		
 		if (!lfd.options.useHO)
@@ -489,7 +527,8 @@ public class GlobalFeatureData {
 			}
 		}
 		
-		score += lfd.parameters.dotProduct(tmpFv) * lfd.gamma;
+		//score += lfd.parameters.dotProduct(tmpFv) * lfd.gamma;
+		score += tmpFv.score * gamma;
 		return score;
 	}
 

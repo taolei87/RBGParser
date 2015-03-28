@@ -22,6 +22,7 @@ public class LocalFeatureData {
 	DependencyParser pruner;
 	DependencyDecoder prunerDecoder;
 	
+	final boolean isTrain;
 	final int len;					// sentence length
 	final int ntypes;				// number of label types
 	final int size, sizeL;						
@@ -50,8 +51,9 @@ public class LocalFeatureData {
 	double[] psc;			// parent-sib-mod-child, [dep id (p, sib)][dep id (mod, child)]
 	
 	public LocalFeatureData(DependencyInstance inst,
-			DependencyParser parser, boolean indexGoldArcs) 
+			DependencyParser parser, boolean indexGoldArcs, boolean isTrain) 
 	{
+		this.isTrain = isTrain;
 		this.inst = inst;
 		pipe = parser.pipe;
 		synFactory = pipe.synFactory;
@@ -66,8 +68,8 @@ public class LocalFeatureData {
 		len = inst.length;
 		ntypes = pipe.types.length;
 		rank = options.R;
-		size = pipe.synFactory.numArcFeats+1;
-		sizeL = pipe.synFactory.numLabeledArcFeats+1;
+		size = synFactory.numArcFeats+1;
+		sizeL = synFactory.numLabeledArcFeats+1;
 		gamma = options.gamma;
 		//gammaLabel = options.gammaLabel;
 		
@@ -75,7 +77,7 @@ public class LocalFeatureData {
 		wpU = new double[len][rank];
 		wpV = new double[len][rank];
 		
-		arcFvs = new FeatureVector[len*len];
+		if (isTrain) arcFvs = new FeatureVector[len*len];
 		arcScores = new double[len*len];
 	    //arcNtScores = new double[len*len];
 
@@ -97,7 +99,7 @@ public class LocalFeatureData {
 	private void initFirstOrderTables() 
 	{
 		for (int i = 0; i < len; ++i) {
-			wordFvs[i] = pipe.synFactory.createWordFeatures(inst, i);
+			wordFvs[i] = synFactory.createWordFeatures(inst, i);
 			//wpU[i] = parameters.projectU(wordFvs[i]);
 			//wpV[i] = parameters.projectV(wordFvs[i]);
 			parameters.projectU(wordFvs[i], wpU[i]);
@@ -106,17 +108,25 @@ public class LocalFeatureData {
 		
 		boolean nopruning = !options.pruning || pruner == null || options.learningMode == LearningMode.Basic;
 		
-		for (int i = 0; i < len; ++i)
-			for (int j = 0; j < len; ++j) 
-				if (i != j && (nopruning || arc2id[j*len+i] != -1)) {
-
-						arcFvs[i*len+j] = new FeatureVector(size);
-						pipe.synFactory.createArcFeatures(arcFvs[i*len+j], inst, i, j);
-	
-						arcScores[i*len+j] = parameters.dotProduct(arcFvs[i*len+j]) * gamma
-										+ parameters.dotProduct(wpU[i], wpV[j], i-j) * (1-gamma);
-
-				}
+		if (isTrain) {
+			for (int i = 0; i < len; ++i)
+				for (int j = 0; j < len; ++j) 
+					if (i != j && (nopruning || arc2id[j*len+i] != -1)) {
+							arcFvs[i*len+j] = new FeatureVector(size);
+							synFactory.createArcFeatures(arcFvs[i*len+j], inst, i, j);	
+							arcScores[i*len+j] = parameters.dotProduct(arcFvs[i*len+j]) * gamma
+											+ parameters.dotProduct(wpU[i], wpV[j], i-j) * (1-gamma);
+					}
+		} else {
+			for (int i = 0; i < len; ++i)
+				for (int j = 0; j < len; ++j) 
+					if (i != j && (nopruning || arc2id[j*len+i] != -1)) {
+							ScoreCollector col = new ScoreCollector(parameters);
+							synFactory.createArcFeatures(col, inst, i, j);	
+							arcScores[i*len+j] = col.score * gamma
+											+ parameters.dotProduct(wpU[i], wpV[j], i-j) * (1-gamma);
+					}
+		}
 		
 //		if (options.learnLabel) {
 //			for (int i = 0; i < len; ++i)
@@ -222,7 +232,7 @@ public class LocalFeatureData {
 			
 			// Use the threshold to prune arcs. 
 			double threshold = Math.log(options.pruningCoeff);
-			LocalFeatureData lfd2 = new LocalFeatureData(inst, pruner, false);
+			LocalFeatureData lfd2 = new LocalFeatureData(inst, pruner, false, false);
 			GlobalFeatureData gfd2 = null;
 			DependencyInstance pred = prunerDecoder.decode(inst, lfd2, gfd2, false);
 							
@@ -884,7 +894,7 @@ public class LocalFeatureData {
 		
 		//int pos = id*len+s;
 		FeatureVector fv = new FeatureVector(size);
-		pipe.synFactory.createTripsFeatureVector(fv, inst, h, m, s);
+		synFactory.createTripsFeatureVector(fv, inst, h, m, s);
 		//trips[pos] = parameters.dotProduct(fv) * gamma;			
 		return fv;
 	}
@@ -893,7 +903,7 @@ public class LocalFeatureData {
 	{
 		//int pos = m*len+s;				
 		FeatureVector fv = new FeatureVector(size);
-		pipe.synFactory.createSibFeatureVector(fv, inst, m, s/*, false*/);
+		synFactory.createSibFeatureVector(fv, inst, m, s/*, false*/);
 		//sib[pos] = parameters.dotProduct(fv) * gamma;
 		return fv;
 	}
@@ -905,7 +915,7 @@ public class LocalFeatureData {
 		
 		//int pos = id*len+m;
 		FeatureVector fv = new FeatureVector(size);
-		pipe.synFactory.createGPCFeatureVector(fv, inst, gp, h, m);
+		synFactory.createGPCFeatureVector(fv, inst, gp, h, m);
 		//gpc[pos] = parameters.dotProduct(fv) * gamma;
 		return fv;
 	}
@@ -919,7 +929,7 @@ public class LocalFeatureData {
 		//int pos = id*len+h2;
 
 		FeatureVector fv = new FeatureVector(size);
-		pipe.synFactory.createHeadBiFeatureVector(fv, inst, m, h, h2);
+		synFactory.createHeadBiFeatureVector(fv, inst, m, h, h2);
 		//headbi[pos] = parameters.dotProduct(fv) * gamma;
 		return fv;
 	}
@@ -932,7 +942,7 @@ public class LocalFeatureData {
 		
 		//int pos = (id*len+m)*len+s;
 		FeatureVector fv = new FeatureVector(size);
-		pipe.synFactory.createGPSibFeatureVector(fv, inst, gp, h, m, s);
+		synFactory.createGPSibFeatureVector(fv, inst, gp, h, m, s);
 		//gpsib[pos] = parameters.dotProduct(fv) * gamma;
 		return fv;
 	}
@@ -945,7 +955,7 @@ public class LocalFeatureData {
 		
 		//int pos = (id*len+s1)*len+s2;
 		FeatureVector fv = new FeatureVector(size);
-		pipe.synFactory.createTriSibFeatureVector(fv, inst, h, s1, m, s2);
+		synFactory.createTriSibFeatureVector(fv, inst, h, s1, m, s2);
 		//trisib[pos] = parameters.dotProduct(fv) * gamma;
 		return fv;
 	}
@@ -958,7 +968,7 @@ public class LocalFeatureData {
 		
 		//int pos = id1 * numarcs + id2;
 		FeatureVector fv = new FeatureVector(size);
-		pipe.synFactory.createGGPCFeatureVector(fv, inst, ggp, gp, h, m);
+		synFactory.createGGPCFeatureVector(fv, inst, ggp, gp, h, m);
 		//ggpc[pos] = parameters.dotProduct(fv) * gamma;
 		return fv;
 	}
@@ -971,7 +981,7 @@ public class LocalFeatureData {
 		
 		//int pos = id1 * numarcs + id2;
 		FeatureVector fv = new FeatureVector(size);
-		pipe.synFactory.createPSCFeatureVector(fv, inst, h, m, c, sib);
+		synFactory.createPSCFeatureVector(fv, inst, h, m, c, sib);
 		//psc[pos] = parameters.dotProduct(fv) * gamma;
 		return fv;
 	}
@@ -1007,7 +1017,7 @@ public class LocalFeatureData {
 	private FeatureVector getLabelFeature(DependencyArcList arcLis, int[] heads, int mod, int type)
 	{
 		FeatureVector fv = new FeatureVector(sizeL);
-		pipe.synFactory.createLabelFeatures(fv, inst, arcLis, heads, mod, type);
+		synFactory.createLabelFeatures(fv, inst, arcLis, heads, mod, type);
 		return fv;
 	}
 	
