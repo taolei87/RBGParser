@@ -3096,7 +3096,7 @@ public class SyntacticFeatureFactory implements Serializable {
     	h *= 0xc2b2ae35;
     	h ^= h >> 16;
     	//int id = hashcode2int(code) & numArcFeats;
-    	int id = h * numArcFeats;
+    	int id = h & numArcFeats;
     	mat.addEntry(id);
     	if (!stoppedGrowth)
     		featureHashSet.add(code);
@@ -3128,7 +3128,7 @@ public class SyntacticFeatureFactory implements Serializable {
     	h *= 0xc2b2ae35;
     	h ^= h >> 16;
     	//int id = hashcode2int(code) & numArcFeats;
-    	int id = h * numArcFeats;
+    	int id = h & numArcFeats;
     	mat.addEntry(id, value);
     	if (!stoppedGrowth)
     		featureHashSet.add(code);
@@ -3160,7 +3160,7 @@ public class SyntacticFeatureFactory implements Serializable {
     	h *= 0xc2b2ae35;
     	h ^= h >> 16;
     	//int id = hashcode2int(code) & numArcFeats;
-    	int id = h * numLabeledArcFeats;
+    	int id = h & numLabeledArcFeats;
     	mat.addEntry(id);
     	//if (!stoppedGrowth)
     	//	featureHashSet.add(code);
@@ -3192,7 +3192,7 @@ public class SyntacticFeatureFactory implements Serializable {
     	h *= 0xc2b2ae35;
     	h ^= h >> 16;
     	//int id = hashcode2int(code) & numArcFeats;
-    	int id = h * numLabeledArcFeats;	
+    	int id = h & numLabeledArcFeats;	
     	mat.addEntry(id, value);
     	//if (!stoppedGrowth)
     	//	featureHashSet.add(code);
