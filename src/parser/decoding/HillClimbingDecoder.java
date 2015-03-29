@@ -67,18 +67,22 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		//if (options.learnLabel)
 		//	staticTypes = lfd.getStaticTypes();
 		
-		for (int i = 0; i < tasks.length; ++i) {
-			decodingService.submit(tasks[i], null);			
+		if (options.numHcThreads == 1) {
+			tasks[0].run();
 		}
-		
-		for (int i = 0; i < tasks.length; ++i) {
-			try {
-				decodingService.take();
-			} catch (InterruptedException e) {
-				System.out.println("Hill climbing thread interupted!!!!");
+		else {
+			for (int i = 0; i < tasks.length; ++i) {
+				decodingService.submit(tasks[i], null);			
+			}
+			
+			for (int i = 0; i < tasks.length; ++i) {
+				try {
+					decodingService.take();
+				} catch (InterruptedException e) {
+					System.out.println("Hill climbing thread interupted!!!!");
+				}
 			}
 		}
-		
 		//if (options.learnLabel)
 		//	lfd.predictLabels(pred.heads, pred.deplbids, addLoss);
 		

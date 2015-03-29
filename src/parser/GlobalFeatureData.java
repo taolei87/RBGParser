@@ -248,7 +248,7 @@ public class GlobalFeatureData {
 		int pos = (id * size + left) * size + right;		
 		if (nb[pos] == NULL) {
 			ScoreCollector col = new ScoreCollector(parameters);
-			synFactory.createNeighborFeatureVector(col, inst, par, id, left, right);
+			synFactory.createNeighborFeatureVector(col, inst, par, h, left, right);
 			nb[pos] = col.score * gamma;
 			//getNeighborFeatureVector(par, h, left, right);
 		}
