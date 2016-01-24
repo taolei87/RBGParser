@@ -13,6 +13,7 @@ import java.util.zip.GZIPOutputStream;
 
 import parser.Options.LearningMode;
 import parser.decoding.DependencyDecoder;
+import parser.decoding.HillClimbingDecoder;
 import parser.io.DependencyReader;
 import parser.io.DependencyWriter;
 import parser.pruning.BasicArcPruner;
@@ -420,8 +421,12 @@ public class DependencyParser implements Serializable {
     	
 		long start = System.currentTimeMillis();
     	
-    	DependencyInstance inst = pipe.createInstance(reader);    	
+    	DependencyInstance inst = pipe.createInstance(reader);  
+    	int cnt = 0;
     	while (inst != null) {
+    		cnt += 1;
+    		if (cnt % 100 == 0)
+    			System.out.print(cnt + "  ");
     		LocalFeatureData lfd = new LocalFeatureData(inst, this, true);
     		GlobalFeatureData gfd = new GlobalFeatureData(lfd); 
 
@@ -440,6 +445,7 @@ public class DependencyParser implements Serializable {
     		
     		inst = pipe.createInstance(reader);
     	}
+    	System.out.println();
     	
     	reader.close();
     	if (writer != null) writer.close();
@@ -457,10 +463,34 @@ public class DependencyParser implements Serializable {
     					options.pruningCoeff);
     		}
     	}
+    	outputStat((HillClimbingDecoder)decoder);
     	
         decoder.shutdown();
 
         return eval.UAS();
+    }
+    
+    public void outputStat(HillClimbingDecoder decoder) {
+    	int sum = 0;
+    	for (int i = 0; i < decoder.scoreDistance.length; ++i)
+    		sum += decoder.scoreDistance[i];
+    	System.out.println("sum: " + sum);
+    	double cumu = 0.0;
+    	for (int i = 0; i < decoder.scoreDistance.length; ++i) {
+    		cumu += decoder.scoreDistance[i];
+    		System.out.println(i + " " + (double)decoder.scoreDistance[i] / sum + " " + cumu / sum);
+    	}
+    	
+    	sum = 0;
+    	for (Integer cnt : decoder.localCount.keySet()) {
+    		sum += decoder.localCount.get(cnt);
+    	}
+    	
+    	cumu = 0.0;
+    	for (Integer cnt : decoder.localCount.keySet()) {
+    		cumu += decoder.localCount.get(cnt);
+    		System.out.println(cnt + " " + cumu / sum);
+    	}
     }
     
     public double evaluateWithConvergeNum(int converge) throws IOException, CloneNotSupportedException 

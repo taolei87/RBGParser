@@ -1,5 +1,6 @@
 package parser.decoding;
 
+import java.util.*;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
@@ -30,6 +31,13 @@ public class HillClimbingDecoder extends DependencyDecoder {
     ExecutorService executorService;
 	ExecutorCompletionService<Object> decodingService;
 	HillClimbingTask[] tasks;
+	
+	// for statistics
+	public double interval = 1.0;
+	public int[] scoreDistance = new int[100];
+	public TreeMap<Integer, Integer> localCount = new TreeMap<Integer, Integer>();	// v trees have k local 
+	public HashMap<String, Double> treeToScore;
+	public HashMap<String, Integer> treeToCount;
 	
 	public HillClimbingDecoder(Options options) {
 		this.options = options;
@@ -67,6 +75,9 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		//if (options.learnLabel)
 		//	staticTypes = lfd.getStaticTypes();
 		
+		treeToScore = new HashMap<String, Double>();
+		treeToCount = new HashMap<String, Integer>();
+		
 		for (int i = 0; i < tasks.length; ++i) {
 			decodingService.submit(tasks[i], null);			
 		}
@@ -81,6 +92,28 @@ public class HillClimbingDecoder extends DependencyDecoder {
 		
 		//if (options.learnLabel)
 		//	lfd.predictLabels(pred.heads, pred.deplbids, addLoss);
+		
+		// collect stat
+		int numOfLocal = treeToCount.size();
+		if (!localCount.containsKey(numOfLocal)) {
+			localCount.put(numOfLocal, 1);
+		}
+		else {
+			localCount.put(numOfLocal, localCount.get(numOfLocal) + 1);
+		}
+		
+		for (String tree : treeToCount.keySet()) {
+			int cnt = treeToCount.get(tree);
+			double score = treeToScore.get(tree);
+			Utils.Assert(score <= bestScore + 1e-6);
+			double diff = bestScore - score;
+			if (diff < 1e-6) {
+				scoreDistance[0] += cnt;
+			}
+			else {
+				scoreDistance[(int)Math.min(scoreDistance.length - 1, (int)(diff / interval) + 1)] += cnt;
+			}
+		}
 		
 		return pred;		
 	}
@@ -148,6 +181,10 @@ public class HillClimbingDecoder extends DependencyDecoder {
 			
 			n = inst.length;
 			converge = addLoss ? options.numTrainConverge : options.numTestConverge;
+			if (!addLoss) {
+				converge = 3000;	// maximum restart
+			}
+			int maxRestartForStat = 300;
 			
 			if (dfslis == null || dfslis.length < n) {
 				dfslis = new int[n];				
@@ -226,17 +263,44 @@ public class HillClimbingDecoder extends DependencyDecoder {
 				double score = calcScore(now);
 				synchronized (pred) {
 					++totRuns;
-					if (score > bestScore) {
-						bestScore = score;
-						unchangedRuns = 0;
-						pred.heads = heads;
-						pred.deplbids = deplbids;
-					} else {
-						++unchangedRuns;
-						if (unchangedRuns >= converge)
-							stopped = true;
-					}
+					//if (score > bestScore) {
+					//	bestScore = score;
+					//	unchangedRuns = 0;
+					//	pred.heads = heads;
+					//	pred.deplbids = deplbids;
+					//} 
+					//else {
+					//	++unchangedRuns;
+					//	if (unchangedRuns >= converge)
+					//		stopped = true;
+					//}
 					
+					if (totRuns <= converge) {
+						if (score > bestScore) {
+							bestScore = score;
+							pred.heads = heads;
+							pred.deplbids = deplbids;
+						}
+						
+						if (totRuns <= maxRestartForStat) {
+							String tree = "";
+							for (int i = 0; i < heads.length; ++i) {
+								tree += Integer.toString(heads[i]) + "," + Integer.toBinaryString(deplbids[i]) + ",";
+							}
+							if (!treeToCount.containsKey(tree)) {
+								treeToCount.put(tree, 1);
+								treeToScore.put(tree, score);
+							}
+							else {
+								treeToCount.put(tree, treeToCount.get(tree) + 1);
+								double diff = score - treeToScore.get(tree);
+								Utils.Assert(Math.abs(diff) < 1e-6);
+							}
+						}
+					}
+					else {
+						stopped = true;
+					}
 				}
 			}
 		}
