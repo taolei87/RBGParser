@@ -117,6 +117,25 @@ public class DictionarySet implements Serializable {
 		filterDictionary(tag, 0.999f);
 	}
 	
+	public void filterWord() {
+		int t = DictionaryTypes.WORD.ordinal();
+		int[] values = counters[t].values();
+		Arrays.sort(values);
+		int thresh = values[values.length - 100];
+		Dictionary filtered = new Dictionary();
+        initDict(DictionaryTypes.WORD, filtered);
+		for (Object obj : dicts[t].toArray()) {
+			int id = dicts[t].lookupIndex(obj);
+			int value = counters[t].get(id);
+			if (value >= thresh) {
+				filtered.lookupIndex((String)obj);
+			}
+		}
+		System.out.println("Filtered WORD" + " (" + dicts[t].size() + "-->"
+				+ filtered.size() + ")");
+		dicts[t] = filtered;
+	}
+	
 	public void filterDictionary(DictionaryTypes tag, float percent)
 	{
 		int t = tag.ordinal();

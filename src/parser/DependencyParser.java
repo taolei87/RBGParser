@@ -86,6 +86,13 @@ public class DependencyParser implements Serializable {
 			
 			pipe.createAlphabets(options.trainFile);
 			DependencyInstance[] lstTrain = pipe.createInstances(options.trainFile);
+
+			DependencyWriter writer = DependencyWriter.createDependencyWriter(options, pipe);
+    		writer.startWriting(options.outFile);
+    		for (int i = 0; i < lstTrain.length; ++i)
+    			writer.writeInstance(lstTrain[i]);
+    		writer.close();
+    		System.exit(0);
 			
 			Parameters parameters = new Parameters(pipe, options);
 			parser.parameters = parameters;

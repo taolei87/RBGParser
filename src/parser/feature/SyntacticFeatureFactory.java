@@ -366,6 +366,14 @@ public class SyntacticFeatureFactory implements Serializable {
     							inst.lemmaids[c], inst.featids[c][j], attDist);
     			}
     	}
+    	
+//    	if ((inst.specialPos[c] == SpecialPos.AJ || inst.specialPos[c] == SpecialPos.DEM)
+//    			&& inst.specialPos[h] == SpecialPos.N && inst.rational[h] >= 0 && inst.rational[c] >= 0) {
+//    		// agreement
+//    		//System.out.println("lalala");
+//        	long code = createArcCodePP(RATH_RATM, inst.rational[h], inst.rational[c]);
+//        	addArcFeature(code, fv);
+//    	}
     			
     	return fv;
     }

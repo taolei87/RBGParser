@@ -40,7 +40,7 @@ public class Options implements Cloneable, Serializable {
 	public double pruningCoeff = 0.10;
 	public int labelLossType = 0;
 	
-	public int numHcThreads = 4;		// hill climbing: number of threads
+	public int numHcThreads = 6;		// hill climbing: number of threads
 	
 	// Number of hill climbing restarts to converge
 	// Training requires more restarts because of cost-augmented decoding

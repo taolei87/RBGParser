@@ -20,7 +20,7 @@ import utils.DictionarySet;
 public class DependencyInstance implements Serializable {
 	
 	public enum SpecialPos {
-		C, P, PNX, V, AJ, N, OTHER,
+		C, P, PNX, V, AJ, N, DEM, OTHER,
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -44,6 +44,7 @@ public class DependencyInstance implements Serializable {
 	
 	// FEATURES: some features associated with the elements separated by "|", e.g. "PAST|3P"
 	public String[][] feats;
+	public int[] rational;
 
 	// HEAD: the IDs of the heads for each element
 	public int[] heads;
@@ -93,7 +94,7 @@ public class DependencyInstance implements Serializable {
     }
     
     public DependencyInstance(DependencyInstance a) {
-    	//this(a.forms, a.lemmas, a.cpostags, a.postags, a.feats, a.heads, a.deprels);
+    	this(a.forms, a.lemmas, a.cpostags, a.postags, a.feats, a.heads, a.deprels);
     	specialPos = a.specialPos;
     	length = a.length;
     	heads = a.heads;
@@ -105,6 +106,7 @@ public class DependencyInstance implements Serializable {
     	deplbids = a.deplbids;
     	featids = a.featids;
     	wordVecIds = a.wordVecIds;
+    	rational = a.rational;
     }
     
     //public void setDepIds(int[] depids) {
@@ -121,7 +123,15 @@ public class DependencyInstance implements Serializable {
 		cpostagids = new int[length];
 		
     	for (int i = 0; i < length; ++i) {
-    		formids[i] = dicts.lookupIndex(WORD, "form="+normalize(forms[i]));
+//    		if (postags[i].equals("ADP")
+//    				|| postags[i].equals("DET")
+//    				|| postags[i].equals(".")
+//    				|| postags[i].equals("PRT")
+//    				|| postags[i].equals("CONJ")
+//    				|| postags[i].equals("PRON")) {
+    			formids[i] = dicts.lookupIndex(WORD, "form="+normalize(forms[i]));
+//    		}
+//    		formids[i] = 0;
 			postagids[i] = dicts.lookupIndex(POS, "pos="+postags[i]);
 			cpostagids[i] = dicts.lookupIndex(POS, "cpos="+cpostags[i]);
 			deplbids[i] = dicts.lookupIndex(DEPLABEL, deprels[i]) - 1;	// zero-based
@@ -134,11 +144,19 @@ public class DependencyInstance implements Serializable {
     	}
 
 		featids = new int[length][];
-		for (int i = 0; i < length; ++i) if (feats[i] != null) {
-			featids[i] = new int[feats[i].length];
-			for (int j = 0; j < feats[i].length; ++j)
-				featids[i][j] = dicts.lookupIndex(POS, "feat="+feats[i][j]);
-		}
+//		rational = new int[length];
+//		for (int i = 0; i < length; ++i) if (feats[i] != null) {
+//			//featids[i] = new int[feats[i].length];
+//			featids[i] = new int[4];
+//			for (int j = 0; j < featids[i].length; ++j)
+//				featids[i][j] = dicts.lookupIndex(POS, "feat="+feats[i][j]);
+//			if (feats[i].length > 4) {
+//				rational[i] = Integer.parseInt(feats[i][4].split("=")[1]);
+//			}
+//			else {
+//				rational[i] = -1;
+//			}
+//		}
 		
 		if (dicts.size(WORDVEC) > 0) {
 			wordVecIds = new int[length];
@@ -152,26 +170,26 @@ public class DependencyInstance implements Serializable {
 		// set special pos
 		specialPos = new SpecialPos[length];
 		for (int i = 0; i < length; ++i) {
-			if (coarseMap.containsKey(postags[i])) {
-				String cpos = coarseMap.get(postags[i]);
-				if ((cpos.equals("CONJ")
-						|| PossibleLang.Japanese == lang) && conjWord.contains(forms[i])) {
-					specialPos[i] = SpecialPos.C;
-				}
-				else if (cpos.equals("ADP"))
-					specialPos[i] = SpecialPos.P;
-				else if (cpos.equals("."))
-					specialPos[i] = SpecialPos.PNX;
-				else if (cpos.equals("VERB"))
-					specialPos[i] = SpecialPos.V;
-				else
-					specialPos[i] = SpecialPos.OTHER;
-			}
-			else {
+//			if (coarseMap.containsKey(postags[i])) {
+//				String cpos = coarseMap.get(postags[i]);
+//				if ((cpos.equals("CONJ")
+//						|| PossibleLang.Japanese == lang) && conjWord.contains(forms[i])) {
+//					specialPos[i] = SpecialPos.C;
+//				}
+//				else if (cpos.equals("ADP"))
+//					specialPos[i] = SpecialPos.P;
+//				else if (cpos.equals("."))
+//					specialPos[i] = SpecialPos.PNX;
+//				else if (cpos.equals("VERB"))
+//					specialPos[i] = SpecialPos.V;
+//				else
+//					specialPos[i] = SpecialPos.OTHER;
+//			}
+//			else {
 				//System.out.println("Can't find coarse map: " + postags[i]);
 				//coarseMap.put(postags[i], "X");
 				specialPos[i] = getSpecialPos(forms[i], postags[i]);
-			}
+//			}
 		}
     }
 
@@ -200,6 +218,12 @@ public class DependencyInstance implements Serializable {
     			 tag.equals(";") ||
     			 Evaluator.puncRegex.matcher(form).matches())
     		return SpecialPos.PNX;
+    	else if (tag.indexOf("NN") != -1)
+    		return SpecialPos.N;
+    	else if (tag.indexOf("JJ") != -1)
+    		return SpecialPos.AJ;
+    	else if (tag.indexOf("DEM") != -1)
+    		return SpecialPos.DEM;
     	else
     		return SpecialPos.OTHER;
     }

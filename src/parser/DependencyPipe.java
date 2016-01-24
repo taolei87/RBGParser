@@ -213,7 +213,9 @@ public class DependencyPipe implements Serializable {
 			inst.setInstIds(dictionaries, coarseMap, conjWord, options.lang);
 			
 			inst = reader.nextInstance();	
-			++cnt;
+			//++cnt;
+			if (inst != null)
+				cnt += inst.length - 1;
 			if (options.maxNumSent != -1 && cnt >= options.maxNumSent) break;
 		}
 		reader.close();
@@ -221,6 +223,7 @@ public class DependencyPipe implements Serializable {
 		//dumpPathStats(pathCounts, pathlengthCounts);
 		
 		dictionaries.filterDictionary(DEPLABEL);
+		dictionaries.filterWord();
 		//dictionaries.filterDictionary(WORD);
 		dictionaries.closeCounters();
 		
@@ -310,7 +313,9 @@ public class DependencyPipe implements Serializable {
 		    synFactory.initFeatureAlphabets(inst);
 				
 		    inst = reader.nextInstance();
-		    cnt++;
+		    //cnt++;
+		    if (inst != null)
+		    	cnt += inst.length - 1;
 	        if (options.maxNumSent != -1 && cnt >= options.maxNumSent) break;
 		}
 				
@@ -439,7 +444,9 @@ public class DependencyPipe implements Serializable {
 			lt.add(new DependencyInstance(inst));		    
 			
 			inst = reader.nextInstance();
-			cnt++;
+			//cnt++;
+			if (inst != null)
+				cnt += inst.length - 1;
 			if (options.maxNumSent != -1 && cnt >= options.maxNumSent) break;
 			if (cnt % 1000 == 0)
 				System.out.printf("%d ", cnt);

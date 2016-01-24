@@ -13,7 +13,7 @@ public final class Utils {
 			System.exit(1);
 		}
 	}
-		
+	
 	public static int log2(long x) 
 	{
 		long y = 1;

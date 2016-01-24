@@ -351,6 +351,7 @@ public class FeatureTemplate {
 	    HEAD_EMB,
 	    MOD_EMB,
 	    
+	    RATH_RATM,
 	    
 	    FEATURE_TEMPLATE_END;
 		

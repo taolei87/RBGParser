@@ -121,13 +121,15 @@ public class LocalFeatureData {
 	
 	private void initFirstOrderTables() 
 	{
-		for (int i = 0; i < len; ++i) {
-			wordFvs[i] = pipe.synFactory.createWordFeatures(inst, i);
-			//wpU[i] = parameters.projectU(wordFvs[i]);
-			//wpV[i] = parameters.projectV(wordFvs[i]);
-			parameters.projectU(wordFvs[i], wpU[i]);
-			parameters.projectV(wordFvs[i], wpV[i]);
-		}
+		//if (gamma < 1.0) {
+			for (int i = 0; i < len; ++i) {
+				wordFvs[i] = pipe.synFactory.createWordFeatures(inst, i);
+				//wpU[i] = parameters.projectU(wordFvs[i]);
+				//wpV[i] = parameters.projectV(wordFvs[i]);
+				parameters.projectU(wordFvs[i], wpU[i]);
+				parameters.projectV(wordFvs[i], wpV[i]);
+			}
+		//}
 		
 		boolean nopruning = !options.pruning || pruner == null || options.learningMode == LearningMode.Basic;
 		
@@ -138,7 +140,7 @@ public class LocalFeatureData {
 					arcFvs[i*len+j] = pipe.synFactory.createArcFeatures(inst, i, j);
                     //arcNtScores[i*len+j] = parameters.dotProduct(arcFvs[i*len+j]) * gamma;
 					arcScores[i*len+j] = parameters.dotProduct(arcFvs[i*len+j]) * gamma
-									+ parameters.dotProduct(wpU[i], wpV[j], i-j) * (1-gamma);
+									+ (gamma < 1.0 ? parameters.dotProduct(wpU[i], wpV[j], i-j) * (1-gamma) : 0.0);
 				}
 		
 //		if (options.learnLabel) {

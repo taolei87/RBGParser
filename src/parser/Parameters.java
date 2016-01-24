@@ -268,6 +268,7 @@ public class Parameters implements Serializable {
         double loss = - dt.dotProduct(params)*gamma + Fi;
         double l2norm = dt.Squaredl2NormUnsafe() * gamma * gamma;
     	
+        if (gamma < 1.0) {
         int updId = (updCnt + offset) % 3;
         //if ( updId == 1 ) {
         	// update U
@@ -294,6 +295,7 @@ public class Parameters implements Serializable {
             	dW[k] = dWk;
         	}   
         //}
+        }
         
         double alpha = loss/l2norm;
     	alpha = Math.min(C, alpha);
@@ -309,6 +311,8 @@ public class Parameters implements Serializable {
 		    		total[x] += coeff2 * z;
 	    		}
     		}
+    		
+    		if (gamma < 1.0) {
     		
     		//if ( updId == 1 ) 
     		{
@@ -351,6 +355,8 @@ public class Parameters implements Serializable {
             			totalW[k][x] += coeff2 * z;
             		}
             	}  
+    		}
+    		
     		}
     	}
     	
