@@ -31,6 +31,9 @@ public class HillClimbingDecoder extends DependencyDecoder {
 	ExecutorCompletionService<Object> decodingService;
 	HillClimbingTask[] tasks;
 	
+	// for statistics
+	public int convergeIter = 0;
+	
 	public HillClimbingDecoder(Options options) {
 		this.options = options;
 		labelLossType = options.labelLossType;
@@ -97,6 +100,7 @@ public class HillClimbingDecoder extends DependencyDecoder {
 			
 			n = inst.length;
 			converge = options.numHcConverge;
+			converge = 3000;
 			
 			if (dfslis == null || dfslis.length < n) {
 				dfslis = new int[n];				
@@ -159,20 +163,32 @@ public class HillClimbingDecoder extends DependencyDecoder {
 				double score = calcScore(now);
 				synchronized (pred) {
 					++totRuns;
-					if (!stopped && score > bestScore) {
-						bestScore = score;
+					//if (!stopped && score > bestScore) {
+					//	bestScore = score;
 						//unchangedRuns = 0;
-						pred.heads = heads;
-						pred.deplbids = deplbids;
-					} else {
+					//	pred.heads = heads;
+					//	pred.deplbids = deplbids;
+					//} else {
 						//++unchangedRuns;
 						//if (unchangedRuns >= converge)
 						//	stopped = true;
-					}
+					//}
 					
-					++unchangedRuns;
-					if (unchangedRuns >= converge)
+					//++unchangedRuns;
+					//if (unchangedRuns >= converge)
+					//	stopped = true;
+					
+					if (totRuns <= converge) {
+						if (score > bestScore) {
+							bestScore = score;
+							pred.heads = heads;
+							pred.heads = heads;
+							convergeIter = totRuns;
+						}
+					}
+					else {
 						stopped = true;
+					}
 				}
 			}
 		}

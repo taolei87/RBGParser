@@ -15,6 +15,7 @@ import optimality.Optimality;
 
 import parser.Options.LearningMode;
 import parser.decoding.DependencyDecoder;
+import parser.decoding.HillClimbingDecoder;
 import parser.io.DependencyReader;
 import parser.io.DependencyWriter;
 import parser.pruning.BasicArcPruner;
@@ -382,7 +383,15 @@ public class DependencyParser implements Serializable {
     	DependencyInstance inst = pipe.createInstance(reader);    
     	
     	int[] optRes = new int[5];
+    	int size = 300;
+    	int[] certConverge = new int[size];
+    	int[] nocertConverge = new int[size];
+    	int cnt = 0;
     	while (inst != null) {
+    		cnt += 1;
+    		if (cnt % 100 == 0)
+    			System.out.println(cnt + "  ");
+    		
     		LocalFeatureData lfd = new LocalFeatureData(inst, this, true);
     		GlobalFeatureData gfd = new GlobalFeatureData(lfd); 
     		
@@ -422,11 +431,20 @@ public class DependencyParser implements Serializable {
     			
     			//int isOpt = opt.optimalityCheck(predInst, null, lfd);
     			int isOpt = opt.dualDecodingCheck(predInst, null, lfd);
-    			optRes[isOpt]++;
+    			//optRes[isOpt]++;
+    			
+    			if (isOpt < 2) {
+    				// dd return cert
+    				certConverge[Math.min(size - 1, ((HillClimbingDecoder)decoder).convergeIter - 1)] += 1;
+    			}
+    			else {
+    				nocertConverge[Math.min(size - 1, ((HillClimbingDecoder)decoder).convergeIter - 1)] += 1;
+    			}
     		}
     		
     		inst = pipe.createInstance(reader);
     	}
+    	System.out.println();
     	
     	long end = System.currentTimeMillis();
     	
@@ -449,7 +467,20 @@ public class DependencyParser implements Serializable {
     	System.out.println("Seconds per token: " + ((double)(end - start))/1000/token);
     	
     	decoder.shutdown();
+    	
+    	int sum1 = 0, sum2 = 0;
+    	for (int i = 0; i < size; ++i) {
+    		sum1 += certConverge[i];
+    		sum2 += nocertConverge[i];
+    	}
 
+    	double cumu1 = 0.0, cumu2 = 0.0;
+    	for (int i = 0; i < size; ++i) {
+    		cumu1 += certConverge[i];
+    		cumu2 += nocertConverge[i];
+    		System.out.println(i + " " + cumu1 / sum1 + " " + cumu2 / sum2);
+    	}
+    	
     	return (nUCorrect+0.0)/nDeps;
     }
 }

@@ -24,7 +24,7 @@ public class Options implements Cloneable, Serializable {
 	public boolean test = false;	
 	public String wordVectorFile = null;
 	public String modelFile = "model.out";
-    public String format = "CONLL";
+    public String format = "CONLL-X";
     
 	public int maxNumSent = -1;
     public int numPretrainIters = 1;
@@ -48,7 +48,7 @@ public class Options implements Cloneable, Serializable {
 	public int R = 50;
 	
 	// optimality 
-	public boolean checkOptimality = false;
+	public boolean checkOptimality = true;
 	public double optBeta = 0.999;
 	public int optMaxIter = 250;
 	
@@ -56,12 +56,12 @@ public class Options implements Cloneable, Serializable {
 	// feature set
 	public boolean useCS = true;		// use consecutive siblings
 	public boolean useGP = true;		// use grandparent
-	public boolean useHB = true;		// use head bigram
-	public boolean useGS = true;		// use grand sibling
-	public boolean useTS = true;		// use tri-sibling
-	public boolean useGGP = true;		// use great-grandparent
-	public boolean usePSC = true;		// use parent-sibling-child
-	public boolean useHO = true;		// use global feature
+	public boolean useHB = false;		// use head bigram
+	public boolean useGS = false;		// use grand sibling
+	public boolean useTS = false;		// use tri-sibling
+	public boolean useGGP = false;		// use great-grandparent
+	public boolean usePSC = false;		// use parent-sibling-child
+	public boolean useHO = false;		// use global feature
 	
 	// CoNLL language specific info
 	// used only in Full learning mode
@@ -180,6 +180,9 @@ public class Options implements Cloneable, Serializable {
             		learningMode = LearningMode.Standard;
             	else if (str.equals("full"))
             		learningMode = LearningMode.Full;
+            }
+            else if (arg.startsWith("format:")) {
+            	format = arg.split(":")[1];
             }
 
     	}    	

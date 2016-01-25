@@ -17,8 +17,12 @@ public abstract class DependencyReader {
 	
 	public static DependencyReader createDependencyReader(Options options) {
 		String format = options.format;
-		if (format.equals("CONLL")) {
+		if (format.equalsIgnoreCase("CONLL06") || format.equalsIgnoreCase("CONLL-06")) {
 			return new CONLLReader(options);
+		} else if (format.equalsIgnoreCase("CONLLX") || format.equalsIgnoreCase("CONLL-X")) {
+			return new CONLLReader(options);
+		} else if (format.equalsIgnoreCase("CONLL09") || format.equalsIgnoreCase("CONLL-09")) {
+			return new CONLL09Reader(options);
 		} else {
 			System.out.printf("!!!!! Unsupported file format: %s%n", format);
 			return new CONLLReader(options);

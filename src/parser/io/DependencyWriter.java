@@ -16,8 +16,12 @@ public abstract class DependencyWriter {
 	
 	public static DependencyWriter createDependencyWriter(Options options, DependencyPipe pipe) {
 		String format = options.format;
-		if (format.equals("CONLL")) {
+		if (format.equalsIgnoreCase("CONLL06") || format.equalsIgnoreCase("CONLL-06")) {
 			return new CONLLWriter(options, pipe);
+		} else if (format.equalsIgnoreCase("CONLLX") || format.equalsIgnoreCase("CONLL-X")) {
+			return new CONLLWriter(options, pipe);
+		} else if (format.equalsIgnoreCase("CONLL09") || format.equalsIgnoreCase("CONLL-09")) {
+			return new CONLL09Writer(options, pipe);
 		} else {
 			System.out.printf("!!!!! Unsupported file format: %s%n", format);
 			return new CONLLWriter(options, pipe);
